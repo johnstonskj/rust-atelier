@@ -1,0 +1,3 @@
+[workspace]
+
+crates = ["atelier-lib", "atelier-core", "cargo-atelier"]
