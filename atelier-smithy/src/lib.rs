@@ -1,21 +1,17 @@
 /*!
-Rust native core model for the AWS Smithy IDL.
+One-line description.
+
+More detailed description, with
+
+# Example
+
 */
 
-#[macro_use]
-extern crate error_chain;
-
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+// use ...
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
-pub enum Version {
-    V10,
-}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -29,30 +25,6 @@ pub enum Version {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Default for Version {
-    fn default() -> Self {
-        Self::V10
-    }
-}
-
-impl Display for Version {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "1.0")
-    }
-}
-
-impl FromStr for Version {
-    type Err = error::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "1.0" {
-            Ok(Self::V10)
-        } else {
-            Err(error::ErrorKind::InvalidVersionNumber(s.to_string()).into())
-        }
-    }
-}
-
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
@@ -61,10 +33,4 @@ impl FromStr for Version {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-pub mod error;
-
 pub mod io;
-
-pub mod model;
-
-pub mod prelude;

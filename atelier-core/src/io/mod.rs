@@ -1,20 +1,25 @@
 /*!
-Rust native core model for the AWS Smithy IDL.
+One-line description.
+
+More detailed description, with
+
+# Example
+
 */
 
-#[macro_use]
-extern crate error_chain;
-
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+use crate::error::Result;
+use crate::model::Model;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
-pub enum Version {
-    V10,
+pub trait ModelWriter: Default {
+    fn write(&mut self, w: &mut impl std::io::Write, model: &Model) -> Result<()>;
+}
+
+pub trait ModelReader: Default {
+    fn read(&mut self, r: &mut impl std::io::Read) -> Result<Model>;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -25,33 +30,25 @@ pub enum Version {
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
+pub fn read_model_from_string<S>(r: &mut impl ModelReader, s: S) -> Result<Model>
+where
+    S: AsRef<[u8]>,
+{
+    use std::io::Cursor;
+    let mut buffer = Cursor::new(s);
+    r.read(&mut buffer)
+}
+
+pub fn write_model_to_string(w: &mut impl ModelWriter, model: &Model) -> Result<String> {
+    use std::io::Cursor;
+    let mut buffer = Cursor::new(Vec::new());
+    w.write(&mut buffer, model)?;
+    Ok(String::from_utf8(buffer.into_inner()).unwrap())
+}
+
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
-
-impl Default for Version {
-    fn default() -> Self {
-        Self::V10
-    }
-}
-
-impl Display for Version {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "1.0")
-    }
-}
-
-impl FromStr for Version {
-    type Err = error::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "1.0" {
-            Ok(Self::V10)
-        } else {
-            Err(error::ErrorKind::InvalidVersionNumber(s.to_string()).into())
-        }
-    }
-}
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
@@ -60,11 +57,3 @@ impl FromStr for Version {
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
-
-pub mod error;
-
-pub mod io;
-
-pub mod model;
-
-pub mod prelude;

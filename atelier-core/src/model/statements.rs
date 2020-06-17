@@ -1,20 +1,30 @@
 /*!
-Rust native core model for the AWS Smithy IDL.
+One-line description.
+
+More detailed description, with
+
+# Example
+
 */
 
-#[macro_use]
-extern crate error_chain;
-
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+use crate::model::shapes::Trait;
+use crate::model::values::Value;
+use crate::model::{Named, ObjectKey, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
-pub enum Version {
-    V10,
+#[derive(Clone, Debug, PartialEq)]
+pub struct Apply {
+    id: ShapeID,
+    the_trait: Trait,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Metadata {
+    id: ObjectKey,
+    value: Value,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -29,27 +39,40 @@ pub enum Version {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Default for Version {
-    fn default() -> Self {
-        Self::V10
+impl Named<ShapeID> for Apply {
+    fn id(&self) -> &ShapeID {
+        &self.id
     }
 }
 
-impl Display for Version {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "1.0")
+impl Apply {
+    pub fn new(id: ShapeID, the_trait: Trait) -> Self {
+        Self { id, the_trait }
+    }
+
+    pub fn the_trait(&self) -> &Trait {
+        &self.the_trait
     }
 }
 
-impl FromStr for Version {
-    type Err = error::Error;
+// ------------------------------------------------------------------------------------------------
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "1.0" {
-            Ok(Self::V10)
-        } else {
-            Err(error::ErrorKind::InvalidVersionNumber(s.to_string()).into())
-        }
+impl Named<ObjectKey> for Metadata {
+    fn id(&self) -> &ObjectKey {
+        &self.id
+    }
+}
+
+impl Metadata {
+    pub fn new(id: ObjectKey, value: Value) -> Self {
+        Self { id, value }
+    }
+
+    pub fn value(&self) -> &Value {
+        &self.value
+    }
+    pub fn set_value(&mut self, value: Value) {
+        self.value = value;
     }
 }
 
@@ -60,11 +83,3 @@ impl FromStr for Version {
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
-
-pub mod error;
-
-pub mod io;
-
-pub mod model;
-
-pub mod prelude;

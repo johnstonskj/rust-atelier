@@ -1,3 +1,3 @@
 [workspace]
 
-crates = ["atelier-lib", "atelier-core", "cargo-atelier"]
+members = ["atelier-lib", "atelier-json", "atelier-openapi", "atelier-smithy", "atelier-core", "cargo-atelier"]

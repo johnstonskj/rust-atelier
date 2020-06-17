@@ -1,20 +1,22 @@
 /*!
-Rust native core model for the AWS Smithy IDL.
+One-line description.
+
+More detailed description, with
+
+# Example
+
 */
 
-#[macro_use]
-extern crate error_chain;
-
-use std::fmt::{Display, Formatter};
+use crate::model::shapes::Shape;
+use crate::model::{Model, Namespace, ShapeID};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
-pub enum Version {
-    V10,
+pub struct ModelBuilder {
+    model: Model,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -29,27 +31,32 @@ pub enum Version {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Default for Version {
-    fn default() -> Self {
-        Self::V10
-    }
-}
-
-impl Display for Version {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "1.0")
-    }
-}
-
-impl FromStr for Version {
-    type Err = error::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "1.0" {
-            Ok(Self::V10)
-        } else {
-            Err(error::ErrorKind::InvalidVersionNumber(s.to_string()).into())
+impl ModelBuilder {
+    pub fn new(namespace: &str) -> Self {
+        Self {
+            model: Model {
+                version: Default::default(),
+                namespace: Namespace::from_str(namespace).unwrap(),
+                uses: vec![],
+                shapes: Default::default(),
+                applies: vec![],
+                metadata: vec![],
+            },
         }
+    }
+
+    pub fn uses(&mut self, shape: &str) -> &mut Self {
+        self.model.add_usage(ShapeID::from_str(shape).unwrap());
+        self
+    }
+
+    pub fn add(&mut self, shape: Shape) -> &mut Self {
+        self.model.add_shape(shape);
+        self
+    }
+
+    pub fn build(&self) -> Model {
+        self.model.clone()
     }
 }
 
@@ -61,10 +68,22 @@ impl FromStr for Version {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-pub mod error;
+pub mod shapes;
 
-pub mod io;
+pub mod traits;
 
-pub mod model;
+// ------------------------------------------------------------------------------------------------
+// Unit Tests
+// ------------------------------------------------------------------------------------------------
 
-pub mod prelude;
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_builder() {
+        let model = ModelBuilder::new("example.weather");
+        let model: Model = model.build();
+        println!("{:?}", model);
+    }
+}
