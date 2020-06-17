@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::error::invalid_value_variant;
 use crate::model::shapes::{Member, Valued};
 use crate::model::values::Value;

@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::model::values::Value;
 use crate::model::{Annotated, Documented, Identifier, Named, ShapeID};
 

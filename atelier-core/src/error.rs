@@ -1,10 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
+Standard `Error`, `ErrorKind`, and `Result` types.
 */
 
 use std::fmt::Display;

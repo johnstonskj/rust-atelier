@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::model::shapes::{Shape, ShapeInner, SimpleType, Trait};
 use crate::model::{Annotated, Documented, Identifier};
 use std::str::FromStr;

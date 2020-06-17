@@ -1,9 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
+Builders to construct models in a more fluent style.
 
 */
 
@@ -18,14 +14,6 @@ use std::str::FromStr;
 pub struct ModelBuilder {
     model: Model,
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -45,12 +33,17 @@ impl ModelBuilder {
         }
     }
 
+    pub fn version(&mut self, version: Version) -> &mut Self {
+        self.model.version = version;
+        self
+    }
+
     pub fn uses(&mut self, shape: &str) -> &mut Self {
         self.model.add_usage(ShapeID::from_str(shape).unwrap());
         self
     }
 
-    pub fn add(&mut self, shape: Shape) -> &mut Self {
+    pub fn shape(&mut self, shape: Shape) -> &mut Self {
         self.model.add_shape(shape);
         self
     }
@@ -61,29 +54,14 @@ impl ModelBuilder {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[doc(hidden)]
 pub mod shapes;
+pub use shapes::ShapeBuilder;
 
+#[doc(hidden)]
 pub mod traits;
-
-// ------------------------------------------------------------------------------------------------
-// Unit Tests
-// ------------------------------------------------------------------------------------------------
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_builder() {
-        let model = ModelBuilder::new("example.weather");
-        let model: Model = model.build();
-        println!("{:?}", model);
-    }
-}
+use crate::Version;
+pub use traits::TraitBuilder;

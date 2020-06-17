@@ -9,7 +9,7 @@ More detailed description, with
 
 use atelier_core::error::Result;
 use atelier_core::io::{ModelReader, ModelWriter};
-use atelier_core::model::shapes::{Shape, ShapeInner};
+use atelier_core::model::shapes::ShapeInner;
 use atelier_core::model::{Annotated, Documented, Model, Named};
 use std::io::{Read, Write};
 
@@ -82,44 +82,44 @@ impl SmithyWriter {
             for a_trait in shape.traits() {
                 writeln!(w, "@{}", a_trait.id())?;
             }
-            match shape.shape_type() {
+            match shape.inner() {
                 ShapeInner::SimpleType(st) => {
                     writeln!(w, "{} {}", st, shape.id())?;
                 }
-                ShapeInner::List => {
+                ShapeInner::List(_) => {
                     writeln!(w, "list {} {{", shape.id())?;
                     // writeln!(w, "    member: {}", list.member())?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Set => {}
-                ShapeInner::Map => {}
-                ShapeInner::Structure => {}
-                ShapeInner::Union => {}
-                ShapeInner::Service => {
+                ShapeInner::Set(_) => {}
+                ShapeInner::Map(_) => {}
+                ShapeInner::Structure(_) => {}
+                ShapeInner::Union(_) => {}
+                ShapeInner::Service(_) => {
                     writeln!(w, "service {} {{", shape.id())?;
-                    self.write_members(w, shape)?;
+                    //self.write_members(w, shape)?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Operation => {}
-                ShapeInner::Resource => {}
+                ShapeInner::Operation(_) => {}
+                ShapeInner::Resource(_) => {}
             }
             writeln!(w)?;
         }
         Ok(())
     }
 
-    fn write_members(&mut self, w: &mut impl Write, shape: &Shape) -> Result<()> {
-        for (id, member) in shape.members() {
-            if let Some(doc) = shape.documentation() {
-                writeln!(w, "    /// {}", doc)?;
-            }
-            for a_trait in shape.traits() {
-                writeln!(w, "    @{}", a_trait.id())?;
-            }
-            write!(w, "    {}: {}", id, member.value())?;
-        }
-        Ok(())
-    }
+    // fn write_members(&mut self, w: &mut impl Write, shape: &Shape) -> Result<()> {
+    //     for (id, member) in shape.members() {
+    //         if let Some(doc) = shape.documentation() {
+    //             writeln!(w, "    /// {}", doc)?;
+    //         }
+    //         for a_trait in shape.traits() {
+    //             writeln!(w, "    @{}", a_trait.id())?;
+    //         }
+    //         write!(w, "    {}: {}", id, member.value())?;
+    //     }
+    //     Ok(())
+    // }
 
     fn write_footer(&mut self, _w: &mut impl Write, _model: &Model) -> Result<()> {
         Ok(())

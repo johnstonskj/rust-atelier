@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::model::shapes::{Trait, Valued};
 use crate::model::values::Value;
 use crate::model::{Identifier, ShapeID};
@@ -84,7 +75,7 @@ impl TraitBuilder {
         }
     }
 
-    pub fn add(&mut self, value: Value) {
+    pub fn value(&mut self, value: Value) {
         self.a_trait.set_value(value)
     }
 

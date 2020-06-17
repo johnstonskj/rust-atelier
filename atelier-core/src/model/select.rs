@@ -1,9 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
+Model structures for selector expressions.
 
 */
 

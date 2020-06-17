@@ -1,9 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
+Model structures for shapes.
 
 */
 
@@ -112,11 +108,14 @@ impl Shape {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[doc(hidden)]
 pub mod members;
 pub use members::{Member, Trait, Valued};
 
+#[doc(hidden)]
 pub mod services;
 pub use services::{Operation, Resource, Service};
 
+#[doc(hidden)]
 pub mod types;
 pub use types::{ListOrSet, Map, SimpleType, StructureOrUnion};
