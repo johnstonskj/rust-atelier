@@ -4,8 +4,16 @@ description = "Rust native core model for the AWS Smithy IDL."
 version = "0.1.0"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
+documentation = "https://docs.rs/atelier_core/"
+repository = "https://github.com/johnstonskj/rust-atelier.git"
+license = "MIT"
+readme = "README.md"
+publish = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.docs.rs]
+# This sets the default target to `x86_64-unknown-linux-gnu`
+# and only builds that target for documentation.
+targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 error-chain = "0.12.2"

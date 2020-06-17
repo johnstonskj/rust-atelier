@@ -9,12 +9,28 @@ Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/sm
 
 Given that a Smithy is "_the workshop of a smith_", this project has been named for "_an artist's or designer's studio or workroom_".
 
+## Crates
+
+| crate                                | Content                                         | Status                              |
+|--------------------------------------|-------------------------------------------------|-------------------------------------|
+| [`atelier_core`](./atelier_core)     | The Model, Builder, and Selector types and I/O traits. | Model: 80%, Builder: 75%, Selector: 20%, Tests: 0% |
+| `atelier_smithy`                     | TBD                                             | Not Started                         |
+| `atelier_json`                       | TBD                                             | Not Started                         |
+| `atelier_openapi`                    | TBD                                             | Not Started                         |
+| `atelier_lib`                        | TBD                                             | Awaiting completion of `core`.      |
+| `cargo_atelier`                      | TBD                                             | Not Started                         |
+
 ## Changes
 
 **Version 0.1.0** (_in progress_)
 
-* TBD
+* Initial types for manipulation of Smithy Models, _not_ including selector expressions.
+* Initial builder types for fluent construction of models.
 
 ## TODO
 
-1. TBD
+1. Complete model for selector expressions.
+2. Parser and writer for Smithy representation.
+3. Parser and writer for Smithy's JSON AST representation.
+4. Parser and writer for OpenAPI representation.
+5. Work on cargo command for processing Smithy files.
