@@ -1,8 +1,3 @@
-/*!
-Identifier types used across model structures.
-
-*/
-
 use crate::error;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -11,21 +6,37 @@ use std::str::FromStr;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// An internal identifier, corresponding to the `identifier` production in the specification's
+/// _Lexical Structure_ section.
+///
 #[allow(clippy::derive_hash_xor_eq)]
 #[derive(Clone, Debug, Eq, Hash)]
 pub struct Identifier(String);
 
+///
+/// A component of `ShapeID`, corresponding to the `namespace` production in the specification's
+/// _Lexical Structure_ section.
+///
 #[allow(clippy::derive_hash_xor_eq)]
 #[derive(Clone, Debug, Eq, Hash)]
 pub struct Namespace(String);
 
 ///
+/// The complete shape identifier type used across model structures. This type corresponds to the
+/// `shape_id` production in the specification's _Lexical Structure_ section.
+///
 /// ```abnf
 /// com.foo.baz#ShapeName$memberName
 /// \_________/ \_______/ \________/
-///      |          |          |
-///  Namespace  Shape name  Member name
+/// |          |          |
+/// Namespace  Shape name  Member name
 /// ```
+///
+/// * `ShapeID`; comprises the 3-tuple described above, with components as follows:
+/// * `Namespace`; the optional `Namespace` struct is a list of `Identifier` components.
+/// * `Shape name`; an `Identifier` value.
+/// * `Member name`; an optional `Identifier` value.
 ///
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ShapeID {
