@@ -17,7 +17,7 @@ use std::str::FromStr;
 ///
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
 pub enum Version {
-    /// Version 1.0
+    /// Version 1.0 (initial, and current)
     V10,
 }
 
@@ -53,7 +53,7 @@ impl Version {
     ///
     /// Returns the most current version of the Smithy specification.
     ///
-    fn current() -> Self {
+    pub fn current() -> Self {
         Self::V10
     }
 }
