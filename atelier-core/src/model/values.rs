@@ -26,7 +26,6 @@ pub enum Value {
     BigDecimal(i128), // TODO: Need a better representation
     Timestamp(i128),  // TODO: Need a better representation
     // ----------------------------------------------------
-    Identifier(Identifier),
     Ref(ShapeID),
     // ----------------------------------------------------
     List(Vec<Value>),
@@ -60,7 +59,7 @@ impl Display for Value {
             Value::BigInteger(v) => write!(f, "\"{}\"", v),
             Value::BigDecimal(v) => write!(f, "{}", v),
             Value::Timestamp(v) => write!(f, "{}", v),
-            Value::Identifier(v) => write!(f, "{}", v),
+            Value::Ref(v) => write!(f, "{}", v),
             Value::List(vs) | Value::Set(vs) => writeln!(
                 f,
                 "[ {} ]",
