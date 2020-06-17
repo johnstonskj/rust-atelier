@@ -13,9 +13,13 @@ TBD
 
 * First release.
 
+* Initial types for manipulation of Smithy Models, _not_ including selector expressions.
+* Initial builder types for fluent construction of models.
+
 ## TODO
 
-1. Complete builder API
-2. macro-ize APIs
+1. Complete the selector expression types
+1. Complete the builder types
+2. macro-ize APIs for less code
 3. More documentation
 4. More tests

@@ -13,7 +13,7 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 | crate                                | Content                                         | Status                              |
 |--------------------------------------|-------------------------------------------------|-------------------------------------|
-| [`atelier_core`](./atelier_core)     | The Model, Builder, and Selector types and I/O traits. | Model: 80%, Builder: 75%, Selector: 20%, Tests: 0% |
+| [`atelier_core`](./atelier_core/)     | The Model, Builder, and Selector types and I/O traits. | Model: 80%, Builder: 75%, Selector: 20%, Tests: 0% |
 | `atelier_smithy`                     | TBD                                             | Not Started                         |
 | `atelier_json`                       | TBD                                             | Not Started                         |
 | `atelier_openapi`                    | TBD                                             | Not Started                         |
