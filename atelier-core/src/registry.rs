@@ -7,6 +7,7 @@ use crate::model::builder::{shapes, traits, ModelBuilder};
 use crate::model::{Model, Namespace};
 use crate::Version;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -28,6 +29,12 @@ pub trait ModelRegistry: Default {
     /// Resolve the `namespace` to a `Model`, if known.
     ///
     fn resolve(&self, namespace: &Namespace) -> Option<&Model>;
+    ///
+    /// Returns the prelude's `Model`, if known.
+    ///
+    fn prelude(&self) -> Option<&Model> {
+        self.resolve(&Namespace::from_str(PRELUDE_NAMESPACE).unwrap())
+    }
 }
 
 ///
