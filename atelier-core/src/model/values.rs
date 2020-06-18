@@ -27,10 +27,11 @@ pub enum Value {
     Timestamp(i128),  // TODO: Need a better representation
     // ----------------------------------------------------
     Ref(ShapeID),
+    RefMap(HashMap<Identifier, Value>),
     // ----------------------------------------------------
     List(Vec<Value>),
     Set(Vec<Value>),
-    Map(HashMap<Identifier, Value>),
+    Map(HashMap<String, Value>),
 }
 
 // ------------------------------------------------------------------------------------------------

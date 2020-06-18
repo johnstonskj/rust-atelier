@@ -1,3 +1,4 @@
+use crate::model::builder::TraitBuilder;
 use crate::model::shapes::{Shape, ShapeInner, SimpleType, Trait};
 use crate::model::{Annotated, Documented, Identifier};
 use std::str::FromStr;
@@ -6,134 +7,215 @@ use std::str::FromStr;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-pub struct ShapeBuilder {
+pub trait ShapeBuilder {
+    fn as_shape(&self) -> &Shape;
+    fn as_shape_mut(&mut self) -> &mut Shape;
+
+    fn doc_comment(&mut self, documentation: &str) -> &mut Self {
+        self.as_shape_mut().set_documentation(documentation);
+        self
+    }
+
+    fn doc_trait(&mut self, documentation: &str) -> &mut Self {
+        self.add_trait(TraitBuilder::documentation(documentation).build());
+        self
+    }
+
+    fn add_trait(&mut self, a_trait: Trait) -> &mut Self {
+        self.as_shape_mut().add_trait(a_trait);
+        self
+    }
+
+    fn external_documentation(&mut self, map: &[(&str, &str)]) -> &mut Self {
+        self.add_trait(TraitBuilder::external_documentation(map).build());
+        self
+    }
+    fn deprecated(&mut self, message: Option<&str>, since: Option<&str>) -> &mut Self {
+        self.add_trait(TraitBuilder::deprecated(message, since).build());
+        self
+    }
+
+    fn private(&mut self) -> &mut Self {
+        self.add_trait(TraitBuilder::private().build());
+        self
+    }
+
+    fn since(&mut self, date: &str) -> &mut Self {
+        self.add_trait(TraitBuilder::since(date).build());
+        self
+    }
+
+    fn tagged(&mut self, tags: &[&str]) -> &mut Self {
+        self.add_trait(TraitBuilder::tagged(tags).build());
+        self
+    }
+
+    fn build(&self) -> Shape {
+        self.as_shape().clone()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct SimpleShapeBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct ListBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct SetBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct MapBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct StructureBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct UnionBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct ServiceBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct OperationBuilder {
+    shape: Shape,
+}
+
+#[derive(Clone, Debug)]
+pub struct ResourceBuilder {
     shape: Shape,
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Types
+// Macros
 // ------------------------------------------------------------------------------------------------
+
+#[doc(hidden)]
+macro_rules! simple_constructor {
+    ($fn_name:ident, $var_name:ident) => {
+        pub fn $fn_name(id: &str) -> Self {
+            Self {
+                shape: Shape::new(
+                    Identifier::from_str(id).unwrap(),
+                    ShapeInner::SimpleType(SimpleType::$var_name),
+                ),
+            }
+        }
+    };
+}
+
+#[doc(hidden)]
+macro_rules! default_builder_impl {
+    ($struct_name:ident) => {
+        impl ShapeBuilder for $struct_name {
+            fn as_shape(&self) -> &Shape {
+                &self.shape
+            }
+
+            fn as_shape_mut(&mut self) -> &mut Shape {
+                &mut self.shape
+            }
+        }
+    };
+}
+
+#[doc(hidden)]
+macro_rules! add_trait {
+    ($trait_fn:ident) => {
+        pub fn $trait_fn(&mut self) -> &mut Self {
+            self.add_trait(TraitBuilder::$trait_fn().build());
+            self
+        }
+    };
+}
 
 // ------------------------------------------------------------------------------------------------
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-pub fn blob(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Blob),
-    )
-}
-
-pub fn boolean(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Boolean),
-    )
-}
-
-pub fn document(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Document),
-    )
-}
-
-pub fn string(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::String),
-    )
-}
-
-pub fn byte(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Byte),
-    )
-}
-
-pub fn short(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Short),
-    )
-}
-
-pub fn integer(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Integer),
-    )
-}
-
-pub fn long(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Long),
-    )
-}
-
-pub fn float(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Float),
-    )
-}
-
-pub fn double(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Double),
-    )
-}
-
-pub fn big_integer(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::BigInteger),
-    )
-}
-
-pub fn big_decimal(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::BigDecimal),
-    )
-}
-
-pub fn timestamp(id: &str) -> ShapeBuilder {
-    ShapeBuilder::new(
-        Identifier::from_str(id).unwrap(),
-        ShapeInner::SimpleType(SimpleType::Timestamp),
-    )
-}
-
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl ShapeBuilder {
-    fn new(id: Identifier, shape_type: ShapeInner) -> Self {
-        Self {
-            shape: Shape::new(id, shape_type),
-        }
-    }
+default_builder_impl!(SimpleShapeBuilder);
 
-    pub fn documentation(&mut self, documentation: &str) -> &mut Self {
-        self.shape.set_documentation(documentation);
-        self
-    }
+impl SimpleShapeBuilder {
+    simple_constructor!(blob, Blob);
 
-    pub fn add_trait(&mut self, a_trait: Trait) -> &mut Self {
-        self.shape.add_trait(a_trait);
-        self
-    }
+    simple_constructor!(boolean, Boolean);
 
-    pub fn build(&self) -> Shape {
-        self.shape.clone()
-    }
+    simple_constructor!(document, Document);
+
+    simple_constructor!(string, String);
+
+    simple_constructor!(byte, Byte);
+
+    simple_constructor!(short, Short);
+
+    simple_constructor!(integer, Integer);
+
+    simple_constructor!(long, Long);
+
+    simple_constructor!(float, Float);
+
+    simple_constructor!(double, Double);
+
+    simple_constructor!(big_integer, BigInteger);
+
+    simple_constructor!(big_decimal, BigDecimal);
+
+    simple_constructor!(timestamp, Timestamp);
+
+    add_trait!(boxed);
+
+    add_trait!(sensitive);
 }
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(ListBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(SetBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(MapBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(StructureBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(UnionBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(ServiceBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(OperationBuilder);
+
+// ------------------------------------------------------------------------------------------------
+
+default_builder_impl!(ResourceBuilder);
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions

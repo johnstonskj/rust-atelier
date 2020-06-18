@@ -3,7 +3,7 @@ Provides a run-time registry for resolving namespaces to models.
 
 */
 
-use crate::model::builder::{shapes, traits, ModelBuilder};
+use crate::model::builder::{shapes::ShapeBuilder, shapes::SimpleShapeBuilder, ModelBuilder};
 use crate::model::{Model, Namespace};
 use crate::Version;
 use std::collections::HashMap;
@@ -62,38 +62,26 @@ pub const PRELUDE_NAMESPACE: &str = "smithy.api";
 pub fn prelude_model(version: Version) -> Model {
     ModelBuilder::new(PRELUDE_NAMESPACE)
         .version(version)
-        .shape(shapes::string("String").build())
-        .shape(shapes::blob("Blob").build())
-        .shape(shapes::big_integer("BigInteger").build())
-        .shape(shapes::big_decimal("BigDecimal").build())
-        .shape(shapes::timestamp("Timestamp").build())
-        .shape(shapes::document("Document").build())
-        .shape(
-            shapes::boolean("Boolean")
-                .add_trait(traits::is_boxed())
-                .build(),
-        )
-        .shape(shapes::boolean("PrimitiveBoolean").build())
-        .shape(shapes::byte("Byte").add_trait(traits::is_boxed()).build())
-        .shape(shapes::byte("PrimitiveByte").build())
-        .shape(shapes::short("Short").add_trait(traits::is_boxed()).build())
-        .shape(shapes::short("PrimitiveShort").build())
-        .shape(
-            shapes::integer("Integer")
-                .add_trait(traits::is_boxed())
-                .build(),
-        )
-        .shape(shapes::integer("PrimitiveInteger").build())
-        .shape(shapes::long("Long").add_trait(traits::is_boxed()).build())
-        .shape(shapes::long("PrimitiveLong").build())
-        .shape(shapes::float("Float").add_trait(traits::is_boxed()).build())
-        .shape(shapes::float("PrimitiveFloat").build())
-        .shape(
-            shapes::double("Double")
-                .add_trait(traits::is_boxed())
-                .build(),
-        )
-        .shape(shapes::double("PrimitiveDouble").build())
+        .shape(SimpleShapeBuilder::string("String").build())
+        .shape(SimpleShapeBuilder::blob("Blob").build())
+        .shape(SimpleShapeBuilder::big_integer("BigInteger").build())
+        .shape(SimpleShapeBuilder::big_decimal("BigDecimal").build())
+        .shape(SimpleShapeBuilder::timestamp("Timestamp").build())
+        .shape(SimpleShapeBuilder::document("Document").build())
+        .shape(SimpleShapeBuilder::boolean("Boolean").boxed().build())
+        .shape(SimpleShapeBuilder::boolean("PrimitiveBoolean").build())
+        .shape(SimpleShapeBuilder::byte("Byte").boxed().build())
+        .shape(SimpleShapeBuilder::byte("PrimitiveByte").build())
+        .shape(SimpleShapeBuilder::short("Short").boxed().build())
+        .shape(SimpleShapeBuilder::short("PrimitiveShort").build())
+        .shape(SimpleShapeBuilder::integer("Integer").boxed().build())
+        .shape(SimpleShapeBuilder::integer("PrimitiveInteger").build())
+        .shape(SimpleShapeBuilder::long("Long").boxed().build())
+        .shape(SimpleShapeBuilder::long("PrimitiveLong").build())
+        .shape(SimpleShapeBuilder::float("Float").boxed().build())
+        .shape(SimpleShapeBuilder::float("PrimitiveFloat").build())
+        .shape(SimpleShapeBuilder::double("Double").boxed().build())
+        .shape(SimpleShapeBuilder::double("PrimitiveDouble").build())
         .build()
 }
 
