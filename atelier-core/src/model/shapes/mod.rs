@@ -95,6 +95,10 @@ impl Shape {
         &self.inner
     }
 
+    pub(crate) fn inner_mut(&mut self) -> &mut ShapeInner {
+        &mut self.inner
+    }
+
     pub fn set_inner(&mut self, inner: ShapeInner) {
         self.inner = inner
     }

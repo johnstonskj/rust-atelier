@@ -59,7 +59,7 @@ impl ModelBuilder {
 
 #[doc(hidden)]
 pub mod shapes;
-pub use shapes::ShapeBuilder;
+pub use shapes::Builder;
 
 #[doc(hidden)]
 pub mod traits;

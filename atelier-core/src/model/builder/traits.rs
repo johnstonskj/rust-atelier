@@ -1,3 +1,4 @@
+use crate::error::ErrorSource;
 use crate::model::shapes::{Trait, Valued};
 use crate::model::values::Value;
 use crate::model::{Identifier, ShapeID};
@@ -48,9 +49,11 @@ impl TraitBuilder {
     }
 
     pub fn documentation(value: &str) -> Self {
-        let mut result = Self::new("deprecated");
-        result.string(value);
-        result
+        Self::new("deprecated").string(value).clone()
+    }
+
+    pub fn error(src: ErrorSource) -> Self {
+        Self::new("error").string(&src.to_string()).clone()
     }
 
     pub fn external_documentation(map: &[(&str, &str)]) -> Self {
@@ -59,6 +62,10 @@ impl TraitBuilder {
             .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
             .collect();
         Self::with_value("externalDocumentation", Value::Map(value))
+    }
+
+    pub fn idempotent() -> Self {
+        Self::new("idempotent")
     }
 
     pub fn length(min: Option<usize>, max: Option<usize>) -> Self {
@@ -96,8 +103,16 @@ impl TraitBuilder {
         Self::new("required")
     }
 
+    pub fn requires_length() -> Self {
+        Self::new("requiresLength")
+    }
+
     pub fn sensitive() -> Self {
         Self::new("sensitive")
+    }
+
+    pub fn streaming() -> Self {
+        Self::new("streaming")
     }
 
     pub fn since(date: &str) -> Self {
@@ -112,9 +127,23 @@ impl TraitBuilder {
         )
     }
 
+    pub fn title(title: &str) -> Self {
+        Self::new("title").string(title).clone()
+    }
+
     pub fn is_trait() -> Self {
         Self::new("trait")
     }
+
+    pub fn unique_items() -> Self {
+        Self::new("uniqueItems")
+    }
+
+    pub fn unstable() -> Self {
+        Self::new("unstable")
+    }
+
+    // --------------------------------------------------------------------------------------------
 
     pub fn new(id: &str) -> Self {
         Self {

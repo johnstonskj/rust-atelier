@@ -3,7 +3,7 @@ Provides a run-time registry for resolving namespaces to models.
 
 */
 
-use crate::model::builder::{shapes::ShapeBuilder, shapes::SimpleShapeBuilder, ModelBuilder};
+use crate::model::builder::{shapes::Builder, shapes::SimpleShapeBuilder, ModelBuilder};
 use crate::model::{Model, Namespace};
 use crate::Version;
 use std::collections::HashMap;
@@ -61,7 +61,9 @@ pub const PRELUDE_NAMESPACE: &str = "smithy.api";
 ///
 pub fn prelude_model(version: Version) -> Model {
     ModelBuilder::new(PRELUDE_NAMESPACE)
+        // Smithy specification version
         .version(version)
+        // Simple Shapes/Types
         .shape(SimpleShapeBuilder::string("String").build())
         .shape(SimpleShapeBuilder::blob("Blob").build())
         .shape(SimpleShapeBuilder::big_integer("BigInteger").build())
@@ -82,6 +84,7 @@ pub fn prelude_model(version: Version) -> Model {
         .shape(SimpleShapeBuilder::float("PrimitiveFloat").build())
         .shape(SimpleShapeBuilder::double("Double").boxed().build())
         .shape(SimpleShapeBuilder::double("PrimitiveDouble").build())
+        // Traits
         .build()
 }
 
