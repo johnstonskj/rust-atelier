@@ -1,6 +1,6 @@
 use crate::error::invalid_value_variant;
 use crate::model::shapes::{Member, Valued};
-use crate::model::values::Value;
+use crate::model::values::{Key, NodeValue};
 use crate::model::{Identifier, ShapeID};
 use std::str::FromStr;
 
@@ -37,12 +37,84 @@ pub struct Resource {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Types
+// Macros
 // ------------------------------------------------------------------------------------------------
 
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
+#[doc(hidden)]
+macro_rules! optional_member {
+    ($member:ident, $setter:ident, $unsetter:ident) => {
+        pub fn $member(&self) -> Option<&ShapeID> {
+            match &self.$member.value().as_ref() {
+                None => None,
+                Some(NodeValue::ShapeID(id)) => Some(id),
+                _ => invalid_value_variant("ShapeID"),
+            }
+        }
+        pub fn $setter(&mut self, $member: ShapeID) {
+            self.$member.set_value(NodeValue::ShapeID($member))
+        }
+        pub fn $unsetter(&mut self) {
+            self.$member.unset_value();
+        }
+    };
+}
+
+#[doc(hidden)]
+macro_rules! array_member {
+    ($collection:ident, $member:ident, $add_fn:ident, $append_fn:ident, $remove_fn:ident) => {
+        pub fn $collection(&self) -> impl Iterator<Item = &ShapeID> {
+            match self.$collection.value() {
+                Some(v) => match v {
+                    NodeValue::Array(vs) => vs.iter().map(|v| {
+                        if let NodeValue::ShapeID(id) = v {
+                            id
+                        } else {
+                            invalid_value_variant("ShapeID")
+                        }
+                    }),
+                    _ => invalid_value_variant("Array"),
+                },
+                _ => invalid_value_variant("Array"),
+            }
+        }
+        pub fn $add_fn(&mut self, $member: ShapeID) {
+            match self.$collection.value_mut() {
+                Some(v) => match v {
+                    NodeValue::Array(vs) => vs.push(NodeValue::ShapeID($member)),
+                    _ => invalid_value_variant("Array"),
+                },
+                _ => invalid_value_variant("Array"),
+            }
+        }
+        pub fn $append_fn(&mut self, $collection: &[ShapeID]) {
+            match self.$collection.value_mut() {
+                Some(v) => match v {
+                    NodeValue::Array(vs) => vs.append(
+                        &mut $collection
+                            .iter()
+                            .cloned()
+                            .map(NodeValue::ShapeID)
+                            .collect(),
+                    ),
+                    _ => invalid_value_variant("Array"),
+                },
+                _ => invalid_value_variant("Array"),
+            }
+        }
+        pub fn $remove_fn(&mut self, $member: &ShapeID) {
+            match self.$collection.value_mut() {
+                Some(v) => match v {
+                    NodeValue::Array(vs) => {
+                        let id_value = NodeValue::ShapeID($member.clone());
+                        vs.retain(|v| v == &id_value);
+                    }
+                    _ => invalid_value_variant("Array"),
+                },
+                _ => invalid_value_variant("Array"),
+            }
+        }
+    };
+}
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -54,11 +126,11 @@ impl Default for Service {
             version: Member::new(Identifier::from_str("version").unwrap()),
             operations: Member::with_value(
                 Identifier::from_str("operations").unwrap(),
-                Value::Set(Default::default()),
+                NodeValue::Array(Default::default()),
             ),
             resources: Member::with_value(
                 Identifier::from_str("resources").unwrap(),
-                Value::Set(Default::default()),
+                NodeValue::Array(Default::default()),
             ),
         }
     }
@@ -67,97 +139,18 @@ impl Default for Service {
 impl Service {
     pub fn version(&self) -> &String {
         match &self.version.value().as_ref().unwrap() {
-            Value::String(v) => v,
+            NodeValue::String(v) => v,
             _ => invalid_value_variant("String"),
         }
     }
     pub fn set_version(&mut self, version: &str) {
-        self.version.set_value(Value::String(version.to_string()))
+        self.version
+            .set_value(NodeValue::String(version.to_string()))
     }
 
-    pub fn operations(&self) -> impl Iterator<Item = &ShapeID> {
-        match self.operations.value() {
-            Some(v) => match v {
-                Value::Set(vs) => vs.iter().map(|v| {
-                    if let Value::Ref(id) = v {
-                        id
-                    } else {
-                        invalid_value_variant("Ref")
-                    }
-                }),
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn add_operation(&mut self, operation: ShapeID) {
-        match self.operations.value_mut() {
-            Some(v) => match v {
-                Value::Set(vs) => vs.push(Value::Ref(operation)),
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn append_operations(&mut self, operations: &[ShapeID]) {
-        match self.operations.value_mut() {
-            Some(v) => match v {
-                Value::Set(vs) => {
-                    vs.append(&mut operations.iter().cloned().map(Value::Ref).collect())
-                }
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn remove_operation(&mut self, operation: &ShapeID) {
-        match self.operations.value_mut() {
-            Some(v) => match v {
-                Value::Set(vs) => {
-                    let id_value = Value::Ref(operation.clone());
-                    vs.retain(|v| v == &id_value);
-                }
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
+    array_member! { operations, operation, add_operation, append_operations, remove_operation }
 
-    pub fn resources(&self) -> &Member {
-        &self.resources
-    }
-    pub fn add_resource(&mut self, resource: ShapeID) {
-        match &mut self.resources.value_mut() {
-            Some(v) => match v {
-                Value::Set(vs) => vs.push(Value::Ref(resource)),
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn append_resources(&mut self, resources: &[ShapeID]) {
-        match &mut self.resources.value_mut() {
-            Some(v) => match v {
-                Value::Set(vs) => {
-                    vs.append(&mut resources.iter().cloned().map(Value::Ref).collect());
-                }
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn remove_resource(&mut self, resource: &ShapeID) {
-        match self.resources.value_mut() {
-            Some(v) => match v {
-                Value::Set(vs) => {
-                    let id_value = Value::Ref(resource.clone());
-                    vs.retain(|v| v == &id_value);
-                }
-                _ => invalid_value_variant("Set"),
-            },
-            _ => invalid_value_variant("Set"),
-        }
-    }
+    array_member! { resources, resource, add_resource, append_resources, remove_resource }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -169,74 +162,18 @@ impl Default for Operation {
             output: Member::new(Identifier::from_str("output").unwrap()),
             errors: Member::with_value(
                 Identifier::from_str("errors").unwrap(),
-                Value::Set(Default::default()),
+                NodeValue::Array(Default::default()),
             ),
         }
     }
 }
 
 impl Operation {
-    pub fn input(&self) -> &ShapeID {
-        match &self.input.value().as_ref().unwrap() {
-            Value::Ref(id) => id,
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn set_input(&mut self, input: ShapeID) {
-        self.input.set_value(Value::Ref(input))
-    }
-    pub fn unset_input(&mut self) {
-        self.input.unset_value();
-    }
+    optional_member! { input, set_input, unset_input }
 
-    pub fn output(&self) -> &ShapeID {
-        match &self.output.value().as_ref().unwrap() {
-            Value::Ref(id) => id,
-            _ => invalid_value_variant("Set"),
-        }
-    }
-    pub fn set_output(&mut self, output: ShapeID) {
-        self.output.set_value(Value::Ref(output))
-    }
-    pub fn unset_output(&mut self) {
-        self.output.unset_value();
-    }
+    optional_member! { output, set_output, unset_output }
 
-    pub fn errors(&self) -> &Member {
-        &self.errors
-    }
-    pub fn add_error(&mut self, error: ShapeID) {
-        match &mut self.errors.value_mut() {
-            Some(v) => match v {
-                Value::List(vs) => vs.push(Value::Ref(error)),
-                _ => invalid_value_variant("List"),
-            },
-            _ => invalid_value_variant("List"),
-        }
-    }
-    pub fn append_errors(&mut self, errors: &[ShapeID]) {
-        match &mut self.errors.value_mut() {
-            Some(v) => match v {
-                Value::List(vs) => {
-                    vs.append(&mut errors.iter().cloned().map(Value::Ref).collect());
-                }
-                _ => invalid_value_variant("List"),
-            },
-            _ => invalid_value_variant("List"),
-        }
-    }
-    pub fn remove_error(&mut self, error: &ShapeID) {
-        match self.errors.value_mut() {
-            Some(v) => match v {
-                Value::List(vs) => {
-                    let id_value = Value::Ref(error.clone());
-                    vs.retain(|v| v == &id_value);
-                }
-                _ => invalid_value_variant("List"),
-            },
-            _ => invalid_value_variant("List"),
-        }
-    }
+    array_member! { errors, error, add_error, append_errors, remove_error }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -244,23 +181,80 @@ impl Operation {
 impl Default for Resource {
     fn default() -> Self {
         Self {
-            identifiers: Member::new(Identifier::from_str("identifiers").unwrap()),
+            identifiers: Member::with_value(
+                Identifier::from_str("identifiers").unwrap(),
+                NodeValue::Object(Default::default()),
+            ),
             create: Member::new(Identifier::from_str("create").unwrap()),
             put: Member::new(Identifier::from_str("put").unwrap()),
             read: Member::new(Identifier::from_str("read").unwrap()),
             update: Member::new(Identifier::from_str("update").unwrap()),
             delete: Member::new(Identifier::from_str("delete").unwrap()),
             list: Member::new(Identifier::from_str("list").unwrap()),
-            operations: Member::new(Identifier::from_str("operations").unwrap()),
-            collection_operations: Member::new(
-                Identifier::from_str("collectionOperations").unwrap(),
+            operations: Member::with_value(
+                Identifier::from_str("operations").unwrap(),
+                NodeValue::Array(Default::default()),
             ),
-            resources: Member::new(Identifier::from_str("resources").unwrap()),
+            collection_operations: Member::with_value(
+                Identifier::from_str("collection_operations").unwrap(),
+                NodeValue::Array(Default::default()),
+            ),
+            resources: Member::with_value(
+                Identifier::from_str("resources").unwrap(),
+                NodeValue::Array(Default::default()),
+            ),
         }
     }
 }
 
-impl Resource {}
+impl Resource {
+    pub fn identifiers(&self) -> &Member {
+        &self.identifiers
+    }
+
+    pub fn add_identifier(&mut self, id: Identifier, shape: ShapeID) {
+        match self.identifiers.value_mut() {
+            Some(v) => match v {
+                NodeValue::Object(vs) => {
+                    vs.insert(id.into(), shape.into());
+                }
+                _ => invalid_value_variant("Object"),
+            },
+            _ => invalid_value_variant("Object"),
+        }
+    }
+
+    pub fn remove_identifier(&mut self, id: &Identifier) {
+        match self.identifiers.value_mut() {
+            Some(v) => match v {
+                NodeValue::Object(vs) => {
+                    let key: Key = id.clone().into();
+                    vs.retain(|k, _| k == &key);
+                }
+                _ => invalid_value_variant("Object"),
+            },
+            _ => invalid_value_variant("Object"),
+        }
+    }
+
+    optional_member! { create, set_create, unset_create }
+
+    optional_member! { put, set_put, unset_put }
+
+    optional_member! { read, set_read, unset_read }
+
+    optional_member! { update, set_update, unset_update }
+
+    optional_member! { delete, set_delete, unset_delete }
+
+    optional_member! { list, set_list, unset_list }
+
+    array_member! { operations, operation, add_operation, append_operations, remove_operation }
+
+    array_member! { collection_operations, collection_operation, add_collection_operation, append_collection_operations, remove_collection_operation }
+
+    array_member! { resources, resource, add_resource, append_resources, remove_resource }
+}
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions

@@ -3,8 +3,8 @@ Builders to construct models in a more fluent style.
 
 */
 
-use crate::model::shapes::Shape;
-use crate::model::{Model, Namespace, ShapeID};
+use crate::model::{Model, Namespace, Shape, ShapeID};
+use crate::Version;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -59,9 +59,14 @@ impl ModelBuilder {
 
 #[doc(hidden)]
 pub mod shapes;
-pub use shapes::Builder;
+pub use shapes::{
+    Builder, ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ResourceBuilder,
+    ServiceBuilder, SetBuilder, SimpleShapeBuilder, StructureBuilder, UnionBuilder,
+};
 
 #[doc(hidden)]
 pub mod traits;
-use crate::Version;
 pub use traits::TraitBuilder;
+
+#[doc(hidden)]
+pub mod values;

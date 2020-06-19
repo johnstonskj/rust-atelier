@@ -10,28 +10,27 @@ use std::fmt::{Display, Formatter};
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum Value {
-    Blob(Vec<u8>),
-    Boolean(bool),
-    Document(String),
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Key {
     String(String),
-    Byte(i8),
-    Short(i16),
-    Integer(i32),
-    Long(i64),
-    Float(f32),
-    Double(f64),
-    BigInteger(i128), // TODO: Need a better representation
-    BigDecimal(i128), // TODO: Need a better representation
-    Timestamp(i128),  // TODO: Need a better representation
-    // ----------------------------------------------------
-    Ref(ShapeID),
-    RefMap(HashMap<Identifier, Value>),
-    // ----------------------------------------------------
-    List(Vec<Value>),
-    Set(Vec<Value>),
-    Map(HashMap<String, Value>),
+    Identifier(Identifier),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Number {
+    Integer(i64),
+    Float(f64),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum NodeValue {
+    Array(Vec<NodeValue>),
+    Object(HashMap<Key, NodeValue>),
+    Number(Number),
+    Boolean(bool),
+    ShapeID(ShapeID),
+    TextBlock(String),
+    String(String),
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -46,22 +45,158 @@ pub enum Value {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Display for Value {
+impl From<String> for Key {
+    fn from(s: String) -> Self {
+        Self::String(s)
+    }
+}
+
+impl From<&str> for Key {
+    fn from(s: &str) -> Self {
+        Self::String(s.to_string())
+    }
+}
+
+impl From<Identifier> for Key {
+    fn from(id: Identifier) -> Self {
+        Self::Identifier(id)
+    }
+}
+
+impl Display for Key {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::Boolean(v) => write!(f, "{}", v),
-            Value::String(v) => write!(f, "\"{}\"", v),
-            Value::Byte(v) => write!(f, "{}", v),
-            Value::Short(v) => write!(f, "{}", v),
-            Value::Integer(v) => write!(f, "{}", v),
-            Value::Long(v) => write!(f, "{}", v),
-            Value::Float(v) => write!(f, "{}", v),
-            Value::Double(v) => write!(f, "{}", v),
-            Value::BigInteger(v) => write!(f, "\"{}\"", v),
-            Value::BigDecimal(v) => write!(f, "{}", v),
-            Value::Timestamp(v) => write!(f, "{}", v),
-            Value::Ref(v) => write!(f, "{}", v),
-            Value::List(vs) | Value::Set(vs) => writeln!(
+            Self::String(s) => write!(f, "{:?}", s),
+            Self::Identifier(id) => write!(f, "{}", id),
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+
+impl From<i8> for Number {
+    fn from(n: i8) -> Self {
+        Self::Integer(n as i64)
+    }
+}
+
+impl From<i16> for Number {
+    fn from(n: i16) -> Self {
+        Self::Integer(n as i64)
+    }
+}
+
+impl From<i32> for Number {
+    fn from(n: i32) -> Self {
+        Self::Integer(n as i64)
+    }
+}
+
+impl From<i64> for Number {
+    fn from(n: i64) -> Self {
+        Self::Integer(n)
+    }
+}
+
+impl From<f32> for Number {
+    fn from(n: f32) -> Self {
+        Self::Float(n as f64)
+    }
+}
+
+impl From<f64> for Number {
+    fn from(n: f64) -> Self {
+        Self::Float(n)
+    }
+}
+
+impl Display for Number {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Integer(n) => write!(f, "{}", n),
+            Self::Float(n) => write!(f, "{}", n),
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+
+impl From<i8> for NodeValue {
+    fn from(n: i8) -> Self {
+        Self::Number((n as i64).into())
+    }
+}
+
+impl From<i16> for NodeValue {
+    fn from(n: i16) -> Self {
+        Self::Number((n as i64).into())
+    }
+}
+
+impl From<i32> for NodeValue {
+    fn from(n: i32) -> Self {
+        Self::Number((n as i64).into())
+    }
+}
+
+impl From<i64> for NodeValue {
+    fn from(n: i64) -> Self {
+        Self::Number(n.into())
+    }
+}
+
+impl From<f32> for NodeValue {
+    fn from(n: f32) -> Self {
+        Self::Number((n as f64).into())
+    }
+}
+
+impl From<f64> for NodeValue {
+    fn from(n: f64) -> Self {
+        Self::Number(n.into())
+    }
+}
+
+impl From<bool> for NodeValue {
+    fn from(b: bool) -> Self {
+        Self::Boolean(b)
+    }
+}
+
+impl From<ShapeID> for NodeValue {
+    fn from(id: ShapeID) -> Self {
+        Self::ShapeID(id)
+    }
+}
+
+impl From<String> for NodeValue {
+    fn from(v: String) -> Self {
+        Self::String(v)
+    }
+}
+
+impl From<Vec<NodeValue>> for NodeValue {
+    fn from(v: Vec<NodeValue>) -> Self {
+        Self::Array(v)
+    }
+}
+
+impl From<&[NodeValue]> for NodeValue {
+    fn from(v: &[NodeValue]) -> Self {
+        Self::Array(v.to_vec())
+    }
+}
+
+impl From<HashMap<Key, NodeValue>> for NodeValue {
+    fn from(v: HashMap<Key, NodeValue>) -> Self {
+        Self::Object(v)
+    }
+}
+
+impl Display for NodeValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NodeValue::Array(vs) => writeln!(
                 f,
                 "[ {} ]",
                 vs.iter()
@@ -69,7 +204,7 @@ impl Display for Value {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            Value::Map(vs) => writeln!(
+            NodeValue::Object(vs) => writeln!(
                 f,
                 "{{ {} }}",
                 vs.iter()
@@ -77,7 +212,11 @@ impl Display for Value {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            _ => panic!("Cannot format a value of this type"),
+            NodeValue::Number(v) => write!(f, "{}", v),
+            NodeValue::Boolean(v) => write!(f, "{}", v),
+            NodeValue::ShapeID(v) => write!(f, "{}", v),
+            NodeValue::TextBlock(v) => write!(f, "\"\"\"{}\"\"\"", v),
+            NodeValue::String(v) => write!(f, "\"{}\"", v),
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::model::values::Value;
+use crate::model::values::NodeValue;
 use crate::model::{Annotated, Documented, Identifier, Named, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
@@ -10,19 +10,19 @@ pub struct Member {
     id: Identifier,
     doc: Option<String>,
     traits: Vec<Trait>,
-    value: Option<Value>,
+    value: Option<NodeValue>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Trait {
     id: ShapeID,
-    value: Option<Value>,
+    value: Option<NodeValue>,
 }
 
 pub trait Valued {
-    fn value(&self) -> &Option<Value>;
-    fn value_mut(&mut self) -> &mut Option<Value>;
-    fn set_value(&mut self, value: Value);
+    fn value(&self) -> &Option<NodeValue>;
+    fn value_mut(&mut self) -> &mut Option<NodeValue>;
+    fn set_value(&mut self, value: NodeValue);
     fn unset_value(&mut self);
 }
 
@@ -77,15 +77,15 @@ impl Annotated for Member {
 }
 
 impl Valued for Member {
-    fn value(&self) -> &Option<Value> {
+    fn value(&self) -> &Option<NodeValue> {
         &self.value
     }
 
-    fn value_mut(&mut self) -> &mut Option<Value> {
+    fn value_mut(&mut self) -> &mut Option<NodeValue> {
         &mut self.value
     }
 
-    fn set_value(&mut self, value: Value) {
+    fn set_value(&mut self, value: NodeValue) {
         self.value = Some(value)
     }
 
@@ -104,12 +104,21 @@ impl Member {
         }
     }
 
-    pub fn with_value(id: Identifier, value: Value) -> Self {
+    pub fn with_value(id: Identifier, value: NodeValue) -> Self {
         Self {
             id,
             doc: None,
             traits: Default::default(),
             value: Some(value),
+        }
+    }
+
+    pub fn with_reference(id: Identifier, ref_id: ShapeID) -> Self {
+        Self {
+            id,
+            doc: None,
+            traits: Default::default(),
+            value: Some(NodeValue::ShapeID(ref_id)),
         }
     }
 }
@@ -123,15 +132,15 @@ impl Named<ShapeID> for Trait {
 }
 
 impl Valued for Trait {
-    fn value(&self) -> &Option<Value> {
+    fn value(&self) -> &Option<NodeValue> {
         &self.value
     }
 
-    fn value_mut(&mut self) -> &mut Option<Value> {
+    fn value_mut(&mut self) -> &mut Option<NodeValue> {
         &mut self.value
     }
 
-    fn set_value(&mut self, value: Value) {
+    fn set_value(&mut self, value: NodeValue) {
         self.value = Some(value)
     }
 
@@ -145,7 +154,7 @@ impl Trait {
         Self { id, value: None }
     }
 
-    pub fn with_value(id: ShapeID, value: Value) -> Self {
+    pub fn with_value(id: ShapeID, value: NodeValue) -> Self {
         Self {
             id,
             value: Some(value),

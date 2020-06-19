@@ -3,7 +3,7 @@ Model structures for selector expressions.
 
 */
 
-use crate::model::values::Value;
+use crate::model::values::NodeValue;
 use crate::model::ShapeID;
 
 // ------------------------------------------------------------------------------------------------
@@ -85,12 +85,12 @@ pub enum Operation {
 pub struct AttributeMatch {
     attribute: Attribute,
     operation: Operation,
-    rhs: Vec<Value>,
+    rhs: Vec<NodeValue>,
 }
 
 #[allow(dead_code)]
 pub struct QueryResult {
-    values: Option<Vec<Value>>,
+    values: Option<Vec<NodeValue>>,
 }
 
 pub trait Queryable {

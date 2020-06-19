@@ -1,6 +1,8 @@
-use crate::error::ErrorSource;
+use crate::error::ErrorKind;
+use crate::error::{AndPanic, ErrorSource};
+use crate::model::builder::values::ObjectBuilder;
 use crate::model::shapes::{Trait, Valued};
-use crate::model::values::Value;
+use crate::model::values::{Key, NodeValue};
 use crate::model::{Identifier, ShapeID};
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -32,20 +34,14 @@ impl TraitBuilder {
     }
 
     pub fn deprecated(message: Option<&str>, since: Option<&str>) -> Self {
-        let mut value: HashMap<Identifier, Value> = Default::default();
+        let mut values = ObjectBuilder::default();
         if let Some(message) = message {
-            value.insert(
-                Identifier::from_str("message").unwrap(),
-                Value::String(message.to_string()),
-            );
+            values.string(Identifier::from_str("message").unwrap().into(), message);
         }
         if let Some(since) = since {
-            value.insert(
-                Identifier::from_str("since").unwrap(),
-                Value::String(since.to_string()),
-            );
+            values.string(Identifier::from_str("since").unwrap().into(), since);
         }
-        Self::with_value("deprecated", Value::RefMap(value))
+        Self::with_value("length", values.build())
     }
 
     pub fn documentation(value: &str) -> Self {
@@ -57,11 +53,11 @@ impl TraitBuilder {
     }
 
     pub fn external_documentation(map: &[(&str, &str)]) -> Self {
-        let value = map
+        let value: HashMap<Key, NodeValue> = map
             .into_iter()
-            .map(|(k, v)| (k.to_string(), Value::String(v.to_string())))
+            .map(|(k, v)| (k.to_string().into(), v.to_string().into()))
             .collect();
-        Self::with_value("externalDocumentation", Value::Map(value))
+        Self::with_value("externalDocumentation", value.into())
     }
 
     pub fn idempotent() -> Self {
@@ -70,23 +66,49 @@ impl TraitBuilder {
 
     pub fn length(min: Option<usize>, max: Option<usize>) -> Self {
         assert!(min.is_some() || max.is_some());
-        let mut value: HashMap<Identifier, Value> = Default::default();
+        let mut values = ObjectBuilder::default();
         if let Some(min) = min {
-            value.insert(
-                Identifier::from_str("min").unwrap(),
-                Value::Integer(min as i32),
-            );
+            values.integer(Identifier::from_str("min").unwrap().into(), min as i64);
         }
         if let Some(max) = max {
-            value.insert(
-                Identifier::from_str("max").unwrap(),
-                Value::Integer(max as i32),
-            );
+            values.integer(Identifier::from_str("max").unwrap().into(), max as i64);
         }
-        Self::with_value("length", Value::RefMap(value))
+        Self::with_value("length", values.build())
     }
 
-    pub fn has_pattern(pat: &str) -> Self {
+    pub fn no_replace() -> Self {
+        Self::new("noReplace")
+    }
+
+    pub fn paginated(
+        input_token: Option<&str>,
+        output_token: Option<&str>,
+        items: Option<&str>,
+        page_size: Option<&str>,
+    ) -> Self {
+        let mut values = ObjectBuilder::default();
+        if let Some(input_token) = input_token {
+            values.string(
+                Identifier::from_str("inputToken").unwrap().into(),
+                input_token,
+            );
+        }
+        if let Some(output_token) = output_token {
+            values.string(
+                Identifier::from_str("outputToken").unwrap().into(),
+                output_token,
+            );
+        }
+        if let Some(items) = items {
+            values.string(Identifier::from_str("items").unwrap().into(), items);
+        }
+        if let Some(page_size) = page_size {
+            values.string(Identifier::from_str("pageSize").unwrap().into(), page_size);
+        }
+        Self::with_value("paginated", values.build())
+    }
+
+    pub fn pattern(pat: &str) -> Self {
         assert!(!pat.is_empty());
         Self::new("pattern").string(pat).clone()
     }
@@ -97,6 +119,13 @@ impl TraitBuilder {
 
     pub fn readonly() -> Self {
         Self::new("readonly")
+    }
+
+    pub fn references(reference_list: NodeValue) -> Self {
+        match reference_list {
+            NodeValue::Array(_) => Self::with_value("references", reference_list),
+            _ => ErrorKind::InvalidValueVariant("Array".to_string()).panic(),
+        }
     }
 
     pub fn required() -> Self {
@@ -123,7 +152,11 @@ impl TraitBuilder {
     pub fn tagged(tags: &[&str]) -> Self {
         Self::with_value(
             "tags",
-            Value::List(tags.iter().map(|s| Value::String(s.to_string())).collect()),
+            NodeValue::Array(
+                tags.iter()
+                    .map(|s| NodeValue::String(s.to_string()))
+                    .collect(),
+            ),
         )
     }
 
@@ -151,45 +184,41 @@ impl TraitBuilder {
         }
     }
 
-    pub fn with_value(id: &str, value: Value) -> Self {
+    pub fn with_value(id: &str, value: NodeValue) -> Self {
         Self {
             a_trait: Trait::with_value(ShapeID::from_str(id).unwrap(), value),
         }
     }
 
+    pub fn array(&mut self, value: Vec<NodeValue>) -> &mut Self {
+        self.value(value.into())
+    }
+
+    pub fn object(&mut self, value: HashMap<Key, NodeValue>) -> &mut Self {
+        self.value(value.into())
+    }
+
+    pub fn integer(&mut self, value: i64) -> &mut Self {
+        self.value(value.into())
+    }
+
+    pub fn float(&mut self, value: f64) -> &mut Self {
+        self.value(value.into())
+    }
+
     pub fn boolean(&mut self, value: bool) -> &mut Self {
-        self.value(Value::Boolean(value))
+        self.value(value.into())
+    }
+
+    pub fn reference(&mut self, value: ShapeID) -> &mut Self {
+        self.value(value.into())
     }
 
     pub fn string(&mut self, value: &str) -> &mut Self {
-        self.value(Value::String(value.to_string()))
+        self.value(value.to_string().into())
     }
 
-    pub fn byte(&mut self, value: i8) -> &mut Self {
-        self.value(Value::Byte(value))
-    }
-
-    pub fn short(&mut self, value: i16) -> &mut Self {
-        self.value(Value::Short(value))
-    }
-
-    pub fn integer(&mut self, value: i32) -> &mut Self {
-        self.value(Value::Integer(value))
-    }
-
-    pub fn long(&mut self, value: i64) -> &mut Self {
-        self.value(Value::Long(value))
-    }
-
-    pub fn float(&mut self, value: f32) -> &mut Self {
-        self.value(Value::Float(value))
-    }
-
-    pub fn double(&mut self, value: f64) -> &mut Self {
-        self.value(Value::Double(value))
-    }
-
-    pub fn value(&mut self, value: Value) -> &mut Self {
+    pub fn value(&mut self, value: NodeValue) -> &mut Self {
         self.a_trait.set_value(value);
         self
     }

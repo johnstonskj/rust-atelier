@@ -132,9 +132,23 @@ impl Namespace {
         }
         true
     }
+
+    pub fn split(&self) -> impl Iterator<Item = Identifier> + '_ {
+        self.0.split('.').map(|s| Identifier(s.to_string()))
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
+
+impl From<Identifier> for ShapeID {
+    fn from(shape_name: Identifier) -> Self {
+        Self {
+            namespace: None,
+            shape_name,
+            member_name: None,
+        }
+    }
+}
 
 impl Display for ShapeID {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

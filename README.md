@@ -26,6 +26,7 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 * Initial types for manipulation of Smithy Models, _not_ including selector expressions.
 * Initial builder types for fluent construction of models.
+* Goal: to be able to create a copy of the weather example model in code using the model builder API.
 
 ## TODO
 

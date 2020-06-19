@@ -4,7 +4,7 @@ Model structures for statements.
 */
 
 use crate::model::shapes::Trait;
-use crate::model::values::Value;
+use crate::model::values::NodeValue;
 use crate::model::{Named, ObjectKey, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ pub struct Apply {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Metadata {
     id: ObjectKey,
-    value: Value,
+    value: NodeValue,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -60,14 +60,14 @@ impl Named<ObjectKey> for Metadata {
 }
 
 impl Metadata {
-    pub fn new(id: ObjectKey, value: Value) -> Self {
+    pub fn new(id: ObjectKey, value: NodeValue) -> Self {
         Self { id, value }
     }
 
-    pub fn value(&self) -> &Value {
+    pub fn value(&self) -> &NodeValue {
         &self.value
     }
-    pub fn set_value(&mut self, value: Value) {
+    pub fn set_value(&mut self, value: NodeValue) {
         self.value = value;
     }
 }
