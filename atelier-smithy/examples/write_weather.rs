@@ -20,7 +20,6 @@ fn main() {
 fn make_weather_model() -> Model {
     ModelBuilder::new("example.weather")
         .shape(
-            // paginated
             ServiceBuilder::new("Weather")
                 .doc_comment("Provides weather forecasts.")
                 .paginated(Some("nextToken"), Some("nextToken"), None, Some("pageSize"))
@@ -90,7 +89,6 @@ fn make_weather_model() -> Model {
                 .build(),
         )
         .shape(
-            // paginated
             OperationBuilder::new("ListCities")
                 .paginated(None, None, Some("items"), None)
                 .readonly()
