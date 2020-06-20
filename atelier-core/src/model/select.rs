@@ -10,6 +10,7 @@ use crate::model::ShapeID;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+#[derive(Debug)]
 pub enum SelectorToken {
     All,
     Number,
@@ -39,6 +40,7 @@ pub enum SelectorToken {
     Member,
 }
 
+#[derive(Debug)]
 pub enum IdAttributes {
     Namespace,
     Name,
@@ -46,11 +48,13 @@ pub enum IdAttributes {
     Length,
 }
 
+#[derive(Debug)]
 pub enum ServiceAttributes {
     Id,
     Version,
 }
 
+#[derive(Debug)]
 pub enum NodeAttributes {
     Keys,
     Values,
@@ -58,6 +62,7 @@ pub enum NodeAttributes {
     Id(ShapeID),
 }
 
+#[derive(Debug)]
 pub enum Attribute {
     Id(IdAttributes),
     Trait(NodeAttributes),
@@ -66,6 +71,7 @@ pub enum Attribute {
     Var,
 }
 
+#[derive(Debug)]
 pub enum Operation {
     // Strings... (i = insensitive)
     Equal,
@@ -82,6 +88,7 @@ pub enum Operation {
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct AttributeMatch {
     attribute: Attribute,
     operation: Operation,
@@ -89,6 +96,7 @@ pub struct AttributeMatch {
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct QueryResult {
     values: Option<Vec<NodeValue>>,
 }

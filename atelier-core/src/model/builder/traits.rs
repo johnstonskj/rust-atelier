@@ -36,20 +36,20 @@ impl TraitBuilder {
     pub fn deprecated(message: Option<&str>, since: Option<&str>) -> Self {
         let mut values = ObjectBuilder::default();
         if let Some(message) = message {
-            values.string(Identifier::from_str("message").unwrap().into(), message);
+            let _ = values.string(Identifier::from_str("message").unwrap().into(), message);
         }
         if let Some(since) = since {
-            values.string(Identifier::from_str("since").unwrap().into(), since);
+            let _ = values.string(Identifier::from_str("since").unwrap().into(), since);
         }
         Self::with_value("length", values.build())
     }
 
     pub fn documentation(value: &str) -> Self {
-        Self::new("deprecated").string(value).clone()
+        Self::new("deprecated").string(value).to_owned()
     }
 
     pub fn error(src: ErrorSource) -> Self {
-        Self::new("error").string(&src.to_string()).clone()
+        Self::new("error").string(&src.to_string()).to_owned()
     }
 
     pub fn external_documentation(map: &[(&str, &str)]) -> Self {
@@ -68,10 +68,10 @@ impl TraitBuilder {
         assert!(min.is_some() || max.is_some());
         let mut values = ObjectBuilder::default();
         if let Some(min) = min {
-            values.integer(Identifier::from_str("min").unwrap().into(), min as i64);
+            let _ = values.integer(Identifier::from_str("min").unwrap().into(), min as i64);
         }
         if let Some(max) = max {
-            values.integer(Identifier::from_str("max").unwrap().into(), max as i64);
+            let _ = values.integer(Identifier::from_str("max").unwrap().into(), max as i64);
         }
         Self::with_value("length", values.build())
     }
@@ -88,29 +88,29 @@ impl TraitBuilder {
     ) -> Self {
         let mut values = ObjectBuilder::default();
         if let Some(input_token) = input_token {
-            values.string(
+            let _ = values.string(
                 Identifier::from_str("inputToken").unwrap().into(),
                 input_token,
             );
         }
         if let Some(output_token) = output_token {
-            values.string(
+            let _ = values.string(
                 Identifier::from_str("outputToken").unwrap().into(),
                 output_token,
             );
         }
         if let Some(items) = items {
-            values.string(Identifier::from_str("items").unwrap().into(), items);
+            let _ = values.string(Identifier::from_str("items").unwrap().into(), items);
         }
         if let Some(page_size) = page_size {
-            values.string(Identifier::from_str("pageSize").unwrap().into(), page_size);
+            let _ = values.string(Identifier::from_str("pageSize").unwrap().into(), page_size);
         }
         Self::with_value("paginated", values.build())
     }
 
     pub fn pattern(pat: &str) -> Self {
         assert!(!pat.is_empty());
-        Self::new("pattern").string(pat).clone()
+        Self::new("pattern").string(pat).to_owned()
     }
 
     pub fn private() -> Self {
@@ -146,7 +146,7 @@ impl TraitBuilder {
 
     pub fn since(date: &str) -> Self {
         assert!(!date.is_empty());
-        Self::new("since").string(date).clone()
+        Self::new("since").string(date).to_owned()
     }
 
     pub fn tagged(tags: &[&str]) -> Self {
@@ -161,7 +161,7 @@ impl TraitBuilder {
     }
 
     pub fn title(title: &str) -> Self {
-        Self::new("title").string(title).clone()
+        Self::new("title").string(title).to_owned()
     }
 
     pub fn is_trait() -> Self {

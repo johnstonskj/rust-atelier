@@ -104,7 +104,7 @@ impl Default for SimpleModelRegistry {
 
 impl ModelRegistry for SimpleModelRegistry {
     fn register(&mut self, model: Model) {
-        self.known.insert(model.namespace().clone(), model);
+        let _ = self.known.insert(model.namespace().clone(), model);
     }
 
     fn contains_namespace(&self, namespace: &Namespace) -> bool {

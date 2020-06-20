@@ -48,36 +48,37 @@ impl ArrayBuilder {
     }
 
     pub fn number(&mut self, v: Number) -> &mut Self {
-        self.push(NodeValue::Number(v))
+        let _ = self.push(NodeValue::Number(v));
+        self
     }
 
     pub fn integer(&mut self, v: i64) -> &mut Self {
-        self.push(NodeValue::Number(v.into()));
+        let _ = self.push(NodeValue::Number(v.into()));
         self
     }
 
     pub fn float(&mut self, v: f64) -> &mut Self {
-        self.push(NodeValue::Number(v.into()));
+        let _ = self.push(NodeValue::Number(v.into()));
         self
     }
 
     pub fn boolean(&mut self, v: bool) -> &mut Self {
-        self.push(NodeValue::Boolean(v));
+        let _ = self.push(NodeValue::Boolean(v));
         self
     }
 
     pub fn reference(&mut self, v: ShapeID) -> &mut Self {
-        self.push(NodeValue::ShapeID(v));
+        let _ = self.push(NodeValue::ShapeID(v));
         self
     }
 
     pub fn text_block(&mut self, v: &str) -> &mut Self {
-        self.push(NodeValue::TextBlock(v.to_string()));
+        let _ = self.push(NodeValue::TextBlock(v.to_string()));
         self
     }
 
     pub fn string(&mut self, v: &str) -> &mut Self {
-        self.push(NodeValue::String(v.to_string()));
+        let _ = self.push(NodeValue::String(v.to_string()));
         self
     }
 
@@ -98,41 +99,42 @@ impl Default for ObjectBuilder {
 
 impl ObjectBuilder {
     pub fn insert(&mut self, k: Key, v: NodeValue) -> &mut Self {
-        self.inner.insert(k, v);
+        let _ = self.inner.insert(k, v);
         self
     }
 
     pub fn number(&mut self, k: Key, v: Number) -> &mut Self {
-        self.insert(k, NodeValue::Number(v))
+        let _ = self.insert(k, NodeValue::Number(v));
+        self
     }
 
     pub fn integer(&mut self, k: Key, v: i64) -> &mut Self {
-        self.insert(k, NodeValue::Number(v.into()));
+        let _ = self.insert(k, NodeValue::Number(v.into()));
         self
     }
 
     pub fn float(&mut self, k: Key, v: f64) -> &mut Self {
-        self.insert(k, NodeValue::Number(v.into()));
+        let _ = self.insert(k, NodeValue::Number(v.into()));
         self
     }
 
     pub fn boolean(&mut self, k: Key, v: bool) -> &mut Self {
-        self.insert(k, NodeValue::Boolean(v));
+        let _ = self.insert(k, NodeValue::Boolean(v));
         self
     }
 
     pub fn reference(&mut self, k: Key, v: ShapeID) -> &mut Self {
-        self.insert(k, NodeValue::ShapeID(v));
+        let _ = self.insert(k, NodeValue::ShapeID(v));
         self
     }
 
     pub fn text_block(&mut self, k: Key, v: &str) -> &mut Self {
-        self.insert(k, NodeValue::TextBlock(v.to_string()));
+        let _ = self.insert(k, NodeValue::TextBlock(v.to_string()));
         self
     }
 
     pub fn string(&mut self, k: Key, v: &str) -> &mut Self {
-        self.insert(k, NodeValue::String(v.to_string()));
+        let _ = self.insert(k, NodeValue::String(v.to_string()));
         self
     }
 

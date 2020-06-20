@@ -26,21 +26,21 @@ impl ModelBuilder {
             model: Model {
                 version: Default::default(),
                 namespace: Namespace::from_str(namespace).unwrap(),
-                uses: vec![],
+                references: Default::default(),
                 shapes: Default::default(),
-                applies: vec![],
-                metadata: vec![],
+                applied_traits: Default::default(),
+                metadata: Default::default(),
             },
         }
     }
 
     pub fn version(&mut self, version: Version) -> &mut Self {
-        self.model.version = version;
+        self.model.set_version(version);
         self
     }
 
     pub fn uses(&mut self, shape: &str) -> &mut Self {
-        self.model.add_usage(ShapeID::from_str(shape).unwrap());
+        self.model.add_reference(ShapeID::from_str(shape).unwrap());
         self
     }
 

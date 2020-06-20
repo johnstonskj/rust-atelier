@@ -5,7 +5,6 @@ The core model itself, consisting of shapes, members, types, values, and model s
 
 use crate::error::Result;
 use crate::model::shapes::{Shape, Trait};
-use crate::model::statements::{Apply, Metadata};
 use crate::Version;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -16,18 +15,12 @@ use std::fmt::Debug;
 
 #[derive(Clone, Debug)]
 pub struct Model {
-    version: Version,
+    version: Option<Version>,
     namespace: Namespace,
-    uses: Vec<ShapeID>,
+    references: HashMap<ShapeID, Option<Rc<Model>>>,
     shapes: HashMap<Identifier, Shape>,
-    applies: Vec<Apply>,
-    metadata: Vec<Metadata>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum ObjectKey {
-    String(String),
-    Identifier(Identifier),
+    applied_traits: HashMap<ShapeID, Vec<Trait>>,
+    metadata: HashMap<Key, Vec<NodeValue>>,
 }
 
 pub trait Named<I> {
@@ -62,18 +55,24 @@ pub trait Transformer {
 impl Model {
     pub fn new(namespace: Namespace) -> Self {
         Self {
-            version: Version::V10,
+            version: None,
             namespace,
-            uses: Default::default(),
+            references: Default::default(),
             shapes: Default::default(),
-            applies: Default::default(),
+            applied_traits: Default::default(),
             metadata: Default::default(),
         }
     }
 
-    pub fn version(&self) -> &Version {
+    pub fn version(&self) -> &Option<Version> {
         &self.version
     }
+
+    pub fn set_version(&mut self, version: Version) {
+        self.version = Some(version);
+    }
+
+    // --------------------------------------------------------------------------------------------
 
     pub fn namespace(&self) -> &Namespace {
         &self.namespace
@@ -85,19 +84,31 @@ impl Model {
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn uses(&self) -> impl Iterator<Item = &ShapeID> {
-        self.uses.iter()
+    pub fn has_references(&self) -> bool {
+        !self.references.is_empty()
     }
 
-    pub fn add_usage(&mut self, id: ShapeID) {
-        self.uses.push(id);
+    pub fn references(&self) -> impl Iterator<Item = &ShapeID> {
+        self.references.keys()
     }
 
-    pub fn remove_usage(&mut self, id: &ShapeID) {
-        self.uses.retain(|u| u != id);
+    pub fn add_reference(&mut self, id: ShapeID) {
+        let _ = self.references.insert(id, None);
+    }
+
+    pub fn add_reference_from(&mut self, id: ShapeID, from_model: Rc<Model>) {
+        let _ = self.references.insert(id, Some(from_model));
+    }
+
+    pub fn remove_reference(&mut self, id: &ShapeID) {
+        let _ = self.references.remove(id);
     }
 
     // --------------------------------------------------------------------------------------------
+
+    pub fn has_shapes(&self) -> bool {
+        !self.shapes.is_empty()
+    }
 
     pub fn has_shape(&self, shape_id: &Identifier) -> bool {
         self.shapes.contains_key(shape_id)
@@ -112,39 +123,67 @@ impl Model {
     }
 
     pub fn add_shape(&mut self, shape: Shape) {
-        self.shapes.insert(shape.id().clone(), shape);
+        let _ = self.shapes.insert(shape.id().clone(), shape);
     }
 
     pub fn remove_shape(&mut self, shape_id: &Identifier) {
-        self.shapes.remove(shape_id);
+        let _ = self.shapes.remove(shape_id);
     }
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn applies(&self) -> impl Iterator<Item = &Apply> {
-        self.applies.iter()
+    pub fn has_trait_applies(&self) -> bool {
+        !self.applied_traits.is_empty()
     }
 
-    pub fn add_apply(&mut self, apply: Apply) {
-        self.applies.push(apply);
+    pub fn all_applied_traits(&self) -> impl Iterator<Item = (&ShapeID, &Vec<Trait>)> {
+        self.applied_traits.iter()
     }
 
-    pub fn remove_apply(&mut self, apply: &Apply) {
-        self.applies.retain(|a| a != apply);
+    pub fn apply_trait_to(&mut self, a_trait: Trait, id: ShapeID) {
+        match self.applied_traits.get_mut(&id) {
+            None => {
+                let _ = self.applied_traits.insert(id, vec![a_trait]);
+            }
+            Some(vec) => {
+                vec.push(a_trait);
+            }
+        }
+    }
+
+    pub fn remove_trait_from(&mut self, a_trait: &Trait, id: &ShapeID) {
+        if let Some(traits) = self.applied_traits.get_mut(id) {
+            traits.retain(|t| t != a_trait);
+        }
     }
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn metadata(&self) -> impl Iterator<Item = &Metadata> {
+    pub fn has_metadata(&self) -> bool {
+        !self.metadata.is_empty()
+    }
+
+    pub fn metadata(&self) -> impl Iterator<Item = (&Key, &Vec<NodeValue>)> {
         self.metadata.iter()
     }
 
-    pub fn add_metadata(&mut self, metadata: Metadata) {
-        self.metadata.push(metadata);
+    pub fn add_metadata(&mut self, key: Key, value: NodeValue) {
+        match self.metadata.get_mut(&key) {
+            None => {
+                let _ = self.metadata.insert(key, vec![value]);
+            }
+            Some(vec) => {
+                vec.push(value);
+            }
+        }
     }
 
-    pub fn remove_metadata(&mut self, metadata: &Metadata) {
-        self.metadata.retain(|a| a != metadata);
+    pub fn remove_metadata_for(&mut self, key: &Key) {
+        let _ = self.metadata.remove(key);
+    }
+
+    pub fn merge_metadata(&mut self) {
+        unimplemented!()
     }
 }
 
@@ -156,12 +195,12 @@ pub mod builder;
 
 #[doc(hidden)]
 pub mod identity;
+use crate::model::values::{Key, NodeValue};
 pub use identity::{Identifier, Namespace, ShapeID};
+use std::rc::Rc;
 
 pub mod select;
 
 pub mod shapes;
-
-pub mod statements;
 
 pub mod values;

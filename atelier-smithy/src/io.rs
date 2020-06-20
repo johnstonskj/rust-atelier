@@ -64,11 +64,18 @@ impl<'a> ModelWriter<'a> for SmithyWriter {
 
 impl<'a> SmithyWriter {
     fn write_header(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        writeln!(w, "$version: \"{}\"", model.version())?;
+        writeln!(
+            w,
+            "$version: \"{}\"",
+            match model.version() {
+                None => atelier_core::Version::default().to_string(),
+                Some(v) => v.to_string(),
+            }
+        )?;
         writeln!(w)?;
         writeln!(w, "namespace {}", model.namespace())?;
         writeln!(w)?;
-        for use_shape in model.uses() {
+        for use_shape in model.references() {
             writeln!(w, "use {}", use_shape)?;
         }
         writeln!(w)?;

@@ -225,7 +225,7 @@ impl Resource {
         match self.identifiers.value_mut() {
             Some(v) => match v {
                 NodeValue::Object(vs) => {
-                    vs.insert(id.into(), shape.into());
+                    let _ = vs.insert(id.into(), shape.into());
                 }
                 _ => invalid_value_variant("Object"),
             },

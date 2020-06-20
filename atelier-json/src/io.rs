@@ -1,27 +1,23 @@
 /*!
-Model structures for statements.
+One-line description.
+
+More detailed description, with
+
+# Example
 
 */
 
-use crate::model::shapes::Trait;
-use crate::model::values::NodeValue;
-use crate::model::{Named, ObjectKey, ShapeID};
+use atelier_core::error::{Result, ResultExt};
+use atelier_core::io::ModelWriter;
+use atelier_core::model::Model;
+use serde_json::{to_writer_pretty, Map, Value};
+use std::io::Write;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct Apply {
-    id: ShapeID,
-    the_trait: Trait,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Metadata {
-    id: ObjectKey,
-    value: NodeValue,
-}
+pub struct JsonWriter;
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -35,40 +31,35 @@ pub struct Metadata {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Named<ShapeID> for Apply {
-    fn id(&self) -> &ShapeID {
-        &self.id
+impl<'a> Default for JsonWriter {
+    fn default() -> Self {
+        Self {}
     }
 }
 
-impl Apply {
-    pub fn new(id: ShapeID, the_trait: Trait) -> Self {
-        Self { id, the_trait }
-    }
+impl<'a> ModelWriter<'a> for JsonWriter {
+    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+        let mut top: Map<String, Value> = Default::default();
 
-    pub fn the_trait(&self) -> &Trait {
-        &self.the_trait
+        top.insert(
+            "version".to_string(),
+            Value::String(match model.version() {
+                None => atelier_core::Version::default().to_string(),
+                Some(v) => v.to_string(),
+            }),
+        );
+
+        top.insert("shapes".to_string(), self.shapes(model));
+
+        to_writer_pretty(w, &Value::Object(top)).chain_err(|| "Serialization error")
     }
 }
 
-// ------------------------------------------------------------------------------------------------
-
-impl Named<ObjectKey> for Metadata {
-    fn id(&self) -> &ObjectKey {
-        &self.id
-    }
-}
-
-impl Metadata {
-    pub fn new(id: ObjectKey, value: NodeValue) -> Self {
-        Self { id, value }
-    }
-
-    pub fn value(&self) -> &NodeValue {
-        &self.value
-    }
-    pub fn set_value(&mut self, value: NodeValue) {
-        self.value = value;
+impl<'a> JsonWriter {
+    fn shapes(&self, _model: &'a Model) -> Value {
+        #[allow(unused_mut)]
+        let mut shape_map: Map<String, Value> = Default::default();
+        Value::Object(shape_map)
     }
 }
 

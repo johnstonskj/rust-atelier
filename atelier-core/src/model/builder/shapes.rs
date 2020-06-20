@@ -153,26 +153,22 @@ macro_rules! shape_member {
 macro_rules! add_trait {
     (pub $trait_fn:ident) => {
         pub fn $trait_fn(&mut self) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn().build());
-            self
+            self.add_trait(TraitBuilder::$trait_fn().build())
         }
     };
     ($trait_fn:ident) => {
         fn $trait_fn(&mut self) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn().build());
-            self
+            self.add_trait(TraitBuilder::$trait_fn().build())
         }
     };
     (pub $trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
         pub fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).build());
-            self
+            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).build())
         }
     };
     ($trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
         fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).build());
-            self
+            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).build())
         }
     };
 }
@@ -203,8 +199,7 @@ where
     }
 
     fn doc_trait(&mut self, documentation: &str) -> &mut Self {
-        self.add_trait(TraitBuilder::documentation(documentation).build());
-        self
+        self.add_trait(TraitBuilder::documentation(documentation).build())
     }
 
     fn add_trait(&mut self, a_trait: Trait) -> &mut Self {
@@ -443,7 +438,7 @@ impl MemberBuilder {
 
     pub fn reference(id: &str, id_ref: &str) -> Self {
         let mut new = Self::new(id);
-        new.refers_to(id_ref);
+        let _ = new.refers_to(id_ref);
         new
     }
 
