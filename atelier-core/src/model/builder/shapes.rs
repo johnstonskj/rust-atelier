@@ -26,7 +26,7 @@ macro_rules! simple_shape_constructor {
 #[doc(hidden)]
 macro_rules! concrete_builder {
     ($struct_name:ident, $inner_type:ty) => {
-        #[derive(Clone, Debug)]
+        #[derive(Debug)]
         pub struct $struct_name {
             inner: $inner_type,
         }

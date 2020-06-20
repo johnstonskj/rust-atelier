@@ -6,17 +6,17 @@ use std::collections::HashMap;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ArrayBuilder {
     inner: Vec<NodeValue>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ObjectBuilder {
     inner: HashMap<Key, NodeValue>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ValueBuilder {
     inner: NodeValue,
 }

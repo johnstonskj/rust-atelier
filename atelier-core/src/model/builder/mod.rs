@@ -11,6 +11,7 @@ use std::str::FromStr;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+#[derive(Debug)]
 pub struct ModelBuilder {
     model: Model,
 }
@@ -70,3 +71,4 @@ pub use traits::TraitBuilder;
 
 #[doc(hidden)]
 pub mod values;
+pub use values::{ArrayBuilder, ObjectBuilder, ValueBuilder};
