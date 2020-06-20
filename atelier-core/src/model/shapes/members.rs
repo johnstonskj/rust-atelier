@@ -21,9 +21,20 @@ pub struct Trait {
 
 pub trait Valued {
     fn value(&self) -> &Option<NodeValue>;
+
     fn value_mut(&mut self) -> &mut Option<NodeValue>;
-    fn set_value(&mut self, value: NodeValue);
-    fn unset_value(&mut self);
+
+    fn has_value(&self) -> bool {
+        self.value().is_some()
+    }
+
+    fn set_value(&mut self, value: NodeValue) {
+        *self.value_mut() = Some(value)
+    }
+
+    fn unset_value(&mut self) {
+        *self.value_mut() = None
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -83,14 +94,6 @@ impl Valued for Member {
 
     fn value_mut(&mut self) -> &mut Option<NodeValue> {
         &mut self.value
-    }
-
-    fn set_value(&mut self, value: NodeValue) {
-        self.value = Some(value)
-    }
-
-    fn unset_value(&mut self) {
-        self.value = None
     }
 }
 

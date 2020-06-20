@@ -11,29 +11,29 @@ use std::str::FromStr;
 #[derive(Clone, Debug)]
 pub struct Service {
     version: Member,    // **required** Value::String
-    operations: Member, // Value::Set(Value::Ref)
-    resources: Member,  // Value::Set(Value::Ref)
+    operations: Member, // Value::Array(Value::Ref)
+    resources: Member,  // Value::Array(Value::Ref)
 }
 
 #[derive(Clone, Debug)]
 pub struct Operation {
-    input: Member,  // Value::Ref
-    output: Member, // Value::Ref
-    errors: Member, // Value::Set(Value::Ref)
+    input: Member,  // Value::ShapeID
+    output: Member, // Value::ShapeID
+    errors: Member, // Value::Array(Value::Ref)
 }
 
 #[derive(Clone, Debug)]
 pub struct Resource {
-    identifiers: Member,           // Value::Map(Identifier, Value::Ref)
-    create: Member,                // Value::Ref
-    put: Member,                   // Value::Ref
-    read: Member,                  // Value::Ref
-    update: Member,                // Value::Ref
-    delete: Member,                // Value::Ref
-    list: Member,                  // Value::Ref
-    operations: Member,            // Value::List(Value::Ref)
-    collection_operations: Member, // Value::List(Value::Ref)
-    resources: Member,             // Value::List(Value::Ref)
+    identifiers: Member,           // Value::Object(_, Value::ShapeID)
+    create: Member,                // Value::ShapeID
+    put: Member,                   // Value::ShapeID
+    read: Member,                  // Value::ShapeID
+    update: Member,                // Value::ShapeID
+    delete: Member,                // Value::ShapeID
+    list: Member,                  // Value::ShapeID
+    operations: Member,            // Value::List(Value::ShapeID)
+    collection_operations: Member, // Value::List(Value::ShapeID)
+    resources: Member,             // Value::List(Value::ShapeID)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -61,7 +61,16 @@ macro_rules! optional_member {
 
 #[doc(hidden)]
 macro_rules! array_member {
-    ($collection:ident, $member:ident, $add_fn:ident, $append_fn:ident, $remove_fn:ident) => {
+    ($collection:ident, $member:ident, $has_fn:ident, $add_fn:ident, $append_fn:ident, $remove_fn:ident) => {
+        pub fn $has_fn(&self) -> bool {
+            match self.$collection.value() {
+                Some(v) => match v {
+                    NodeValue::Array(vs) => !vs.is_empty(),
+                    _ => invalid_value_variant("Array"),
+                },
+                _ => invalid_value_variant("Array"),
+            }
+        }
         pub fn $collection(&self) -> impl Iterator<Item = &ShapeID> {
             match self.$collection.value() {
                 Some(v) => match v {
@@ -148,9 +157,9 @@ impl Service {
             .set_value(NodeValue::String(version.to_string()))
     }
 
-    array_member! { operations, operation, add_operation, append_operations, remove_operation }
+    array_member! { operations, operation, has_operations, add_operation, append_operations, remove_operation }
 
-    array_member! { resources, resource, add_resource, append_resources, remove_resource }
+    array_member! { resources, resource, has_resources, add_resource, append_resources, remove_resource }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -173,7 +182,7 @@ impl Operation {
 
     optional_member! { output, set_output, unset_output }
 
-    array_member! { errors, error, add_error, append_errors, remove_error }
+    array_member! { errors, error, has_errors, add_error, append_errors, remove_error }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -249,11 +258,11 @@ impl Resource {
 
     optional_member! { list, set_list, unset_list }
 
-    array_member! { operations, operation, add_operation, append_operations, remove_operation }
+    array_member! { operations, operation, has_operations, add_operation, append_operations, remove_operation }
 
-    array_member! { collection_operations, collection_operation, add_collection_operation, append_collection_operations, remove_collection_operation }
+    array_member! { collection_operations, collection_operation, has_collection_operations, add_collection_operation, append_collection_operations, remove_collection_operation }
 
-    array_member! { resources, resource, add_resource, append_resources, remove_resource }
+    array_member! { resources, resource, has_resources, add_resource, append_resources, remove_resource }
 }
 
 // ------------------------------------------------------------------------------------------------

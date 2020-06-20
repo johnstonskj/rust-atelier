@@ -12,14 +12,15 @@ TBD
 **Version 0.1.0**
 
 * First release.
-
 * Initial types for manipulation of Smithy Models, _not_ including selector expressions.
 * Initial builder types for fluent construction of models.
+* Able to construct the example weather service using the builder API.
 
 ## TODO
 
 1. Complete the selector expression types
 1. Complete the builder types
-2. macro-ize APIs for less code
+1. Validation!
+2. Complete macro-ize APIs for less code
 3. More documentation
 4. More tests

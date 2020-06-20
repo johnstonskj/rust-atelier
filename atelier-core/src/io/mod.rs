@@ -12,11 +12,11 @@ use crate::model::Model;
 ///
 /// Trait implemented to write a model in a specific representation.
 ///
-pub trait ModelWriter: Default {
+pub trait ModelWriter<'a>: Default {
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
-    fn write(&mut self, w: &mut impl std::io::Write, model: &Model) -> Result<()>;
+    fn write(&mut self, w: &mut impl std::io::Write, model: &'a Model) -> Result<()>;
 }
 
 ///
@@ -48,7 +48,7 @@ where
 ///
 /// Write the `model` into a string `s` using the given `ModelWriter`.
 ///
-pub fn write_model_to_string(w: &mut impl ModelWriter, model: &Model) -> Result<String> {
+pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model) -> Result<String> {
     use std::io::Cursor;
     let mut buffer = Cursor::new(Vec::new());
     w.write(&mut buffer, model)?;

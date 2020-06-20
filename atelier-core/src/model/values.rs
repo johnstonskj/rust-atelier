@@ -196,7 +196,7 @@ impl From<HashMap<Key, NodeValue>> for NodeValue {
 impl Display for NodeValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            NodeValue::Array(vs) => writeln!(
+            NodeValue::Array(vs) => write!(
                 f,
                 "[ {} ]",
                 vs.iter()
@@ -204,7 +204,7 @@ impl Display for NodeValue {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            NodeValue::Object(vs) => writeln!(
+            NodeValue::Object(vs) => write!(
                 f,
                 "{{ {} }}",
                 vs.iter()
