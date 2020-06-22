@@ -4,8 +4,11 @@ description = "Rust native JSON format for the AWS Smithy IDL."
 version = "0.1.0"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+documentation = "https://docs.rs/atelier_json/"
+repository = "https://github.com/johnstonskj/rust-atelier.git"
+license = "MIT"
+readme = "README.md"
+publish = true
 
 [dependencies]
 atelier_core = { version = "0.1.0", path = "../atelier-core" }
