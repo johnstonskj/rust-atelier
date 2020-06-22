@@ -24,6 +24,7 @@ impl ModelBuilder {
     pub fn new(namespace: &str) -> Self {
         Self {
             model: Model {
+                options: None,
                 version: Default::default(),
                 namespace: Namespace::from_str(namespace).unwrap(),
                 references: Default::default(),
