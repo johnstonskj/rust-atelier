@@ -54,7 +54,7 @@ impl TraitBuilder {
 
     pub fn external_documentation(map: &[(&str, &str)]) -> Self {
         let value: HashMap<Key, NodeValue> = map
-            .into_iter()
+            .iter()
             .map(|(k, v)| (k.to_string().into(), v.to_string().into()))
             .collect();
         Self::with_value("externalDocumentation", value.into())
