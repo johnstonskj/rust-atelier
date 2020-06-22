@@ -15,7 +15,7 @@ fn make_weather_model() -> Model {
     ModelBuilder::new("example.weather")
         .shape(
             ServiceBuilder::new("Weather")
-                .doc_comment("Provides weather forecasts.")
+                .documentation("Provides weather forecasts.")
                 .paginated(Some("nextToken"), Some("nextToken"), None, Some("pageSize"))
                 .version("2006-03-01")
                 .resource("City")
