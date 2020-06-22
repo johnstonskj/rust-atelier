@@ -1,5 +1,6 @@
 /*!
-Traits for reading and writing models in different formats.
+Traits for reading and writing models in different formats. Separate crates implement the ability
+to handle different representations, such as the original Smithy, JSON AST, and OpenAPI.
 */
 
 use crate::error::Result;
@@ -34,7 +35,8 @@ pub trait ModelReader: Default {
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Read a model from the string-like value `s` using the given `ModelReader`.
+/// Read a model from the string-like value `s` using the given `ModelReader`. This is simply a
+/// short-cut that saves some repetitive boiler-plate.
 ///
 pub fn read_model_from_string<S>(r: &mut impl ModelReader, s: S) -> Result<Model>
 where
@@ -46,7 +48,8 @@ where
 }
 
 ///
-/// Write the `model` into a string `s` using the given `ModelWriter`.
+/// Write the `model` into a string `s` using the given `ModelWriter`. This is simply a
+/// short-cut that saves some repetitive boiler-plate.
 ///
 pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model) -> Result<String> {
     use std::io::Cursor;

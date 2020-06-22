@@ -1,3 +1,9 @@
+/*!
+This example shows how to use the builder interface to create a copy of the weather sample
+model from the Smithy [Quick Start](https://awslabs.github.io/smithy/quickstart.html#complete-example)
+document.
+*/
+
 use atelier_core::error::ErrorSource;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::model::builder::{

@@ -1,5 +1,7 @@
 /*!
-Model structures for values.
+Model structures for values, these are used to capture the right-hand side of member declarations
+within shapes, but only shape IDs, as well as the values provided to trait applications and metadata
+statements.
 */
 
 use crate::model::{Identifier, ShapeID};
@@ -10,26 +12,61 @@ use std::fmt::{Display, Formatter};
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// The key to a `NodeValue::Object` value, which may be either a quoted string or an identifier.
+///
+/// Corresponds to the `node_object_key` production in §2.5,
+///   [Node values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#node-values),
+///   of the Smithy 1.0 Specification.
+///
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Key {
+    /// A `quoted_text` string (see [String values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#string-values)).
     String(String),
+    /// An identifier value (see [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf)).
     Identifier(Identifier),
 }
 
+///
+/// The Smithy specification deals with numbers that are representable in JSON, such a production
+/// does not distinguish between integer, decimal, or floating point values however Rust cares.
+///
+/// Corresponds to the `number` production in §2.5,
+///   [Node values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#node-values),
+///   of the Smithy 1.0 Specification.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Number {
+    /// An integer value
     Integer(i64),
+    /// A floating point value
     Float(f64),
 }
 
+///
+/// A Node value is used to carry specific data items; it is a key field in the [`Member`](../shapes/struct.Member.html)
+/// structure for example. The `node_keywords` production also includes the value "null", where
+/// nullable values are necessary they are represented as `Option<NodeValue>`.
+///
+/// Corresponds to the `node_value` production in §2.5,
+///   [Node values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#node-values),
+///   of the Smithy 1.0 Specification.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum NodeValue {
+    /// An array (Smithy list or set) of other node values.
     Array(Vec<NodeValue>),
+    /// An object (Smithy structure) mapping keys to other node values.
     Object(HashMap<Key, NodeValue>),
+    /// A numeric value, either integer or float.
     Number(Number),
+    /// A boolean value. Corresponds to "true" and "false" in the `node_keywords` production.
     Boolean(bool),
+    /// A `ShapeID` which implies a reference to another shape.
     ShapeID(ShapeID),
+    /// A block of text between three double quotes `"""`, corresponding to the `text_block` production.
     TextBlock(String),
+    /// A quoted string, between double quotes `"`, corresponding to the `quoted_text` production.
     String(String),
 }
 
@@ -40,12 +77,15 @@ pub enum NodeValue {
 #[doc(hidden)]
 macro_rules! is_as {
     ($is_fn:ident, $as_fn:ident, $variant:ident, $ret_type:ty) => {
+        /// Returns `true` if `self` is the corresponding variant, else `false`.
         pub fn $is_fn(&self) -> bool {
             match self {
                 Self::$variant(_) => true,
                 _ => false,
             }
         }
+
+        /// Returns `Some(v)` if `self` is the corresponding variant, else `None`.
         pub fn $as_fn(&self) -> Option<&$ret_type> {
             match self {
                 Self::$variant(v) => Some(v),
@@ -246,6 +286,14 @@ impl Display for NodeValue {
 }
 
 impl NodeValue {
+    ///
+    /// Construct a new `NodeValue` as a reference to another shape. This is added as a convenience
+    /// where it makes clear the usage of the `NodeValue` as an explicit reference.
+    ///
+    pub fn reference(shape_id: ShapeID) -> Self {
+        Self::ShapeID(shape_id)
+    }
+
     is_as! { is_array, as_array, Array, Vec<NodeValue> }
 
     is_as! { is_object, as_object, Object, HashMap<Key, NodeValue> }
@@ -253,6 +301,8 @@ impl NodeValue {
     is_as! { is_number, as_number, Number, Number }
 
     is_as! { is_boolean, as_boolean, Boolean, bool }
+
+    is_as! { is_shape_id, as_shape_id, ShapeID, ShapeID }
 
     is_as! { is_reference, as_reference, ShapeID, ShapeID }
 
