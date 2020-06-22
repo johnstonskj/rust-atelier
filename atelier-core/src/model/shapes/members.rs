@@ -1,5 +1,5 @@
 use crate::model::values::NodeValue;
-use crate::model::{Annotated, Documented, Identifier, Named, ShapeID};
+use crate::model::{Annotated, Identifier, Named, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -8,7 +8,6 @@ use crate::model::{Annotated, Documented, Identifier, Named, ShapeID};
 #[derive(Clone, Debug, PartialEq)]
 pub struct Member {
     id: Identifier,
-    doc: Option<String>,
     traits: Vec<Trait>,
     value: Option<NodeValue>,
 }
@@ -55,21 +54,11 @@ impl Named<Identifier> for Member {
     }
 }
 
-impl Documented for Member {
-    fn documentation(&self) -> &Option<String> {
-        &self.doc
-    }
-
-    fn set_documentation(&mut self, documentation: &str) {
-        self.doc = Some(documentation.to_owned());
-    }
-
-    fn unset_documentation(&mut self) {
-        self.doc = None;
-    }
-}
-
 impl Annotated for Member {
+    fn has_traits(&self) -> bool {
+        !self.traits.is_empty()
+    }
+
     fn has_trait(&self, id: &ShapeID) -> bool {
         self.traits.iter().any(|t| t.id() == id)
     }
@@ -101,7 +90,6 @@ impl Member {
     pub fn new(id: Identifier) -> Self {
         Self {
             id,
-            doc: None,
             traits: Default::default(),
             value: None,
         }
@@ -110,7 +98,6 @@ impl Member {
     pub fn with_value(id: Identifier, value: NodeValue) -> Self {
         Self {
             id,
-            doc: None,
             traits: Default::default(),
             value: Some(value),
         }
@@ -119,7 +106,6 @@ impl Member {
     pub fn with_reference(id: Identifier, ref_id: ShapeID) -> Self {
         Self {
             id,
-            doc: None,
             traits: Default::default(),
             value: Some(NodeValue::ShapeID(ref_id)),
         }

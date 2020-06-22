@@ -159,6 +159,10 @@ impl StructureOrUnion {
         }
     }
 
+    pub fn has_members(&self) -> bool {
+        !self.members.is_empty()
+    }
+
     pub fn members(&self) -> impl Iterator<Item = &Member> {
         self.members.iter()
     }

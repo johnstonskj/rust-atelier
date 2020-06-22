@@ -41,11 +41,11 @@ impl TraitBuilder {
         if let Some(since) = since {
             let _ = values.string(Identifier::from_str("since").unwrap().into(), since);
         }
-        Self::with_value("length", values.build())
+        Self::with_value("deprecated", values.build())
     }
 
     pub fn documentation(value: &str) -> Self {
-        Self::new("deprecated").string(value).to_owned()
+        Self::new("documentation").string(value).to_owned()
     }
 
     pub fn error(src: ErrorSource) -> Self {

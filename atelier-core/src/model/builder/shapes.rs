@@ -2,7 +2,7 @@ use crate::error::ErrorSource;
 use crate::model::builder::TraitBuilder;
 use crate::model::shapes::{ListOrSet, Map, Member, Shape, ShapeInner, SimpleType, Trait, Valued};
 use crate::model::values::NodeValue;
-use crate::model::{Annotated, Documented, Identifier, ShapeID};
+use crate::model::{Annotated, Identifier, ShapeID};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -188,17 +188,12 @@ macro_rules! member_constructor {
 
 pub trait Builder<T>
 where
-    T: Clone + Documented + Annotated,
+    T: Clone + Annotated,
 {
     fn inner(&self) -> &T;
     fn inner_mut(&mut self) -> &mut T;
 
-    fn doc_comment(&mut self, documentation: &str) -> &mut Self {
-        self.inner_mut().set_documentation(documentation);
-        self
-    }
-
-    fn doc_trait(&mut self, documentation: &str) -> &mut Self {
+    fn documentation(&mut self, documentation: &str) -> &mut Self {
         self.add_trait(TraitBuilder::documentation(documentation).build())
     }
 

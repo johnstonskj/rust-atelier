@@ -34,8 +34,26 @@ pub enum NodeValue {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Types
+// Macros
 // ------------------------------------------------------------------------------------------------
+
+#[doc(hidden)]
+macro_rules! is_as {
+    ($is_fn:ident, $as_fn:ident, $variant:ident, $ret_type:ty) => {
+        pub fn $is_fn(&self) -> bool {
+            match self {
+                Self::$variant(_) => true,
+                _ => false,
+            }
+        }
+        pub fn $as_fn(&self) -> Option<&$ret_type> {
+            match self {
+                Self::$variant(v) => Some(v),
+                _ => None,
+            }
+        }
+    };
+}
 
 // ------------------------------------------------------------------------------------------------
 // Public Functions
@@ -70,6 +88,12 @@ impl Display for Key {
             Self::Identifier(id) => write!(f, "{}", id),
         }
     }
+}
+
+impl Key {
+    is_as! { is_string, as_string, String, String }
+
+    is_as! { is_identifier, as_identifier, Identifier, Identifier }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -219,6 +243,22 @@ impl Display for NodeValue {
             NodeValue::String(v) => write!(f, "\"{}\"", v),
         }
     }
+}
+
+impl NodeValue {
+    is_as! { is_array, as_array, Array, Vec<NodeValue> }
+
+    is_as! { is_object, as_object, Object, HashMap<Key, NodeValue> }
+
+    is_as! { is_number, as_number, Number, Number }
+
+    is_as! { is_boolean, as_boolean, Boolean, bool }
+
+    is_as! { is_reference, as_reference, ShapeID, ShapeID }
+
+    is_as! { is_text_block, as_text_block, TextBlock, String }
+
+    is_as! { is_string, as_string, String, String }
 }
 
 // ------------------------------------------------------------------------------------------------

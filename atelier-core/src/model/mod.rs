@@ -4,7 +4,7 @@ The core model itself, consisting of shapes, members, types, values, and model s
 */
 
 use crate::error::Result;
-use crate::model::shapes::{Shape, Trait};
+use crate::model::shapes::{Shape, Trait, Valued};
 use crate::Version;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -20,24 +20,24 @@ pub struct Model {
     references: HashMap<ShapeID, Option<Rc<Model>>>,
     shapes: HashMap<Identifier, Shape>,
     applied_traits: HashMap<ShapeID, Vec<Trait>>,
-    metadata: HashMap<Key, Vec<NodeValue>>,
+    metadata: HashMap<Key, NodeValue>,
 }
 
 pub trait Named<I> {
     fn id(&self) -> &I;
 }
 
-pub trait Documented {
-    fn documentation(&self) -> &Option<String>;
-    fn set_documentation(&mut self, documentation: &str);
-    fn unset_documentation(&mut self);
-}
-
 pub trait Annotated {
+    fn has_traits(&self) -> bool;
     fn has_trait(&self, id: &ShapeID) -> bool;
     fn traits(&self) -> &Vec<Trait>;
     fn add_trait(&mut self, a_trait: Trait);
     fn remove_trait(&mut self, id: &ShapeID);
+    fn documentation(&mut self, doc: &str) {
+        let mut doc_trait = Trait::new(ShapeID::from_str("documentation").unwrap());
+        doc_trait.set_value(NodeValue::String(doc.to_string()));
+        let _ = self.add_trait(doc_trait);
+    }
 }
 
 pub trait Validator {
@@ -163,27 +163,16 @@ impl Model {
         !self.metadata.is_empty()
     }
 
-    pub fn metadata(&self) -> impl Iterator<Item = (&Key, &Vec<NodeValue>)> {
+    pub fn metadata(&self) -> impl Iterator<Item = (&Key, &NodeValue)> {
         self.metadata.iter()
     }
 
     pub fn add_metadata(&mut self, key: Key, value: NodeValue) {
-        match self.metadata.get_mut(&key) {
-            None => {
-                let _ = self.metadata.insert(key, vec![value]);
-            }
-            Some(vec) => {
-                vec.push(value);
-            }
-        }
+        let _ = self.metadata.insert(key, value);
     }
 
-    pub fn remove_metadata_for(&mut self, key: &Key) {
+    pub fn remove_metadata(&mut self, key: &Key) {
         let _ = self.metadata.remove(key);
-    }
-
-    pub fn merge_metadata(&mut self) {
-        unimplemented!()
     }
 }
 
@@ -198,6 +187,7 @@ pub mod identity;
 use crate::model::values::{Key, NodeValue};
 pub use identity::{Identifier, Namespace, ShapeID};
 use std::rc::Rc;
+use std::str::FromStr;
 
 pub mod select;
 

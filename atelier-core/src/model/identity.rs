@@ -91,6 +91,22 @@ impl Identifier {
             && s.starts_with(|c: char| c.is_alphabetic() || c == '_')
             && s.chars().all(|c: char| c.is_alphanumeric() || c == '_')
     }
+
+    pub fn to_member(&self, member_id: Identifier) -> ShapeID {
+        ShapeID {
+            namespace: None,
+            shape_name: self.clone(),
+            member_name: Some(member_id),
+        }
+    }
+
+    pub fn to_absolute(&self, ns: Namespace) -> ShapeID {
+        ShapeID {
+            namespace: Some(ns),
+            shape_name: self.clone(),
+            member_name: None,
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------

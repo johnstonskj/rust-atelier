@@ -24,7 +24,7 @@ pub struct Operation {
 
 #[derive(Clone, Debug)]
 pub struct Resource {
-    identifiers: Member,           // Value::Object(_, Value::ShapeID)
+    identifiers: Member,           // Value::Object(Identifier, Value::ShapeID)
     create: Member,                // Value::ShapeID
     put: Member,                   // Value::ShapeID
     read: Member,                  // Value::ShapeID
@@ -217,8 +217,26 @@ impl Default for Resource {
 }
 
 impl Resource {
-    pub fn identifiers(&self) -> &Member {
-        &self.identifiers
+    pub fn has_identifiers(&self) -> bool {
+        match self.identifiers.value() {
+            Some(v) => match v {
+                NodeValue::Object(vs) => !vs.is_empty(),
+                _ => invalid_value_variant("Object"),
+            },
+            _ => invalid_value_variant("Object"),
+        }
+    }
+
+    pub fn identifiers(&self) -> impl Iterator<Item = (&Identifier, &ShapeID)> {
+        match self.identifiers.value() {
+            Some(v) => match v {
+                NodeValue::Object(vs) => vs
+                    .iter()
+                    .map(|(k, v)| (k.as_identifier().unwrap(), v.as_reference().unwrap())),
+                _ => invalid_value_variant("Object"),
+            },
+            _ => invalid_value_variant("Object"),
+        }
     }
 
     pub fn add_identifier(&mut self, id: Identifier, shape: ShapeID) {

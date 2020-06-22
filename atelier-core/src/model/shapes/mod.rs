@@ -3,7 +3,7 @@ Model structures for shapes.
 
 */
 
-use crate::model::{Annotated, Documented, Identifier, Named, ShapeID};
+use crate::model::{Annotated, Identifier, Named, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -12,7 +12,6 @@ use crate::model::{Annotated, Documented, Identifier, Named, ShapeID};
 #[derive(Clone, Debug)]
 pub struct Shape {
     id: Identifier,
-    doc: Option<String>,
     traits: Vec<Trait>,
     inner: ShapeInner,
 }
@@ -49,21 +48,11 @@ impl Named<Identifier> for Shape {
     }
 }
 
-impl Documented for Shape {
-    fn documentation(&self) -> &Option<String> {
-        &self.doc
-    }
-
-    fn set_documentation(&mut self, documentation: &str) {
-        self.doc = Some(documentation.to_owned());
-    }
-
-    fn unset_documentation(&mut self) {
-        self.doc = None;
-    }
-}
-
 impl Annotated for Shape {
+    fn has_traits(&self) -> bool {
+        !self.traits.is_empty()
+    }
+
     fn has_trait(&self, id: &ShapeID) -> bool {
         self.traits.iter().any(|t| t.id() == id)
     }
@@ -85,7 +74,6 @@ impl Shape {
     pub fn new(id: Identifier, inner: ShapeInner) -> Self {
         Self {
             id,
-            doc: None,
             traits: Default::default(),
             inner,
         }
