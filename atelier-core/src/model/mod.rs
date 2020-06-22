@@ -14,7 +14,11 @@ use std::fmt::Debug;
 // ------------------------------------------------------------------------------------------------
 
 #[derive(Clone, Debug)]
+pub struct ModelOptions {}
+
+#[derive(Clone, Debug)]
 pub struct Model {
+    options: Option<ModelOptions>,
     version: Option<Version>,
     namespace: Namespace,
     references: HashMap<ShapeID, Option<Rc<Model>>>,
@@ -55,6 +59,19 @@ pub trait Transformer {
 impl Model {
     pub fn new(namespace: Namespace) -> Self {
         Self {
+            options: None,
+            version: None,
+            namespace,
+            references: Default::default(),
+            shapes: Default::default(),
+            applied_traits: Default::default(),
+            metadata: Default::default(),
+        }
+    }
+
+    pub fn with_options(namespace: Namespace, options: ModelOptions) -> Self {
+        Self {
+            options: Some(options),
             version: None,
             namespace,
             references: Default::default(),
