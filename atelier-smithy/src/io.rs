@@ -11,7 +11,7 @@ use atelier_core::error::Result;
 use atelier_core::io::{ModelReader, ModelWriter};
 use atelier_core::model::shapes::{Member, ShapeInner, Trait, Valued};
 use atelier_core::model::values::NodeValue;
-use atelier_core::model::{Annotated, Documented, Model, Named};
+use atelier_core::model::{Annotated, Model, Named};
 use std::io::{Read, Write};
 
 // ------------------------------------------------------------------------------------------------
@@ -84,9 +84,6 @@ impl<'a> SmithyWriter {
 
     fn write_shapes(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         for shape in model.shapes() {
-            if let Some(doc) = shape.documentation() {
-                writeln!(w, "/// {}", doc)?;
-            }
             for a_trait in shape.traits() {
                 self.write_trait(w, a_trait, "")?;
             }
@@ -170,7 +167,13 @@ impl<'a> SmithyWriter {
                 }
                 ShapeInner::Resource(resource) => {
                     writeln!(w, "resource {} {{", shape.id())?;
-                    // TODO: identifiers
+                    if resource.has_identifiers() {
+                        writeln!(w, "    identifiers: {{")?;
+                        for (id, ref_id) in resource.identifiers() {
+                            writeln!(w, "        {}: {}", id, ref_id)?;
+                        }
+                        writeln!(w, "    }}")?;
+                    }
                     if let Some(id) = resource.create() {
                         writeln!(w, "    create: {}", id)?;
                     }
@@ -260,9 +263,6 @@ impl<'a> SmithyWriter {
     }
 
     fn write_member(&mut self, w: &mut impl Write, member: &'a Member, prefix: &str) -> Result<()> {
-        if let Some(doc) = member.documentation() {
-            writeln!(w, "{}/// {}", prefix, doc)?;
-        }
         for a_trait in member.traits() {
             self.write_trait(w, a_trait, prefix)?;
         }
@@ -276,7 +276,12 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_footer(&mut self, _w: &mut impl Write, _model: &'a Model) -> Result<()> {
+    fn write_footer(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+        if model.has_metadata() {
+            for (key, value) in model.metadata() {
+                writeln!(w, "metadata \"{}\" = {}", key, value)?;
+            }
+        }
         Ok(())
     }
 }
