@@ -39,13 +39,24 @@ error_chain! {
     }
 }
 
+///
+/// The identification of an error's source used by the `error` trait.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum ErrorSource {
+    /// The error originated in the client.
     Client,
+    /// The error originated in the server.
     Server,
 }
 
+///
+/// Allows any value that implements `Display` to be the message in a panic.
+///
 pub trait AndPanic: Display {
+    ///
+    /// Call `panic!` using the string serialization of the current value.
+    ///
     fn panic(&self) -> ! {
         panic!(self.to_string())
     }

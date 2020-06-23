@@ -3,20 +3,148 @@ This crate provides a Rust native core model for the AWS [Smithy](https://github
 
 This crate is the foundation for the Atelier set of crates, and provides the following components:
 
-1. The model structures themselves that represents a Smithy model, this is intended to be the
+1. The model structures themselves that represents a Smithy model. This API is the
    in-memory representation shared by all Atelier crates and tools.
-1. The model builder structures that allow for a fluent and easy construction of a core model.
+1. The model builder API that allow for a more _fluent_ and less repetative construction of a
+   core model.
 1. The prelude model containing the set of shapes defined in the Smithy specification.
 1. Traits for reading/writing models in different representations.
 1. Trait and simple implementation for a model registry.
 1. A common `error` module to be used by all Atelier crates.
 
-# Example
+# Model API Example
 
-The following example demonstrates the builder interface to create a model for a simple service. The
+The following example demonstrates the core model API to create a model for a simple service. The
 service, `MessageOfTheDay` has a single resource `Message`. The resource has an identifier for the
 date, but the `read` operation does not make the date member required and so will return the message
 for the current date.
+
+This API acts as a set of generic data objects and as such has a tendency to be verbose in the
+construction of models. The need to create a lot of `Identifier` and `ShapeID` instances, for example,
+does impact the readability.
+
+```rust
+use atelier_core::model::shapes::{
+    Member, Operation, Resource, Service, Shape, ShapeInner, SimpleType, StructureOrUnion,
+    Trait, Valued,
+};
+use atelier_core::model::values::NodeValue;
+use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
+use std::str::FromStr;
+
+// ----------------------------------------------------------------------------------------
+let mut error = StructureOrUnion::new();
+error.add_member_value(
+    Identifier::from_str("errorMessage").unwrap(),
+    Some(NodeValue::ShapeID(ShapeID::from_str("String").unwrap())),
+);
+let mut error = Shape::new(
+    Identifier::from_str("BadDateValue").unwrap(),
+    ShapeInner::Structure(error),
+);
+let mut error_trait = Trait::new(ShapeID::from_str("error").unwrap());
+error_trait.set_value(NodeValue::String("client".to_string()));
+error.add_trait(error_trait);
+
+// ----------------------------------------------------------------------------------------
+let mut output = StructureOrUnion::new();
+let mut message = Member::with_reference(
+    Identifier::from_str("message").unwrap(),
+    ShapeID::from_str("String").unwrap(),
+);
+let required = Trait::new(ShapeID::from_str("required").unwrap());
+message.add_trait(required);
+output.add_member(message);
+let output = Shape::new(
+    Identifier::from_str("GetMessageOutput").unwrap(),
+    ShapeInner::Structure(output),
+);
+
+// ----------------------------------------------------------------------------------------
+let mut input = StructureOrUnion::new();
+input.add_member_value(
+    Identifier::from_str("date").unwrap(),
+    Some(NodeValue::ShapeID(ShapeID::from_str("Date").unwrap())),
+);
+let input = Shape::new(
+    Identifier::from_str("GetMessageInput").unwrap(),
+    ShapeInner::Structure(input),
+);
+
+// ----------------------------------------------------------------------------------------
+let mut get_message = Operation::default();
+get_message.set_input(ShapeID::from_str("GetMessageInput").unwrap());
+get_message.set_output(ShapeID::from_str("GetMessageOutput").unwrap());
+get_message.add_error(ShapeID::from_str("BadDateValue").unwrap());
+let mut get_message = Shape::new(
+    Identifier::from_str("GetMessage").unwrap(),
+    ShapeInner::Operation(get_message),
+);
+let required = Trait::new(ShapeID::from_str("readonly").unwrap());
+get_message.add_trait(required);
+
+// ----------------------------------------------------------------------------------------
+let mut date = Shape::new(
+    Identifier::from_str("Date").unwrap(),
+    ShapeInner::SimpleType(SimpleType::String),
+);
+let mut pattern_trait = Trait::new(ShapeID::from_str("pattern").unwrap());
+pattern_trait.set_value(NodeValue::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
+date.add_trait(pattern_trait);
+
+// ----------------------------------------------------------------------------------------
+let mut message = Resource::default();
+message.add_identifier(
+    Identifier::from_str("date").unwrap(),
+    ShapeID::from_str("Date").unwrap(),
+);
+message.set_read(ShapeID::from_str("GetMessage").unwrap());
+let message = Shape::new(
+    Identifier::from_str("Message").unwrap(),
+    ShapeInner::Resource(message),
+);
+
+// ----------------------------------------------------------------------------------------
+let mut service = Service::default();
+service.set_version("2020-06-21");
+service.add_resource(ShapeID::from_str("Message").unwrap());
+let mut service = Shape::new(
+    Identifier::from_str("MessageOfTheDay").unwrap(),
+    ShapeInner::Service(service),
+);
+let documentation = Trait::with_value(
+    ShapeID::from_str("documentation").unwrap(),
+    NodeValue::String("Provides a Message of the day.".to_string()),
+);
+service.add_trait(documentation);
+
+// ----------------------------------------------------------------------------------------
+let mut model = Model::new(Namespace::from_str("example.motd").unwrap());
+model.add_shape(message);
+model.add_shape(date);
+model.add_shape(get_message);
+model.add_shape(input);
+model.add_shape(output);
+model.add_shape(error);
+```
+
+# Builder API Example
+
+The following example demonstrates the builder interface to create the same service as the example
+above. Hopefully this is more readable as it tends to be less repetative, uses  `&str` for
+identifiers, and includes helper functions for common traits for example. It provides this better
+_construction experience_ (there are no read methods on builder objects) by compromising two aspects:
+
+1. The API itself is very repetative; this means the same method may be on multiple objects, but
+makes it easier to use. For example, you want to add the documentation trait to a shape, so you can:
+   1. construct a `Trait` entity using the core model and the `Builder::add_trait` method,
+   1. use the `TraitBuilder::documentation` method which also takes the string to use as the trait
+      value and returns a new `TraitBuilder`, or
+   1. use the `Builder::documentation` method that hides all the details of a trait and just takes
+      a string.
+1. It hides a lot of the `Identifier` and `ShapeID` construction and so any of those calls to
+   `from_str` may fail when the code unwraps the result. This means the builder can panic in ways
+   the core model does not.
 
 ```rust
 use atelier_core::error::ErrorSource;
@@ -31,7 +159,7 @@ let model = ModelBuilder::new("example.motd")
     .shape(
         ServiceBuilder::new("MessageOfTheDay")
             .documentation("Provides a Message of the day.")
-             .version("2020-06-21")
+            .version("2020-06-21")
             .resource("Message")
             .build(),
     )

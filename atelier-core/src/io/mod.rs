@@ -1,6 +1,33 @@
 /*!
 Traits for reading and writing models in different formats. Separate crates implement the ability
 to handle different representations, such as the original Smithy, JSON AST, and OpenAPI.
+
+# Example Model Writer
+
+The example below is pretty much the implementation of the `debug` module, it writes the model
+using the `Debug` implementation associated with those objects.
+
+```rust
+# use crate::io::ModelWriter;
+# use crate::model::Model;
+# use std::io::Write;
+#[derive(Debug)]
+pub struct Debugger {}
+
+impl Default for Debugger {
+    fn default() -> Self {
+        Self {}
+    }
+}
+
+impl<'a> ModelWriter<'a> for Debugger {
+    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
+        write!(w, "{:#?}", model)?;
+        Ok(())
+    }
+}
+```
+
 */
 
 use crate::error::Result;
@@ -56,4 +83,33 @@ pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model)
     let mut buffer = Cursor::new(Vec::new());
     w.write(&mut buffer, model)?;
     Ok(String::from_utf8(buffer.into_inner()).unwrap())
+}
+
+///
+/// Simple debug tools, including an implementation of the `ModelWriter` trait.
+///
+pub mod debug {
+    use crate::io::ModelWriter;
+    use crate::model::Model;
+    use std::io::Write;
+
+    ///
+    /// Simple implementation of the `ModelWriter` trait that uses the fact that all the core model
+    /// structures and enumerations implement `Debug`.
+    ///
+    #[derive(Debug)]
+    pub struct Debugger {}
+
+    impl Default for Debugger {
+        fn default() -> Self {
+            Self {}
+        }
+    }
+
+    impl<'a> ModelWriter<'a> for Debugger {
+        fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
+            write!(w, "{:#?}", model)?;
+            Ok(())
+        }
+    }
 }
