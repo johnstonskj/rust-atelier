@@ -7,24 +7,35 @@ use std::str::FromStr;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// An internal identifier, corresponding to the `identifier` production in the specification's
-/// _Lexical Structure_ section.
+/// A component of `ShapeID`, it represents an internal unqualified identifier.
+///
+/// Corresponds to the `identifier` production in §2.4.1,
+///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
+///   of the Smithy 1.0 Specification.
 ///
 #[allow(clippy::derive_hash_xor_eq)]
 #[derive(Clone, Debug, Eq, Hash)]
 pub struct Identifier(String);
 
 ///
-/// A component of `ShapeID`, corresponding to the `namespace` production in the specification's
-/// _Lexical Structure_ section.
+/// A component of `ShapeID`, it represents the namespace of a model, or the namespace for a
+/// qualified identifier.
+///
+/// Corresponds to the `namespace` production in §2.4.1,
+///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
+///   of the Smithy 1.0 Specification.
 ///
 #[allow(clippy::derive_hash_xor_eq)]
 #[derive(Clone, Debug, Eq, Hash)]
 pub struct Namespace(String);
 
 ///
-/// The complete shape identifier type used across model structures. This type corresponds to the
-/// `shape_id` production in the specification's _Lexical Structure_ section.
+/// The complete shape identifier type used across model structures, it is qualified with a namespace
+/// and may also include an inner member identifier.
+///
+/// Corresponds to the `shape_id` production in §2.4.1,
+///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
+///   of the Smithy 1.0 Specification.
 ///
 /// ```abnf
 /// com.foo.baz#ShapeName$memberName
@@ -44,14 +55,6 @@ pub struct ShapeID {
     shape_name: Identifier,
     member_name: Option<Identifier>,
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -86,20 +89,30 @@ impl PartialEq for Identifier {
 }
 
 impl Identifier {
+    ///
+    /// Returns `true` if the provided string is a valid identifier representation, else `false`.
+    /// This is preferred to calling `from_str()` and determining success or failure.
+    ///
     pub fn is_valid(s: &str) -> bool {
         !s.is_empty()
             && s.starts_with(|c: char| c.is_alphabetic() || c == '_')
             && s.chars().all(|c: char| c.is_alphanumeric() || c == '_')
     }
 
-    pub fn to_member(&self, member_id: Identifier) -> ShapeID {
+    ///
+    /// Returns a new relative `ShapeID` with the member name appended to the current shape.
+    ///
+    pub fn to_member(&self, member_name: Identifier) -> ShapeID {
         ShapeID {
             namespace: None,
             shape_name: self.clone(),
-            member_name: Some(member_id),
+            member_name: Some(member_name),
         }
     }
 
+    ///
+    /// Returns a new absolute `ShapeID` with the namespace prepended to the current shape.
+    ///
     pub fn to_absolute(&self, ns: Namespace) -> ShapeID {
         ShapeID {
             namespace: Some(ns),
@@ -140,6 +153,10 @@ impl PartialEq for Namespace {
 }
 
 impl Namespace {
+    ///
+    /// Returns `true` if the provided string is a valid namespace representation, else `false`.
+    /// This is preferred to calling `from_str()` and determining success or failure.
+    ///
     pub fn is_valid(s: &str) -> bool {
         for id in s.split('.') {
             if !Identifier::is_valid(id) {
@@ -149,6 +166,32 @@ impl Namespace {
         true
     }
 
+    ///
+    /// Returns a new absolute `ShapeID` with the shape name appended to the current namespace.
+    ///
+    pub fn to_shape(&self, shape_name: Identifier) -> ShapeID {
+        ShapeID {
+            namespace: Some(self.clone()),
+            shape_name,
+            member_name: None,
+        }
+    }
+
+    ///
+    /// Returns a new absolute `ShapeID` with the shape name and member name appended to the
+    /// current namespace.
+    ///
+    pub fn to_member(&self, shape_name: Identifier, member_name: Identifier) -> ShapeID {
+        ShapeID {
+            namespace: Some(self.clone()),
+            shape_name,
+            member_name: Some(member_name),
+        }
+    }
+
+    ///
+    /// Return the current namespace as an iterator over the individual identifiers within it.
+    ///
     pub fn split(&self) -> impl Iterator<Item = Identifier> + '_ {
         self.0.split('.').map(|s| Identifier(s.to_string()))
     }
@@ -218,14 +261,20 @@ impl FromStr for ShapeID {
 }
 
 impl ShapeID {
-    pub fn new(namespace: &str, shape_name: &str, member_name: &str) -> Self {
+    ///
+    /// Construct a new `ShapeID` from the complete set of given components.
+    ///
+    pub fn new(namespace: Namespace, shape_name: Identifier, member_name: Identifier) -> Self {
         Self {
-            namespace: Some(namespace.parse().unwrap()),
-            shape_name: shape_name.parse().unwrap(),
-            member_name: Some(member_name.parse().unwrap()),
+            namespace: Some(namespace),
+            shape_name,
+            member_name: Some(member_name),
         }
     }
 
+    ///
+    /// Constructs a new relative `ShapeID` with the given shape name.
+    ///
     pub fn shape(shape_name: &str) -> Self {
         Self {
             namespace: None,
@@ -234,7 +283,10 @@ impl ShapeID {
         }
     }
 
-    pub fn with_namespace(namespace: &str, shape_name: &str) -> Self {
+    ///
+    /// Constructs a new absolute `ShapeID` with the given namespace and shape name.
+    ///
+    pub fn absolute_shape(namespace: &str, shape_name: &str) -> Self {
         Self {
             namespace: Some(namespace.parse().unwrap()),
             shape_name: shape_name.parse().unwrap(),
@@ -242,7 +294,10 @@ impl ShapeID {
         }
     }
 
-    pub fn with_member_name(shape_name: &str, member_name: &str) -> Self {
+    ///
+    /// Constructs a new relative `ShapeID` with the given shape name and member name.
+    ///
+    pub fn member(shape_name: &str, member_name: &str) -> Self {
         Self {
             namespace: None,
             shape_name: shape_name.parse().unwrap(),
@@ -250,26 +305,63 @@ impl ShapeID {
         }
     }
 
+    ///
+    /// Constructs a new absolute `ShapeID` with the given namespace, shape name, and member name.
+    ///
+    pub fn absolute_member(namespace: &str, shape_name: &str, member_name: &str) -> Self {
+        Self {
+            namespace: Some(namespace.parse().unwrap()),
+            shape_name: shape_name.parse().unwrap(),
+            member_name: Some(member_name.parse().unwrap()),
+        }
+    }
+
+    ///
+    /// Returns the current namespace component.
+    ///
     pub fn namespace(&self) -> &Option<Namespace> {
         &self.namespace
     }
 
+    ///
+    /// Returns the current shape name component.
+    ///
     pub fn shape_name(&self) -> &Identifier {
         &self.shape_name
     }
 
+    ///
+    /// Returns the current member name component.
+    ///
     pub fn member_name(&self) -> &Option<Identifier> {
         &self.member_name
     }
 
+    ///
+    /// Returns `true` if this `ShapeID` has a namespace component, else `false`.
+    ///
     pub fn is_absolute(&self) -> bool {
         self.namespace.is_some()
     }
 
+    ///
+    /// Returns `true` if this `ShapeID` does not have a namespace component, else `false`.
+    ///
     pub fn is_relative(&self) -> bool {
         self.namespace.is_none()
     }
 
+    ///
+    /// Returns `true` if this `ShapeID` has a member name component, else `false`.
+    ///
+    pub fn is_member(&self) -> bool {
+        self.member_name.is_some()
+    }
+
+    ///
+    /// Return a new shape ID with the current shape and member IDs unchanged but with the namespace
+    /// included.
+    ///
     pub fn into_absolute<S>(self, namespace: Namespace) -> Self {
         Self {
             namespace: Some(namespace),
@@ -277,18 +369,18 @@ impl ShapeID {
         }
     }
 
+    ///
+    /// Return a new shape ID with the current shape and member IDs unchanged but with any namespace
+    /// removed.
+    ///
     pub fn into_relative(self) -> Self {
-        Self {
-            namespace: None,
-            ..self
+        if self.is_absolute() {
+            Self {
+                namespace: None,
+                ..self
+            }
+        } else {
+            self
         }
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
