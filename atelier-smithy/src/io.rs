@@ -41,6 +41,8 @@ impl Default for SmithyReader {
 }
 
 impl ModelReader for SmithyReader {
+    const REPRESENTATION: &'static str = "Smithy";
+
     fn read(&mut self, _r: &mut impl Read) -> Result<Model> {
         unimplemented!()
     }
@@ -55,6 +57,8 @@ impl<'a> Default for SmithyWriter {
 }
 
 impl<'a> ModelWriter<'a> for SmithyWriter {
+    const REPRESENTATION: &'static str = "Smithy";
+
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         self.write_header(w, model)?;
         self.write_shapes(w, model)?;
