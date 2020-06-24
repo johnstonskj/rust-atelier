@@ -264,11 +264,15 @@ impl ShapeID {
     ///
     /// Construct a new `ShapeID` from the complete set of given components.
     ///
-    pub fn new(namespace: Namespace, shape_name: Identifier, member_name: Identifier) -> Self {
+    pub fn new(
+        namespace: Option<Namespace>,
+        shape_name: Identifier,
+        member_name: Option<Identifier>,
+    ) -> Self {
         Self {
-            namespace: Some(namespace),
+            namespace,
             shape_name,
-            member_name: Some(member_name),
+            member_name,
         }
     }
 
