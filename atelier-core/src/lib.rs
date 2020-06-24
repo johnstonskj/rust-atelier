@@ -12,6 +12,63 @@
 * 1. Trait and simple implementation for a model [registry](registry/index.html).
 * 1. A common [error](error/index.html) module to be used by all Atelier crates.
 *
+* ## Data Model
+*
+* The following is a diagrammatic representation of the core model. For the most part this is a
+* direct transform from the ABNF in the specification, although some of the distinctions between
+* different ID types (`Identifier`, `ShapeID`) are not illustrated. It also shows all the
+* shape types as subclasses of `Shape`.
+*
+* ```text
+*                                   ┌──────────┐
+*                                   ○          ○ prelude        ┌─────────────┐
+*                                  ╱│╲         ┼                │   ShapeID   │
+* ┌───────────────┐               ┌─────────────┐               ├─────────────┤
+* │     Trait     │               │    Model    │    references╱│namespace?   │
+* └───────────────┘               ├─────────────┤┼────────────○─│shape_name   │
+*        ╲│╱  ╲│╱                 │options      │              ╲│member_name? │
+*         ○    ○                  │version?     │               │             │
+*         │    │                  │namespace    │               └─────────────┘
+*         │    │                  │metadata?    │                      ┼  id
+*         │    │                  └─────────────┘                      │
+*         │    └─────────────────────┐   ┼                             │
+*         │                          │   │                             │
+*         ┼                          │   ○                             │
+* ┌───────────────┐                  ┼  ╱│╲ shapes                     │
+* │    Member     │╲members       ┌─────────────┐                      │
+* ├───────────────┤─○────────────┼│    Shape    │┼─────────────────────┘
+* │id             │╱              └─────────────┘
+* │value          │                      △          ┌─────────────────────────┐
+* └───────────────┘                      │          │         Service         │
+* ┌───────────────┐                      │          ├─────────────────────────┤
+* │ «enumeration» │                      │          │version                  │
+* │    Simple     │──────────────────────┼──────────│operations: [Operation]? │
+* ├───────────────┤                      │          │resources: [Resource]?   │
+* │Blob           │                      │          └─────────────────────────┘
+* │Boolean        │ ┌────────────┐       │          ┌─────────────────────────┐
+* │Document       │ │    List    │       │          │        Operation        │
+* │String         │ ├────────────┤       │          ├─────────────────────────┤
+* │Byte           │ │member      │───────┤          │input: Structure?        │
+* │Short          │ └────────────┘       ├──────────│output: Structure?       │
+* │Integer        │ ┌────────────┐       │          │errors: [Structure]?     │
+* │Long           │ │    Set     │       │          └─────────────────────────┘
+* │Float          │ ├────────────┤       │          ┌─────────────────────────┐
+* │Double         │ │member      │───────┤          │        Resource         │
+* │BigInteger     │ └────────────┘       │          ├─────────────────────────┤
+* │BigDecimal     │ ┌────────────┐       │          │identifiers?             │
+* │Timestamp      │ │    Map     │       │          │create: Operation?       │
+* └───────────────┘ ├────────────┤       │          │put: Operation?          │
+*                   │key         │───────┤          │read: Operation?         │
+*                   │value       │       │          │update: Operation?       │
+*                   └────────────┘       ├──────────│delete: Operation?       │
+*                   ┌────────────┐       │          │list: : Operation?       │
+*                   │ Structure  │───────┤          │operations: [Operation]? │
+*                   └────────────┘       │          │collection_operations:   │
+*                   ┌────────────┐       │          │[Operation]?             │
+*                   │   Union    │───────┘          │resources: [Resource]?   │
+*                   └────────────┘                  └─────────────────────────┘
+* ```
+*
 * # Model API Example
 *
 * The following example demonstrates the core model API to create a model for a simple service. The
