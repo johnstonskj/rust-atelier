@@ -17,10 +17,22 @@ default feature, although the core will be included regardless of any feature se
 
 */
 
+#![warn(
+    // ---------- Stylistic
+    future_incompatible,
+    nonstandard_style,
+    rust_2018_idioms,
+    // ---------- Public
+    missing_debug_implementations,
+    missing_docs,
+    unreachable_pub,
+)]
+
 pub use atelier_core as core;
 
 #[cfg(any(feature = "json", feature = "openapi", feature = "smithy"))]
-mod format {
+#[doc = "Child modules implement read and write with specific representations."]
+pub mod format {
     #[cfg(feature = "json")]
     pub use atelier_json as json;
 
