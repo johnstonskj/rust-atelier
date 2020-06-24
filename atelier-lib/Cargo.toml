@@ -17,7 +17,7 @@ openapi = ["atelier_openapi"]
 smithy = ["atelier_smithy"]
 
 [dependencies]
-atelier_core = { version = "0.1.0", path = "../atelier-core" }
-atelier_json = { version = "0.1.0", path = "../atelier-json", optional = true }
+atelier_core = { version = "0.1.1", path = "../atelier-core" }
+atelier_json = { version = "0.1.1", path = "../atelier-json", optional = true }
 atelier_openapi = { version = "0.1.0", path = "../atelier-openapi", optional = true }
-atelier_smithy = { version = "0.1.0", path = "../atelier-smithy", optional = true }
+atelier_smithy = { version = "0.1.1", path = "../atelier-smithy", optional = true }
