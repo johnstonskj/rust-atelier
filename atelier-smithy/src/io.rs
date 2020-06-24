@@ -77,6 +77,12 @@ impl<'a> SmithyWriter {
             }
         )?;
         writeln!(w)?;
+        if model.has_metadata() {
+            for (key, value) in model.metadata() {
+                writeln!(w, "metadata \"{}\" = {}", key, value)?;
+            }
+        }
+        writeln!(w)?;
         writeln!(w, "namespace {}", model.namespace())?;
         writeln!(w)?;
         for use_shape in model.references() {
@@ -88,8 +94,10 @@ impl<'a> SmithyWriter {
 
     fn write_shapes(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         for shape in model.shapes() {
-            for a_trait in shape.traits() {
-                self.write_trait(w, a_trait, "")?;
+            if !shape.inner().is_apply() {
+                for a_trait in shape.traits() {
+                    self.write_trait(w, a_trait, "")?;
+                }
             }
             match shape.inner() {
                 ShapeInner::SimpleType(st) => {
@@ -231,6 +239,12 @@ impl<'a> SmithyWriter {
                     }
                     writeln!(w, "}}")?;
                 }
+                ShapeInner::Apply => {
+                    for a_trait in shape.traits() {
+                        write!(w, "apply {} ", shape.id())?;
+                        self.write_trait(w, a_trait, "")?;
+                    }
+                }
             }
             writeln!(w)?;
         }
@@ -280,12 +294,7 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_footer(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        if model.has_metadata() {
-            for (key, value) in model.metadata() {
-                writeln!(w, "metadata \"{}\" = {}", key, value)?;
-            }
-        }
+    fn write_footer(&mut self, _: &mut impl Write, _: &'a Model) -> Result<()> {
         Ok(())
     }
 }
