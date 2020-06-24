@@ -3,7 +3,7 @@ Provides an implementation of the prelude model described in the Smithy specific
 
 */
 
-use crate::model::builder::{shapes::Builder, shapes::SimpleShapeBuilder, ModelBuilder};
+use crate::model::builder::{shapes::SimpleShapeBuilder, ModelBuilder};
 use crate::model::Model;
 use crate::Version;
 
@@ -142,26 +142,26 @@ pub fn prelude_model(version: Version) -> Model {
         // Smithy specification version
         .version(version)
         // Simple Shapes/Types
-        .shape(SimpleShapeBuilder::string(SHAPE_STRING).build())
-        .shape(SimpleShapeBuilder::blob(SHAPE_BLOB).build())
-        .shape(SimpleShapeBuilder::big_integer(SHAPE_BIGINTEGER).build())
-        .shape(SimpleShapeBuilder::big_decimal(SHAPE_BIGDECIMAL).build())
-        .shape(SimpleShapeBuilder::timestamp(SHAPE_TIMESTAMP).build())
-        .shape(SimpleShapeBuilder::document(SHAPE_DOCUMENT).build())
-        .shape(SimpleShapeBuilder::boolean(SHAPE_BOOLEAN).boxed().build())
-        .shape(SimpleShapeBuilder::boolean(SHAPE_PRIMITIVEBOOLEAN).build())
-        .shape(SimpleShapeBuilder::byte(SHAPE_BYTE).boxed().build())
-        .shape(SimpleShapeBuilder::byte(SHAPE_PRIMITIVEBYTE).build())
-        .shape(SimpleShapeBuilder::short(SHAPE_SHORT).boxed().build())
-        .shape(SimpleShapeBuilder::short(SHAPE_PRIMITIVESHORT).build())
-        .shape(SimpleShapeBuilder::integer(SHAPE_INTEGER).boxed().build())
-        .shape(SimpleShapeBuilder::integer(SHAPE_PRIMITIVEINTEGER).build())
-        .shape(SimpleShapeBuilder::long(SHAPE_LONG).boxed().build())
-        .shape(SimpleShapeBuilder::long(SHAPE_PRIMITIVELONG).build())
-        .shape(SimpleShapeBuilder::float(SHAPE_FLOAT).boxed().build())
-        .shape(SimpleShapeBuilder::float(SHAPE_PRIMITIVEFLOAT).build())
-        .shape(SimpleShapeBuilder::double(SHAPE_DOUBLE).boxed().build())
-        .shape(SimpleShapeBuilder::double(SHAPE_PRIMITIVEDOUBLE).build())
+        .shape(SimpleShapeBuilder::string(SHAPE_STRING).into())
+        .shape(SimpleShapeBuilder::blob(SHAPE_BLOB).into())
+        .shape(SimpleShapeBuilder::big_integer(SHAPE_BIGINTEGER).into())
+        .shape(SimpleShapeBuilder::big_decimal(SHAPE_BIGDECIMAL).into())
+        .shape(SimpleShapeBuilder::timestamp(SHAPE_TIMESTAMP).into())
+        .shape(SimpleShapeBuilder::document(SHAPE_DOCUMENT).into())
+        .shape(SimpleShapeBuilder::boolean(SHAPE_BOOLEAN).boxed().into())
+        .shape(SimpleShapeBuilder::boolean(SHAPE_PRIMITIVEBOOLEAN).into())
+        .shape(SimpleShapeBuilder::byte(SHAPE_BYTE).boxed().into())
+        .shape(SimpleShapeBuilder::byte(SHAPE_PRIMITIVEBYTE).into())
+        .shape(SimpleShapeBuilder::short(SHAPE_SHORT).boxed().into())
+        .shape(SimpleShapeBuilder::short(SHAPE_PRIMITIVESHORT).into())
+        .shape(SimpleShapeBuilder::integer(SHAPE_INTEGER).boxed().into())
+        .shape(SimpleShapeBuilder::integer(SHAPE_PRIMITIVEINTEGER).into())
+        .shape(SimpleShapeBuilder::long(SHAPE_LONG).boxed().into())
+        .shape(SimpleShapeBuilder::long(SHAPE_PRIMITIVELONG).into())
+        .shape(SimpleShapeBuilder::float(SHAPE_FLOAT).boxed().into())
+        .shape(SimpleShapeBuilder::float(SHAPE_PRIMITIVEFLOAT).into())
+        .shape(SimpleShapeBuilder::double(SHAPE_DOUBLE).boxed().into())
+        .shape(SimpleShapeBuilder::double(SHAPE_PRIMITIVEDOUBLE).into())
         // Traits
-        .build()
+        .into()
 }
