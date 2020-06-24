@@ -23,8 +23,10 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 ## Changes
 
-**Version 0.1.1** (_in progress_)
+**Version 0.1.1**
 
+* Cleaned up core and builder APIs. 
+* Documented all core package APIs.
 * Goal: documentation and examples.
 
 **Version 0.1.0**
