@@ -8,8 +8,9 @@ The example below is pretty much the implementation of the `debug` module, it wr
 using the `Debug` implementation associated with those objects.
 
 ```rust
-# use crate::io::ModelWriter;
-# use crate::model::Model;
+# use atelier_core::io::ModelWriter;
+# use atelier_core::model::Model;
+# use atelier_core::error::Result;
 # use std::io::Write;
 #[derive(Debug)]
 pub struct Debugger {}
@@ -21,7 +22,7 @@ impl Default for Debugger {
 }
 
 impl<'a> ModelWriter<'a> for Debugger {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
+    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
     }
@@ -86,7 +87,8 @@ pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model)
 }
 
 ///
-/// Simple debug tools, including an implementation of the `ModelWriter` trait.
+/// Simple debug tools, including an implementation of the `ModelWriter` trait. This allows the easy
+/// swapping in ofa sanity check as different reader/writer implementations are used.
 ///
 pub mod debug {
     use crate::io::ModelWriter;
