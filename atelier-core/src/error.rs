@@ -19,9 +19,9 @@ error_chain! {
             display("invalid version number: '{}'", v)
         }
         #[doc("invalid shape ID format")]
-        InvalidShapeID(v: String) {
+        InvalidShapeID(id: String) {
             description("invalid shape ID format")
-            display("invalid shape ID format: '{}'", v)
+            display("invalid shape ID format: '{}'", id)
         }
         #[doc("invalid value variant")]
         InvalidValueVariant(expecting: String) {
@@ -29,9 +29,19 @@ error_chain! {
             display("invalid value variant, expecting a `Value::{}`", expecting)
         }
         #[doc("invalid error source, expecting 'client' or 'server'")]
-        InvalidErrorSource(s: String) {
+        InvalidErrorSource(src: String) {
             description("invalid error source, expecting 'client' or 'server'")
-            display("invalid error source, expecting 'client' or 'server', not {}", s)
+            display("invalid error source, expecting 'client' or 'server', not {}", src)
+        }
+        #[doc("An error occurred serializing a model")]
+        Serialization(repr: String) {
+            description("An error occurred serializing a model")
+            display("An error occurred serializing a model into {}", repr)
+        }
+        #[doc("An error occurred de-serializing a model")]
+        Deserialization(repr: String) {
+            description("An error occurred de-serializing a model")
+            display("An error occurred de-serializing a model from {}", repr)
         }
     }
 
