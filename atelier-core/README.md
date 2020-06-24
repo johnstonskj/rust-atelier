@@ -96,9 +96,10 @@ $ cargo run --example weather
 
 **Version 0.1.1** (_in progress_)
 
-* Updated API to be more consistent.
-* Moved from per-type `build` method to use `Into<T>`.
-* Added a lot more documentation.
+* Updated the model and builder APIs to be more consistent:
+  * documented method patterns, and ensured they were applied,
+  * moved from per-type `build` methods to use `Into<T>`.
+* Added the majority of API documentation.
 
 **Version 0.1.0**
 

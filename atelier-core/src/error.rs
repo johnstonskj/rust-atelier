@@ -2,6 +2,8 @@
 Standard `Error`, `ErrorKind`, and `Result` types.
 */
 
+#![allow(missing_docs)]
+
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 

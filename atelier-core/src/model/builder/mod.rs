@@ -1,5 +1,6 @@
 /*!
-Builders to construct models in a more fluent style.
+Builders to construct models in a more fluent style. See the example in the
+[library overview](../../index.html#builder-api-example).
 
 */
 
@@ -11,6 +12,9 @@ use std::str::FromStr;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// Builder for a top-level `Model`. This implements `From<T>` to provide the model itself.
+///
 #[derive(Debug)]
 pub struct ModelBuilder {
     model: Model,
@@ -20,7 +24,20 @@ pub struct ModelBuilder {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
+impl From<&mut ModelBuilder> for Model {
+    fn from(builder: &mut ModelBuilder) -> Self {
+        builder.model.clone()
+    }
+}
+
+impl From<ModelBuilder> for Model {
+    fn from(builder: ModelBuilder) -> Self {
+        builder.model
+    }
+}
+
 impl ModelBuilder {
+    /// Construct a new model builder for the given namespace.
     pub fn new(namespace: &str) -> Self {
         Self {
             model: Model {
@@ -35,23 +52,22 @@ impl ModelBuilder {
         }
     }
 
+    /// Set the version of Smithy this model conforms to.
     pub fn version(&mut self, version: Version) -> &mut Self {
         self.model.set_version(version);
         self
     }
 
+    /// Add a "uses" statement to add an external reference.
     pub fn uses(&mut self, shape: &str) -> &mut Self {
         self.model.add_reference(ShapeID::from_str(shape).unwrap());
         self
     }
 
+    /// Add the given shape to the model.
     pub fn shape(&mut self, shape: Shape) -> &mut Self {
         self.model.add_shape(shape);
         self
-    }
-
-    pub fn build(&self) -> Model {
-        self.model.clone()
     }
 }
 
@@ -62,8 +78,8 @@ impl ModelBuilder {
 #[doc(hidden)]
 pub mod shapes;
 pub use shapes::{
-    Builder, ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ResourceBuilder,
-    ServiceBuilder, SetBuilder, SimpleShapeBuilder, StructureBuilder, UnionBuilder,
+    ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
+    SetBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, UnionBuilder,
 };
 
 #[doc(hidden)]

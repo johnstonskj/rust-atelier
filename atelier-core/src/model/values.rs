@@ -185,6 +185,12 @@ impl Display for Number {
 
 // ------------------------------------------------------------------------------------------------
 
+impl From<Number> for NodeValue {
+    fn from(n: Number) -> Self {
+        Self::Number(n)
+    }
+}
+
 impl From<i8> for NodeValue {
     fn from(n: i8) -> Self {
         Self::Number((n as i64).into())

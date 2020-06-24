@@ -5,6 +5,10 @@ use crate::model::{Annotated, Identifier, Named, ShapeID};
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// A member of an aggregate, or service, shape. A member has an identity, may have traits, and
+/// may also have a node value.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Member {
     id: Identifier,
@@ -12,37 +16,41 @@ pub struct Member {
     value: Option<NodeValue>,
 }
 
+///
+/// A Trait applied to a shape or member including any value associated with the trait for this
+/// instance.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Trait {
     id: ShapeID,
     value: Option<NodeValue>,
 }
 
+///
+/// A trait that denotes a shape or statement that has a node value.
+///
 pub trait Valued {
-    fn value(&self) -> &Option<NodeValue>;
-
-    fn value_mut(&mut self) -> &mut Option<NodeValue>;
-
+    /// Returns `true` if there is a node value set, else `false`.
     fn has_value(&self) -> bool {
         self.value().is_some()
     }
 
+    /// Return a reference to the current value, if set.
+    fn value(&self) -> &Option<NodeValue>;
+
+    /// Return a mutable reference to the current value, if set.
+    fn value_mut(&mut self) -> &mut Option<NodeValue>;
+
+    /// Set the current node value.
     fn set_value(&mut self, value: NodeValue) {
         *self.value_mut() = Some(value)
     }
 
+    /// Set the current node value to `None`.
     fn unset_value(&mut self) {
         *self.value_mut() = None
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -87,6 +95,7 @@ impl Valued for Member {
 }
 
 impl Member {
+    /// Construct a new member with the given identity and no value.
     pub fn new(id: Identifier) -> Self {
         Self {
             id,
@@ -95,6 +104,7 @@ impl Member {
         }
     }
 
+    /// Construct a new member with the given identity and value.
     pub fn with_value(id: Identifier, value: NodeValue) -> Self {
         Self {
             id,
@@ -103,6 +113,7 @@ impl Member {
         }
     }
 
+    /// Construct a new member with the given identity and a value which is a shape reference.
     pub fn with_reference(id: Identifier, ref_id: ShapeID) -> Self {
         Self {
             id,
@@ -139,10 +150,12 @@ impl Valued for Trait {
 }
 
 impl Trait {
+    /// Construct a new trait with the given identity and no value.
     pub fn new(id: ShapeID) -> Self {
         Self { id, value: None }
     }
 
+    /// Construct a new trait with the given identity and value.
     pub fn with_value(id: ShapeID, value: NodeValue) -> Self {
         Self {
             id,
@@ -150,11 +163,3 @@ impl Trait {
         }
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

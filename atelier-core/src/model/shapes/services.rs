@@ -8,20 +8,29 @@ use std::str::FromStr;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// Corresponds to the "service" shape.
+///
 #[derive(Clone, Debug)]
 pub struct Service {
     version: Member,    // **required** Value::String
-    operations: Member, // Value::Array(Value::Ref)
-    resources: Member,  // Value::Array(Value::Ref)
+    operations: Member, // Value::Array(Value::ShapeID)
+    resources: Member,  // Value::Array(Value::ShapeID)
 }
 
+///
+/// Corresponds to the "operation" shape.
+///
 #[derive(Clone, Debug)]
 pub struct Operation {
     input: Member,  // Value::ShapeID
     output: Member, // Value::ShapeID
-    errors: Member, // Value::Array(Value::Ref)
+    errors: Member, // Value::Array(Value::ShapeID)
 }
 
+///
+/// Corresponds to the "resource" shape.
+///
 #[derive(Clone, Debug)]
 pub struct Resource {
     identifiers: Member,           // Value::Object(Identifier, Value::ShapeID)
@@ -42,7 +51,13 @@ pub struct Resource {
 
 #[doc(hidden)]
 macro_rules! optional_member {
-    ($member:ident, $setter:ident, $unsetter:ident) => {
+    ($has:ident, $member:ident, $setter:ident, $unsetter:ident) => {
+        /// Returns `true` if this shape has a value for this member, else `false`.
+        pub fn $has(&self) -> bool {
+            self.$member.value().is_some()
+        }
+
+        /// Return the current value of this member.
         pub fn $member(&self) -> Option<&ShapeID> {
             match &self.$member.value().as_ref() {
                 None => None,
@@ -50,9 +65,13 @@ macro_rules! optional_member {
                 _ => invalid_value_variant("ShapeID"),
             }
         }
+
+        /// Set the current value of this member.
         pub fn $setter(&mut self, $member: ShapeID) {
             self.$member.set_value(NodeValue::ShapeID($member))
         }
+
+        /// Set the current value of this member to `None`.
         pub fn $unsetter(&mut self) {
             self.$member.unset_value();
         }
@@ -62,6 +81,7 @@ macro_rules! optional_member {
 #[doc(hidden)]
 macro_rules! array_member {
     ($collection:ident, $member:ident, $has_fn:ident, $add_fn:ident, $append_fn:ident, $remove_fn:ident) => {
+        /// Returns `true` if this member's collection has _any_ elements, else `false`.
         pub fn $has_fn(&self) -> bool {
             match self.$collection.value() {
                 Some(v) => match v {
@@ -71,6 +91,8 @@ macro_rules! array_member {
                 _ => invalid_value_variant("Array"),
             }
         }
+
+        /// Return an iterator over all elements in this member's collection.
         pub fn $collection(&self) -> impl Iterator<Item = &ShapeID> {
             match self.$collection.value() {
                 Some(v) => match v {
@@ -86,6 +108,8 @@ macro_rules! array_member {
                 _ => invalid_value_variant("Array"),
             }
         }
+
+        /// Add an element to this member's collection.
         pub fn $add_fn(&mut self, $member: ShapeID) {
             match self.$collection.value_mut() {
                 Some(v) => match v {
@@ -95,6 +119,8 @@ macro_rules! array_member {
                 _ => invalid_value_variant("Array"),
             }
         }
+
+        /// Add all these elements to this member's collection.
         pub fn $append_fn(&mut self, $collection: &[ShapeID]) {
             match self.$collection.value_mut() {
                 Some(v) => match v {
@@ -110,6 +136,8 @@ macro_rules! array_member {
                 _ => invalid_value_variant("Array"),
             }
         }
+
+        /// Remove an element, with the given identifier, to this member's collection.
         pub fn $remove_fn(&mut self, $member: &ShapeID) {
             match self.$collection.value_mut() {
                 Some(v) => match v {
@@ -178,9 +206,9 @@ impl Default for Operation {
 }
 
 impl Operation {
-    optional_member! { input, set_input, unset_input }
+    optional_member! { has_input, input, set_input, unset_input }
 
-    optional_member! { output, set_output, unset_output }
+    optional_member! { has_output, output, set_output, unset_output }
 
     array_member! { errors, error, has_errors, add_error, append_errors, remove_error }
 }
@@ -264,17 +292,17 @@ impl Resource {
         }
     }
 
-    optional_member! { create, set_create, unset_create }
+    optional_member! { has_create, create, set_create, unset_create }
 
-    optional_member! { put, set_put, unset_put }
+    optional_member! { has_put, put, set_put, unset_put }
 
-    optional_member! { read, set_read, unset_read }
+    optional_member! { has_read, read, set_read, unset_read }
 
-    optional_member! { update, set_update, unset_update }
+    optional_member! { has_update, update, set_update, unset_update }
 
-    optional_member! { delete, set_delete, unset_delete }
+    optional_member! { has_delete, delete, set_delete, unset_delete }
 
-    optional_member! { list, set_list, unset_list }
+    optional_member! { has_list, list, set_list, unset_list }
 
     array_member! { operations, operation, has_operations, add_operation, append_operations, remove_operation }
 

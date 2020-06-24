@@ -12,6 +12,7 @@ use std::str::FromStr;
 #[doc(hidden)]
 macro_rules! simple_shape_constructor {
     ($fn_name:ident, $var_name:ident) => {
+        #[doc = "Construct a new `SimpleShape` builder."]
         pub fn $fn_name(id: &str) -> Self {
             Self {
                 inner: Shape::new(
@@ -25,12 +26,26 @@ macro_rules! simple_shape_constructor {
 
 #[doc(hidden)]
 macro_rules! concrete_builder {
-    ($struct_name:ident, $inner_type:ty) => {
+    ($struct_name:ident, $inner_type:ty, $doc:expr) => {
+        #[doc = $doc]
         #[derive(Debug)]
         pub struct $struct_name {
             inner: $inner_type,
         }
-        impl Builder<$inner_type> for $struct_name {
+
+        impl From<&mut $struct_name> for $inner_type {
+            fn from(builder: &mut $struct_name) -> Self {
+                builder.inner().clone()
+            }
+        }
+
+        impl From<$struct_name> for $inner_type {
+            fn from(builder: $struct_name) -> Self {
+                builder.inner().clone()
+            }
+        }
+
+        impl ShapeBuilder<$inner_type> for $struct_name {
             fn inner(&self) -> &$inner_type {
                 &self.inner
             }
@@ -45,6 +60,7 @@ macro_rules! concrete_builder {
 #[doc(hidden)]
 macro_rules! shape_constructor {
     ($shape_variant:ident ( $( $i:ident : $t:ty ),* ), $init_expr:expr) => {
+        #[doc = "Construct a new shape builder, with id and required values."]
         pub fn new(id: &str, $( $i: $t ),*) -> Self {
             Self {
                 inner: Shape::new(
@@ -55,6 +71,7 @@ macro_rules! shape_constructor {
         }
     };
     ($shape_variant:ident, $init_expr:expr) => {
+        #[doc = "Construct a new shape builder, with id."]
         pub fn new(id: &str) -> Self {
             Self {
                 inner: Shape::new(
@@ -72,6 +89,7 @@ macro_rules! shape_constructor {
 #[doc(hidden)]
 macro_rules! structured_member {
     ($fn_name:ident, $id_ref:expr) => {
+        /// Add a member named `id`, with a reference to the corresponding simple shape, to this shape.
         pub fn $fn_name(&mut self, id: &str) -> &mut Self {
             self.member(id, $id_ref)
         }
@@ -81,13 +99,15 @@ macro_rules! structured_member {
 #[doc(hidden)]
 macro_rules! structured_members {
     ($shape_variant:ident) => {
+        /// Add a member named `id`, as a reference to the shape `id_ref` to this shape.
         pub fn member(&mut self, id: &str, id_ref: &str) -> &mut Self {
             if let ShapeInner::$shape_variant(inner) = self.inner.inner_mut() {
-                inner.add_member(MemberBuilder::new(id).refers_to(id_ref).build())
+                inner.add_member(MemberBuilder::new(id).refers_to(id_ref).into())
             }
             self
         }
 
+        /// Add `member` to this shape.
         pub fn add_member(&mut self, member: Member) -> &mut Self {
             if let ShapeInner::$shape_variant(inner) = self.inner.inner_mut() {
                 inner.add_member(member)
@@ -128,6 +148,7 @@ macro_rules! shape_member {
     ($fn_name:ident, $shape_variant:ident, $setter:ident, $plural:ident, $appender:ident) => {
         shape_member! { $fn_name, $shape_variant, $setter }
 
+        /// Append the shapes referenced by `ids` to the named member value.
         pub fn $plural(&mut self, ids: &[&str]) -> &mut Self {
             if let ShapeInner::$shape_variant(inner) = self.inner.inner_mut() {
                 inner.$appender(
@@ -140,6 +161,7 @@ macro_rules! shape_member {
         }
     };
     ($fn_name:ident, $shape_variant:ident, $setter:ident) => {
+        /// Add the named member value to the shape referenced by `id`.
         pub fn $fn_name(&mut self, id: &str) -> &mut Self {
             if let ShapeInner::$shape_variant(inner) = &mut self.inner.inner_mut() {
                 inner.$setter(ShapeID::from_str(id).unwrap())
@@ -152,23 +174,25 @@ macro_rules! shape_member {
 #[doc(hidden)]
 macro_rules! add_trait {
     (pub $trait_fn:ident) => {
+        /// Add the correspondingly named prelude trait to this model element
         pub fn $trait_fn(&mut self) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn().build())
+            self.add_trait(TraitBuilder::$trait_fn().into())
         }
     };
     ($trait_fn:ident) => {
         fn $trait_fn(&mut self) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn().build())
+            self.add_trait(TraitBuilder::$trait_fn().into())
         }
     };
     (pub $trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
+        /// Add the correspondingly named prelude trait, and value(s), to this model element
         pub fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).build())
+            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).into())
         }
     };
     ($trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
         fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
-            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).build())
+            self.add_trait(TraitBuilder::$trait_fn($( $i ),*).into())
         }
     };
 }
@@ -176,6 +200,7 @@ macro_rules! add_trait {
 #[doc(hidden)]
 macro_rules! member_constructor {
     ($fn_name:ident, $id_ref:expr) => {
+        /// Constructs a new member with a reference to the type given by `id`.
         pub fn $fn_name(id: &str) -> Self {
             Self::reference(id, $id_ref)
         }
@@ -186,7 +211,8 @@ macro_rules! member_constructor {
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-pub trait Builder<T>
+/// Common trait for all shape and member builders.
+pub trait ShapeBuilder<T>
 where
     T: Clone + Annotated,
 {
@@ -194,7 +220,7 @@ where
     fn inner_mut(&mut self) -> &mut T;
 
     fn documentation(&mut self, documentation: &str) -> &mut Self {
-        self.add_trait(TraitBuilder::documentation(documentation).build())
+        self.add_trait(TraitBuilder::documentation(documentation).into())
     }
 
     fn add_trait(&mut self, a_trait: Trait) -> &mut Self {
@@ -211,35 +237,55 @@ where
     add_trait!(tagged(tags: &[&str]));
 
     add_trait!(unstable);
-
-    fn build(&self) -> T {
-        self.inner().clone()
-    }
 }
 
-concrete_builder!(SimpleShapeBuilder, Shape);
+concrete_builder!(
+    SimpleShapeBuilder,
+    Shape,
+    "Builder for `ShapeInner::SimpleType` shapes."
+);
 
-concrete_builder!(ListBuilder, Shape);
+concrete_builder!(ListBuilder, Shape, "Builder for `ShapeInner::List` shapes.");
 
-concrete_builder!(SetBuilder, Shape);
+concrete_builder!(SetBuilder, Shape, "Builder for `ShapeInner::Set` shapes.");
 
-concrete_builder!(MapBuilder, Shape);
+concrete_builder!(MapBuilder, Shape, "Builder for `ShapeInner::Map` shapes.");
 
-concrete_builder!(StructureBuilder, Shape);
+concrete_builder!(
+    StructureBuilder,
+    Shape,
+    "Builder for `ShapeInner::Structure` shapes."
+);
 
-concrete_builder!(UnionBuilder, Shape);
+concrete_builder!(
+    UnionBuilder,
+    Shape,
+    "Builder for `ShapeInner::Union` shapes."
+);
 
-concrete_builder!(ServiceBuilder, Shape);
+concrete_builder!(
+    ServiceBuilder,
+    Shape,
+    "Builder for `ShapeInner::Service` shapes."
+);
 
-concrete_builder!(OperationBuilder, Shape);
+concrete_builder!(
+    OperationBuilder,
+    Shape,
+    "Builder for `ShapeInner::Operation` shapes."
+);
 
-concrete_builder!(ResourceBuilder, Shape);
+concrete_builder!(
+    ResourceBuilder,
+    Shape,
+    "Builder for `ShapeInner::Resource` shapes."
+);
 
-concrete_builder!(MemberBuilder, Member);
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
+concrete_builder!(
+    MemberBuilder,
+    Member,
+    "Builder for `Member` objects within shapes."
+);
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -342,6 +388,7 @@ impl UnionBuilder {
 impl ServiceBuilder {
     shape_constructor! { Service }
 
+    /// Set the version of this service.
     pub fn version(&mut self, version: &str) -> &mut Self {
         if let ShapeInner::Service(inner) = &mut self.inner.inner_mut() {
             inner.set_version(version)
@@ -389,6 +436,8 @@ impl OperationBuilder {
 impl ResourceBuilder {
     shape_constructor! { Resource }
 
+    /// Add an identifier to this resource; this represents the local member name and shape
+    /// identifier for the member's type.
     pub fn identifier(&mut self, id: &str, shape: &str) -> &mut Self {
         if let ShapeInner::Resource(inner) = &mut self.inner.inner_mut() {
             inner.add_identifier(
@@ -425,12 +474,15 @@ impl ResourceBuilder {
 // ------------------------------------------------------------------------------------------------
 
 impl MemberBuilder {
+    /// Construct a new `MemberBuilder` with the given member identifier.
     pub fn new(id: &str) -> Self {
         Self {
             inner: Member::new(Identifier::from_str(id).unwrap()),
         }
     }
 
+    /// Construct a new `MemberBuilder` with the given member identifier and the shape identifier
+    /// for the member's type.
     pub fn reference(id: &str, id_ref: &str) -> Self {
         let mut new = Self::new(id);
         let _ = new.refers_to(id_ref);
@@ -463,11 +515,13 @@ impl MemberBuilder {
 
     member_constructor! { timestamp, "Timestamp" }
 
+    /// Set the value of this member.
     pub fn value(&mut self, value: NodeValue) -> &mut Self {
         self.inner.set_value(value);
         self
     }
 
+    /// Set the value of this member to a shape reference.
     pub fn refers_to(&mut self, ref_id: &str) -> &mut Self {
         self.inner
             .set_value(NodeValue::ShapeID(ShapeID::from_str(ref_id).unwrap()));
@@ -476,11 +530,3 @@ impl MemberBuilder {
 
     add_trait!(pub required);
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

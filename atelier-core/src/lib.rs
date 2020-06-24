@@ -272,7 +272,7 @@
     trivial_numeric_casts,
     // ---------- Public
     missing_debug_implementations,
-    // missing_docs,
+    missing_docs,
     unreachable_pub,
     // ---------- Unsafe
     unsafe_code,

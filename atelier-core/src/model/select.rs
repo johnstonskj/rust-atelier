@@ -3,6 +3,8 @@ Model structures for selector expressions.
 
 */
 
+#![allow(missing_docs)]
+
 use crate::model::values::NodeValue;
 use crate::model::ShapeID;
 
