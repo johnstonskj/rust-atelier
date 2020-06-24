@@ -19,6 +19,7 @@ string_const!(K_DELETE, "delete");
 string_const!(K_ERRORS, "errors");
 string_const!(K_IDENTIFIERS, "identifiers");
 string_const!(K_INPUT, "input");
+string_const!(K_KEY, "key");
 string_const!(K_LIST, "list");
 string_const!(K_MEMBER, "member");
 string_const!(K_METADATA, "metadata");
@@ -34,6 +35,7 @@ string_const!(K_TARGET, "target");
 string_const!(K_TRAITS, "traits");
 string_const!(K_TYPE, "type");
 string_const!(K_UPDATE, "update");
+string_const!(K_VALUE, "value");
 string_const!(K_VERSION, "version");
 
 // ------------------------------------------------------------------------------------------------
