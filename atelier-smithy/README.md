@@ -1,6 +1,6 @@
 # Atelier: crate atelier_smithy
 
-Provides the ability to read and write Smithy models in its own native language representation.
+Provides the ability to read and write [Smithy](https://github.com/awslabs/smithy) models in its own native language representation.
 
 [![crates.io](https://img.shields.io/crates/v/atelier_smithy.svg)](https://crates.io/crates/atelier_smithy)
 [![docs.rs](https://docs.rs/atelier_smithy/badge.svg)](https://docs.rs/atelier_smithy)
@@ -8,6 +8,10 @@ Provides the ability to read and write Smithy models in its own native language 
 TBD
 
 ## Changes
+
+**Version 0.1.1** (_in progress_)
+
+* Able to parse basic examples.
 
 **Version 0.1.0**
 
