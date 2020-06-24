@@ -7,24 +7,25 @@ Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/sm
 [![travis.ci](https://travis-ci.org/johnstonskj/rust-atelier.svg?branch=master)](https://travis-ci.org/johnstonskj/rust-atelier)
 [![GitHub stars](https://img.shields.io/github/stars/johnstonskj/rust-atelier.svg)](https://github.com/johnstonskj/rust-atelier/stargazers)
 
-Given that a Smithy is "_the workshop of a smith_", this project has been named for "_an artist's or designer's studio or workroom_". Also, given that Fashion Tech. is just a damn fun place to be these days, it seemed appropriate.
+Given that a Smithy is "_the workshop of a smith_", this project has been named for "_an artist's or designer's studio or workroom_". Also, given that Fashion Tech. is just a damn fun place to be these days, it seemed appropriate. This repo contains a number of crates that provide different aspects, or capabilities, around Smithy processing. For clients that wish to use a number of features but don't want to track individual version compatibility the `atelier_lib` crate incorporates all but the cargo command using features to select the different capabilities.
 
 ## Crates
 
-| crate                                | Content                                                | Status                              |
-|--------------------------------------|--------------------------------------------------------|-------------------------------------|
-| [`atelier_core`](./atelier-core)     | The Model, Builder, and Selector types and I/O traits. | Model: 80%, Builder: 75%, Selector: 20%, Tests: 0% |
-| `atelier_smithy`                     | The serializer/de-serializer for native Smithy.        | Writer: 90%, Reader: 0%, Tests: 5%                 |
-| `atelier_json`                       | The serializer/de-serializer for the JSON AST          | Writer: 90%, Reader: 0%, Tests: 5%                 |
-| `atelier_openapi`                    | TBD                                                    | Not Started                         |
-| `atelier_lib`                        | TBD                                                    | Awaiting completion of `core`.      |
-| `cargo_atelier`                      | TBD                                                    | Not Started                         |
+| crate                                  | Content                                                | Status                              |
+|----------------------------------------|--------------------------------------------------------|-------------------------------------|
+| [`atelier_core`](./atelier-core)       | The Model, Builder, and Selector types and I/O traits. | Model: 80%, Builder: 75%, Selector: 20%, Tests: 0% |
+| [`atelier_smithy`](./atelier_smithy)   | The serializer/de-serializer for native Smithy.        | Writer: 90%, Reader: 0%, Tests: 5%                 |
+| [`atelier_json`](./atelier_json)       | The serializer/de-serializer for the JSON AST          | Writer: 90%, Reader: 0%, Tests: 5%                 |
+| [`atelier_openapi`](./atelier_openapi) | TBD                                                    | Not Started                         |
+| [`atelier_lib`](./atelier_lib)         | Re-export structures from previous crates.             | Done.      |
+| [`cargo_atelier`](./cargo_atelier)     | TBD                                                    | Not Started                         |
 
-## Example
-
-TBD
 
 ## Changes
+
+**Version 0.1.1** (_in progress_)
+
+* Goal: documentation and examples.
 
 **Version 0.1.0**
 
