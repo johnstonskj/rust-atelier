@@ -8,7 +8,7 @@ Definition Language.
 
 This crate is the foundation for the Atelier set of crates, and provides the following components:
 
-1. The model structures themselves that represents a Smithy model, this is the in-memory representation shared by all 
+1. The model structures themselves that represents a Smithy model This is the in-memory representation shared by all 
    Atelier crates and tools.
 1. The model builder structures that allow for a fluent and easy construction of a core model.
 1. The prelude model containing the set of shapes defined in the Smithy specification.
@@ -38,18 +38,18 @@ let model = ModelBuilder::new("example.motd")
             .documentation("Provides a Message of the day.")
              .version("2020-06-21")
             .resource("Message")
-            .build(),
+            .into(),
     )
     .shape(
         ResourceBuilder::new("Message")
             .identifier("date", "Date")
             .read("GetMessage")
-            .build(),
+            .into(),
     )
     .shape(
         SimpleShapeBuilder::string("Date")
-            .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").build())
-            .build(),
+            .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
+            .into(),
     )
     .shape(
         OperationBuilder::new("GetMessage")
@@ -57,37 +57,48 @@ let model = ModelBuilder::new("example.motd")
             .input("GetMessageInput")
             .output("GetMessageOutput")
             .error("BadDateValue")
-            .build(),
+            .into(),
     )
     .shape(
         StructureBuilder::new("GetMessageInput")
             .add_member(
                 MemberBuilder::new("date")
                     .refers_to("Date")
-                    .build(),
+                    .into(),
             )
-            .build(),
+            .into(),
     )
     .shape(
         StructureBuilder::new("GetMessageOutput")
-            .add_member(MemberBuilder::string("message").required().build())
-            .build(),
+            .add_member(MemberBuilder::string("message").required().into())
+            .into(),
     )
     .shape(
         StructureBuilder::new("BadDateValue")
             .error(ErrorSource::Client)
-            .add_member(MemberBuilder::string("errorMessage").required().build())
-            .build(),
+            .add_member(MemberBuilder::string("errorMessage").required().into())
+            .into(),
     )
-    .build();
+    .into();
 ```
 */
+
+## Runnable Examples
+
+Currently, there is simply one complete example, `weather.rs` in the examples directory. As usual this is executed via
+cargo in the following manner. It will print, using `Debug`, the weather example model from the Smithy quick start.
+
+```bash
+$ cargo run --example weather
+```
 
 ## Changes
 
 **Version 0.1.1** (_in progress_)
 
-TBD
+* Updated API to be more consistent.
+* Moved from per-type `build` method to use `Into<T>`.
+* Added a lot more documentation.
 
 **Version 0.1.0**
 
