@@ -2,8 +2,8 @@ use atelier_core::error::ErrorSource;
 use atelier_core::io::write_model_to_string;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::model::builder::{
-    Builder, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
-    ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+    ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
+    ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
 use atelier_json::io::JsonWriter;
@@ -26,7 +26,7 @@ fn make_weather_model() -> Model {
                 .version("2006-03-01")
                 .resource("City")
                 .operation("GetCurrentTime")
-                .build(),
+                .into(),
         )
         .shape(
             ResourceBuilder::new("City")
@@ -34,18 +34,18 @@ fn make_weather_model() -> Model {
                 .read("GetCity")
                 .list("ListCities")
                 .resource("Forecast")
-                .build(),
+                .into(),
         )
         .shape(
             ResourceBuilder::new("Forecast")
                 .identifier("cityId", "CityId")
                 .read("GetForecast")
-                .build(),
+                .into(),
         )
         .shape(
             SimpleShapeBuilder::string("CityId")
-                .add_trait(TraitBuilder::pattern("^[A-Za-z0-9 ]+$").build())
-                .build(),
+                .add_trait(TraitBuilder::pattern("^[A-Za-z0-9 ]+$").into())
+                .into(),
         )
         .shape(
             OperationBuilder::new("GetCity")
@@ -53,7 +53,7 @@ fn make_weather_model() -> Model {
                 .input("GetCityInput")
                 .output("GetCityOutput")
                 .error("NoSuchResource")
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("GetCityInput")
@@ -61,32 +61,32 @@ fn make_weather_model() -> Model {
                     MemberBuilder::new("cityID")
                         .required()
                         .refers_to("CityId")
-                        .build(),
+                        .into(),
                 )
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("GetCityOutput")
-                .add_member(MemberBuilder::string("name").required().build())
+                .add_member(MemberBuilder::string("name").required().into())
                 .add_member(
                     MemberBuilder::new("coordinates")
                         .required()
                         .refers_to("CityCoordinates")
-                        .build(),
+                        .into(),
                 )
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("CityCoordinates")
-                .add_member(MemberBuilder::float("latitude").required().build())
-                .add_member(MemberBuilder::float("longitude").required().build())
-                .build(),
+                .add_member(MemberBuilder::float("latitude").required().into())
+                .add_member(MemberBuilder::float("longitude").required().into())
+                .into(),
         )
         .shape(
             StructureBuilder::new("NoSuchResource")
                 .error(ErrorSource::Client)
-                .add_member(MemberBuilder::string("resourceType").required().build())
-                .build(),
+                .add_member(MemberBuilder::string("resourceType").required().into())
+                .into(),
         )
         .shape(
             OperationBuilder::new("ListCities")
@@ -94,13 +94,13 @@ fn make_weather_model() -> Model {
                 .readonly()
                 .input("ListCitiesInput")
                 .output("ListCitiesOutput")
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("ListCitiesInput")
                 .string("nextToken")
                 .integer("pageSize")
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("ListCitiesOutput")
@@ -109,11 +109,11 @@ fn make_weather_model() -> Model {
                     MemberBuilder::new("items")
                         .required()
                         .refers_to("CitySummaries")
-                        .build(),
+                        .into(),
                 )
-                .build(),
+                .into(),
         )
-        .shape(ListBuilder::new("CitySummaries", "CitySummary").build())
+        .shape(ListBuilder::new("CitySummaries", "CitySummary").into())
         .shape(
             StructureBuilder::new("CitySummary")
                 .add_trait(
@@ -125,38 +125,38 @@ fn make_weather_model() -> Model {
                                         Identifier::from_str("resource").unwrap().into(),
                                         ShapeID::from_str("City").unwrap(),
                                     )
-                                    .build(),
+                                    .into(),
                             )
-                            .build(),
+                            .into(),
                     )
-                    .build(),
+                    .into(),
                 )
                 .add_member(
                     MemberBuilder::new("cityId")
                         .required()
                         .refers_to("CityId")
-                        .build(),
+                        .into(),
                 )
-                .add_member(MemberBuilder::string("name").required().build())
-                .build(),
+                .add_member(MemberBuilder::string("name").required().into())
+                .into(),
         )
         .shape(
             OperationBuilder::new("GetCurrentTime")
                 .readonly()
                 .output("GetCurrentTimeOutput")
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("GetCurrentTimeOutput")
-                .add_member(MemberBuilder::timestamp("time").required().build())
-                .build(),
+                .add_member(MemberBuilder::timestamp("time").required().into())
+                .into(),
         )
         .shape(
             OperationBuilder::new("GetForecast")
                 .readonly()
                 .input("GetForecastInput")
                 .output("GetForecastOutput")
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("GetForecastInput")
@@ -164,14 +164,14 @@ fn make_weather_model() -> Model {
                     MemberBuilder::new("cityId")
                         .required()
                         .refers_to("CityId")
-                        .build(),
+                        .into(),
                 )
-                .build(),
+                .into(),
         )
         .shape(
             StructureBuilder::new("GetForecastOutput")
                 .float("chanceOfRain")
-                .build(),
+                .into(),
         )
-        .build()
+        .into()
 }
