@@ -49,11 +49,59 @@ pub enum ShapeInner {
     Operation(Operation),
     /// Corresponds to the ABNF production `resource_statement`.
     Resource(Resource),
+    /// Corresponds to the ABNF production `apply_statement`.
+    Apply,
+}
+// ------------------------------------------------------------------------------------------------
+// Macros
+// ------------------------------------------------------------------------------------------------
+
+#[doc(hidden)]
+macro_rules! is_as {
+    ($is_fn:ident, $variant:ident) => {
+        /// Returns `true` if `self` is the corresponding variant, else `false`.
+        pub fn $is_fn(&self) -> bool {
+            match self {
+                Self::$variant => true,
+                _ => false,
+            }
+        }
+    };
+    ($is_fn:ident, $variant:ident, $as_fn:ident, $ret_type:ty) => {
+        /// Returns `true` if `self` is the corresponding variant, else `false`.
+        pub fn $is_fn(&self) -> bool {
+            match self {
+                Self::$variant(_) => true,
+                _ => false,
+            }
+        }
+
+        /// Returns `Some(v)` if `self` is the corresponding variant, else `None`.
+        pub fn $as_fn(&self) -> Option<&$ret_type> {
+            match self {
+                Self::$variant(v) => Some(v),
+                _ => None,
+            }
+        }
+    };
 }
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+impl ShapeInner {
+    is_as! { is_simple, SimpleType, as_simple, SimpleType }
+    is_as! { is_list, List, as_list, ListOrSet }
+    is_as! { is_set, Set, as_set, ListOrSet }
+    is_as! { is_map, Map, as_map, Map}
+    is_as! { is_structure, Structure, as_structure, StructureOrUnion}
+    is_as! { is_union, Union, as_union, StructureOrUnion}
+    is_as! { is_service, Service, as_service, Service }
+    is_as! { is_operation, Operation, as_operation, Operation }
+    is_as! { is_resource, Resource, as_resource, Resource }
+    is_as! { is_apply, Apply }
+}
 
 impl Named<Identifier> for Shape {
     fn id(&self) -> &Identifier {

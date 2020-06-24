@@ -4,7 +4,7 @@ Builders to construct models in a more fluent style. See the example in the
 
 */
 
-use crate::model::{Model, Namespace, Shape, ShapeID};
+use crate::model::{shapes::Shape, Model, Namespace, ShapeID};
 use crate::Version;
 use std::str::FromStr;
 
@@ -40,15 +40,7 @@ impl ModelBuilder {
     /// Construct a new model builder for the given namespace.
     pub fn new(namespace: &str) -> Self {
         Self {
-            model: Model {
-                options: None,
-                version: Default::default(),
-                namespace: Namespace::from_str(namespace).unwrap(),
-                references: Default::default(),
-                shapes: Default::default(),
-                applied_traits: Default::default(),
-                metadata: Default::default(),
-            },
+            model: Model::new(Namespace::from_str(namespace).unwrap()),
         }
     }
 

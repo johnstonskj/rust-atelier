@@ -60,31 +60,30 @@ use std::str::FromStr;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// A container for options that may affect how a model is constructed.
-///
-#[derive(Clone, Debug)]
-pub struct ModelOptions {}
-
-///
 /// The core model structure, this corresponds to a single Smithy file according to the
 /// specification. It contains:
 ///
 /// * Optionally, the version of Smithy it conforms to.
+/// * Control values.
+/// * Any metadata associated with the model (with the `metadata` statement).
 /// * The namespace it represents.
 /// * A list of external shape references (with the `use` statement).
 /// * A map of shapes declared by the model.
-/// * Any traits applied to existing model members (with the `applies` statement).
-/// * Any metadata associated with the model (with the `metadata` statement).
 ///
 #[derive(Clone, Debug)]
 pub struct Model {
-    options: Option<ModelOptions>,
     version: Option<Version>,
-    namespace: Namespace,
-    references: HashSet<ShapeID>,
-    shapes: HashMap<Identifier, Shape>,
-    applied_traits: HashMap<ShapeID, Vec<Trait>>,
+    // control_section
+    control_data: HashMap<Key, NodeValue>,
+    // metadata_section
     metadata: HashMap<Key, NodeValue>,
+    // shape_section
+    // shape_section > namespace_statement
+    namespace: Namespace,
+    // shape_section > use_section
+    references: HashSet<ShapeID>,
+    // shape_section > shape_statements : *(shape_statement / apply_statement)
+    shapes: HashMap<Identifier, Shape>,
 }
 
 ///
@@ -138,25 +137,11 @@ impl Model {
     /// Create a new model with the provided namespace.
     pub fn new(namespace: Namespace) -> Self {
         Self {
-            options: None,
             version: None,
+            control_data: Default::default(),
             namespace,
             references: Default::default(),
             shapes: Default::default(),
-            applied_traits: Default::default(),
-            metadata: Default::default(),
-        }
-    }
-
-    /// Create a new model with the provided namespace and processing options.
-    pub fn with_options(namespace: Namespace, options: ModelOptions) -> Self {
-        Self {
-            options: Some(options),
-            version: None,
-            namespace,
-            references: Default::default(),
-            shapes: Default::default(),
-            applied_traits: Default::default(),
             metadata: Default::default(),
         }
     }
@@ -258,34 +243,24 @@ impl Model {
 
     // --------------------------------------------------------------------------------------------
 
-    /// Returns `true` if this model contains _any_ trait applications, else `false`.
-    pub fn has_applied_traits(&self) -> bool {
-        !self.applied_traits.is_empty()
+    /// Returns `true` if this model contains _any_ control data, else `false`.
+    pub fn has_control_data(&self) -> bool {
+        !self.control_data.is_empty()
     }
 
-    /// Returns an iterator over all the trait applications in this model.
-    pub fn applied_traits(&self) -> impl Iterator<Item = (&ShapeID, &Vec<Trait>)> {
-        self.applied_traits.iter()
+    /// Returns an iterator over all the control data in this model.
+    pub fn control_data(&self) -> impl Iterator<Item = (&Key, &NodeValue)> {
+        self.control_data.iter()
     }
 
-    /// Apply the trait `a_trait` to the shape identifier. This does not update any shape in the
-    /// model if this is a locally declared shape.
-    pub fn apply_trait_to(&mut self, a_trait: Trait, id: ShapeID) {
-        match self.applied_traits.get_mut(&id) {
-            None => {
-                let _ = self.applied_traits.insert(id, vec![a_trait]);
-            }
-            Some(vec) => {
-                vec.push(a_trait);
-            }
-        }
+    /// Add the given control data key and value to this model.
+    pub fn add_control_dataa(&mut self, key: Key, value: NodeValue) {
+        let _ = self.control_data.insert(key, value);
     }
 
-    /// Remove _any_ trait that equals `a_trait`, from the shape with the given `ShapeID`, from this model.
-    pub fn remove_trait_from(&mut self, a_trait: &Trait, id: &ShapeID) {
-        if let Some(traits) = self.applied_traits.get_mut(id) {
-            traits.retain(|t| t != a_trait);
-        }
+    /// Remove the control data with the given `Key` from this model.
+    pub fn remove_control_data(&mut self, key: &Key) {
+        let _ = self.control_data.remove(key);
     }
 
     // --------------------------------------------------------------------------------------------
