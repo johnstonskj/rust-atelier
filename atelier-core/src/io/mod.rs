@@ -22,6 +22,8 @@ impl Default for Debugger {
 }
 
 impl<'a> ModelWriter<'a> for Debugger {
+    const REPRESENTATION: &'static str = "Debug";
+
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
@@ -42,6 +44,8 @@ use crate::model::Model;
 /// Trait implemented to write a model in a specific representation.
 ///
 pub trait ModelWriter<'a>: Default {
+    /// The display name of the representation this trait writes.
+    const REPRESENTATION: &'static str;
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
@@ -52,6 +56,8 @@ pub trait ModelWriter<'a>: Default {
 /// Trait implemented to read a model from a specific representation.
 ///
 pub trait ModelReader: Default {
+    /// The display name of the representation this trait reads.
+    const REPRESENTATION: &'static str;
     ///
     ///  Read a model from the given implementation of `Read`.
     ///
@@ -109,6 +115,8 @@ pub mod debug {
     }
 
     impl<'a> ModelWriter<'a> for Debugger {
+        const REPRESENTATION: &'static str = "Debug";
+
         fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
             write!(w, "{:#?}", model)?;
             Ok(())
