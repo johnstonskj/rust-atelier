@@ -7,7 +7,8 @@ More detailed description, with
 
 */
 
-// use ...
+#[macro_use]
+extern crate pest_derive;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -34,3 +35,5 @@ More detailed description, with
 // ------------------------------------------------------------------------------------------------
 
 pub mod io;
+
+mod parser;

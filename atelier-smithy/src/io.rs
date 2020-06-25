@@ -68,14 +68,7 @@ impl<'a> ModelWriter<'a> for SmithyWriter {
 
 impl<'a> SmithyWriter {
     fn write_header(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        writeln!(
-            w,
-            "$version: \"{}\"",
-            match model.version() {
-                None => atelier_core::Version::default().to_string(),
-                Some(v) => v.to_string(),
-            }
-        )?;
+        writeln!(w, "$version: \"{}\"", model.version().to_string())?;
         writeln!(w)?;
         if model.has_metadata() {
             for (key, value) in model.metadata() {

@@ -1,0 +1,242 @@
+idl =
+    { SOI ~ ws ~ control_section ~ metadata_section ~ shape_section ~ EOI }
+
+ws =
+    _{ (sp | NEWLINE | line_comment )* }
+
+sp =
+    _{ " " | "\t" }
+
+br =
+    _{ sp* ~ ( NEWLINE | line_comment | EOI ) ~ sp* }
+
+// unnecessary newline = { "\u{0A}" | "\u{0D}\u{0A}" }
+
+line_comment =
+    { "/" ~ "/" ~ not_newline ~ NEWLINE ~ sp* }
+
+not_slash =
+    { "\t" | '\u{20}'..'\u{2E}' | '\u{30}'..'\u{10FFF}' }
+
+not_newline =
+    { ("\t" | '\u{20}'..'\u{10FFF}')* }
+
+documentation_comment =
+    { "/" ~ "/" ~ "/" ~ not_newline ~ NEWLINE ~ sp* }
+
+control_section =
+    { control_statement* }
+
+control_statement =
+    { "$" ~ ws ~ node_object_key ~ ws ~ ":" ~ ws ~ node_value ~ br }
+
+version_string =
+    { ASCII_DIGIT+ ~ ( "." ~ ASCII_DIGIT+ )? }
+
+shape_id =
+    @{ root_shape_id ~ shape_id_member? }
+
+root_shape_id =
+    { absolute_root_shape_id | identifier }
+
+absolute_root_shape_id =
+    { namespace ~ "#" ~ identifier }
+
+namespace =
+    @{ identifier ~ ("." ~ identifier)* }
+
+identifier =
+    @{ ( ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* )
+    |  ( "_" ~ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_")*) }
+
+shape_id_member =
+    { "$" ~ identifier }
+
+node_value =
+    { node_array | node_object | number | node_keywords | shape_id | text_block | quoted_text }
+
+node_array =
+    { empty_node_array | populated_node_array }
+
+empty_node_array =
+    { "[" ~ ws ~ "]" }
+
+populated_node_array =
+    { "[" ~ ws ~ node_value ~ ws ~ (comma ~ node_value ~ ws)* ~ trailing_comma ~ "]" }
+
+trailing_comma =
+    { comma? }
+
+comma =
+    { "," ~ ws }
+
+node_object =
+    { empty_node_object | populated_node_object }
+
+empty_node_object =
+    { "{" ~ ws ~ "}" }
+
+populated_node_object =
+    { "{" ~ ws ~ node_object_kvp ~  ws ~ (comma ~ node_object_kvp ~ ws)* ~ trailing_comma ~ "}" }
+
+node_object_kvp =
+    { node_object_key ~ ws ~ ":" ~ ws ~ node_value }
+
+node_object_key =
+    { quoted_text | identifier }
+
+number =
+    { minus? ~ int ~ frac? ~ exp?}
+
+decimal_point =
+    { "."}
+
+// unnecessary digit1_9 = { '\u{31}'.. '\u{39}'}
+
+e =
+    { "e" | "E" }
+
+exp =
+    { e ~ (minus | plus)? ~ ASCII_DIGIT+ }
+
+frac =
+    { decimal_point ~ ASCII_DIGIT+ }
+
+int =
+    { zero | (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*) }
+
+minus =
+    { "-" }
+
+plus =
+    { "+" }
+
+zero =
+    { "0" }
+
+node_keywords =
+    { "true" | "false" | "null" }
+
+quoted_text =
+    { DQUOTE ~ quoted_chars ~ DQUOTE }
+
+quoted_chars =
+    @{ ('\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFF}' | escaped_char | preserved_double)* }
+
+escaped_char =
+    {escape ~ (escape | "'" | DQUOTE | "b" | "f" | "n" | "r" | "t" | "/" | unicode_escape) }
+
+unicode_escape =
+    { "u" ~ ASCII_HEX_DIGIT ~ ASCII_HEX_DIGIT ~ ASCII_HEX_DIGIT ~ ASCII_HEX_DIGIT }
+
+// unnecessary hex = { DIGIT | '\u{41}'..'\u{46}'  | '\u{61}'..'\u{66}'  }
+
+preserved_double =
+    { escape ~ ('\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFF}') }
+
+escape =
+    { "\\" }
+
+text_block =
+    { three_dquotes ~ br ~ quoted_chars ~ three_dquotes }
+
+three_dquotes =
+    { DQUOTE ~ DQUOTE ~ DQUOTE }
+
+DQUOTE =
+    { "\"" }
+
+shape_section =
+    { ( namespace_statement ~ (use_section)? ~ (shape_statements)? )? }
+
+namespace_statement =
+    { "namespace" ~ ws ~ namespace ~ br }
+
+use_section =
+    { use_statement+ }
+
+use_statement =
+    { "use" ~ ws ~ absolute_root_shape_id ~ br }
+
+shape_statements =
+    { (shape_statement | apply_statement)+ }
+
+shape_statement =
+    { (shape_documentation_comments ~ ws) ~ trait_statements ~ shape_body ~ br}
+
+shape_documentation_comments =
+    { documentation_comment* }
+
+shape_body =
+    { simple_shape_statement | list_statement | set_statement | map_statement | structure_statement
+    | union_statement | service_statement | operation_statement | resource_statement }
+
+simple_shape_statement =
+    { simple_type_name ~ ws ~ identifier }
+
+simple_type_name =
+    { "blob" | "boolean" | "document" | "string" | "byte" | "short" | "integer" | "long"
+    | "float" | "double" | "bigInteger" | "bigDecimal" | "timestamp" }
+
+shape_members =
+    { empty_shape_members | populated_shape_members }
+
+empty_shape_members =
+    { "{" ~ ws ~ "}" }
+
+populated_shape_members =
+    { "{" ~ ws ~ shape_member_kvp ~ ws ~ (comma ~ shape_member_kvp ~ ws)* ~ trailing_comma ~ ws ~ "}" }
+
+shape_member_kvp =
+    { shape_documentation_comments? ~ trait_statements ~ identifier ~ ws ~ ":" ~ ws ~ shape_id }
+
+list_statement =
+    { "list" ~ ws ~ identifier ~ ws ~ shape_members }
+
+set_statement =
+    { "set" ~ ws ~ identifier ~ ws ~ shape_members }
+
+map_statement =
+    { "map" ~ ws ~ identifier ~ ws ~ shape_members }
+
+structure_statement =
+    { "structure" ~ ws ~ identifier ~ ws ~ shape_members }
+
+union_statement =
+    { "union" ~ ws ~ identifier ~ ws ~ shape_members }
+
+service_statement =
+    { "service" ~ ws ~ identifier ~ ws ~ node_object }
+
+operation_statement =
+    {"operation" ~ ws ~ identifier ~ ws ~ node_object}
+
+resource_statement =
+    { "resource" ~ ws ~ identifier ~ ws ~ node_object }
+
+apply_statement =
+    { "apply" ~ ws ~ shape_id ~ ws ~ a_trait ~ br}
+
+trait_statements =
+     { (ws ~ a_trait)* ~ ws }
+
+a_trait =
+    { "@" ~ shape_id ~ trait_body? }
+
+trait_body =
+    { "(" ~ ws ~ trait_body_value ~ ws ~ ")" }
+
+trait_body_value =
+    { trait_structure | node_value }
+
+trait_structure =
+    { trait_structure_kvp ~ (ws ~  comma ~ trait_structure_kvp)* }
+
+trait_structure_kvp =
+    { node_object_key ~ ws ~ ":" ~ ws ~ node_value }
+
+metadata_section =
+    { metadata_statement* }
+
+metadata_statement =
+    { "metadata" ~ ws ~ node_object_key ~ ws ~ "=" ~ ws ~ node_value ~ br }

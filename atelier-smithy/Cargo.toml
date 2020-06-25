@@ -12,3 +12,5 @@ publish = true
 
 [dependencies]
 atelier_core = { version = "0.1.0", path = "../atelier-core" }
+pest = "2.1.3"
+pest_derive = "2.1.0"
