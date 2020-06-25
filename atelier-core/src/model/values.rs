@@ -68,6 +68,8 @@ pub enum NodeValue {
     TextBlock(String),
     /// A quoted string, between double quotes `"`, corresponding to the `quoted_text` production.
     String(String),
+    /// An empty, non-existent, value.
+    None,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -253,7 +255,7 @@ impl From<Vec<NodeValue>> for NodeValue {
 
 impl From<&[NodeValue]> for NodeValue {
     fn from(v: &[NodeValue]) -> Self {
-        Self::Array(v.to_vec())
+        Self::from(v.to_vec())
     }
 }
 
@@ -278,7 +280,7 @@ impl Display for NodeValue {
                 f,
                 "{{ {} }}",
                 vs.iter()
-                    .map(|(k, v)| format!("{}: {}", k, v))
+                    .map(|(k, v)| format!("{}: {}", k, v.to_string()))
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
@@ -287,6 +289,7 @@ impl Display for NodeValue {
             NodeValue::ShapeID(v) => write!(f, "{}", v),
             NodeValue::TextBlock(v) => write!(f, "\"\"\"{}\"\"\"", v),
             NodeValue::String(v) => write!(f, "\"{}\"", v),
+            NodeValue::None => write!(f, "None"),
         }
     }
 }
@@ -315,6 +318,14 @@ impl NodeValue {
     is_as! { is_text_block, as_text_block, TextBlock, String }
 
     is_as! { is_string, as_string, String, String }
+
+    /// Returns `true` if `self` is the corresponding variant, else `false`.
+    pub fn is_none(&self) -> bool {
+        match self {
+            Self::None => true,
+            _ => false,
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-use crate::error::invalid_value_variant;
+use crate::error::{invalid_value_variant, Error, ErrorKind};
 use crate::model::shapes::{Member, Valued};
 use crate::model::values::NodeValue;
 use crate::model::{Identifier, Named, ShapeID};
@@ -96,6 +96,29 @@ impl Display for SimpleType {
                 SimpleType::Timestamp => "timestamp",
             }
         )
+    }
+}
+
+impl FromStr for SimpleType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "blob" => Ok(SimpleType::Blob),
+            "boolean" => Ok(SimpleType::Boolean),
+            "document" => Ok(SimpleType::Document),
+            "string" => Ok(SimpleType::String),
+            "byte" => Ok(SimpleType::Byte),
+            "short" => Ok(SimpleType::Short),
+            "integer" => Ok(SimpleType::Integer),
+            "long" => Ok(SimpleType::Long),
+            "float" => Ok(SimpleType::Float),
+            "double" => Ok(SimpleType::Double),
+            "bigInteger" => Ok(SimpleType::BigInteger),
+            "bigDecimal" => Ok(SimpleType::BigDecimal),
+            "timestamp" => Ok(SimpleType::Timestamp),
+            _ => Err(ErrorKind::UnknownType(s.to_string()).into()),
+        }
     }
 }
 
@@ -220,13 +243,10 @@ impl StructureOrUnion {
 
     /// Create and add a new member with the given ID and value to this structure or union; this
     /// will overwrite any existing member with the same ID.
-    pub fn add_member_value(&mut self, id: Identifier, value: Option<NodeValue>) {
-        let _ = match value {
-            None => self.members.insert(id.clone(), Member::new(id)),
-            Some(value) => self
-                .members
-                .insert(id.clone(), Member::with_value(id, value)),
-        };
+    pub fn add_member_value(&mut self, id: Identifier, value: NodeValue) {
+        let _ = self
+            .members
+            .insert(id.clone(), Member::with_value(id, value));
     }
 
     // Add all members of the provided group of members to this structure or union. Note that member IDs
