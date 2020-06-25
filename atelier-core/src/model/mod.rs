@@ -254,7 +254,7 @@ impl Model {
     }
 
     /// Add the given control data key and value to this model.
-    pub fn add_control_dataa(&mut self, key: Key, value: NodeValue) {
+    pub fn add_control_data(&mut self, key: Key, value: NodeValue) {
         let _ = self.control_data.insert(key, value);
     }
 
