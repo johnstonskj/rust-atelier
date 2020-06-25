@@ -42,6 +42,7 @@ string_const!(K_VERSION, "version");
 // JSON Value Strings
 // ------------------------------------------------------------------------------------------------
 
+string_const!(V_APPLY, "apply");
 string_const!(V_LIST, "list");
 string_const!(V_SET, "set");
 string_const!(V_MAP, "map");
