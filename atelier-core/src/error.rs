@@ -39,9 +39,14 @@ error_chain! {
             display("An error occurred serializing a model into {}", repr)
         }
         #[doc("An error occurred de-serializing a model")]
-        Deserialization(repr: String) {
+        Deserialization(representation: String, location: String, context: Option<String>) {
             description("An error occurred de-serializing a model")
-            display("An error occurred de-serializing a model from {}", repr)
+            display("An error occurred de-serializing a model from {} at location '{}' (context '{:?}')", representation, location, context)
+        }
+        #[doc("An unknown type-as-string encountered")]
+        UnknownType(s: String) {
+            description("An unknown type-as-string encountered")
+            display("An unknown type-as-string encountered: {}", s)
         }
     }
 
