@@ -72,7 +72,7 @@ use std::str::FromStr;
 ///
 #[derive(Clone, Debug)]
 pub struct Model {
-    version: Option<Version>,
+    version: Version,
     // control_section
     control_data: HashMap<Key, NodeValue>,
     // metadata_section
@@ -135,9 +135,9 @@ pub trait Annotated {
 
 impl Model {
     /// Create a new model with the provided namespace.
-    pub fn new(namespace: Namespace) -> Self {
+    pub fn new(namespace: Namespace, version: Option<Version>) -> Self {
         Self {
-            version: None,
+            version: version.unwrap_or_else(Version::current),
             control_data: Default::default(),
             namespace,
             references: Default::default(),
@@ -147,13 +147,8 @@ impl Model {
     }
 
     /// Return the Smithy version this model conforms to.
-    pub fn version(&self) -> &Option<Version> {
+    pub fn version(&self) -> &Version {
         &self.version
-    }
-
-    /// Set the Smithy version this model conforms to.
-    pub fn set_version(&mut self, version: Version) {
-        self.version = Some(version);
     }
 
     // --------------------------------------------------------------------------------------------
@@ -161,11 +156,6 @@ impl Model {
     /// Return the namespace of this model.
     pub fn namespace(&self) -> &Namespace {
         &self.namespace
-    }
-
-    /// Set the namespace of this model.
-    pub fn set_namespace(&mut self, namespace: Namespace) {
-        self.namespace = namespace
     }
 
     // --------------------------------------------------------------------------------------------
@@ -239,6 +229,14 @@ impl Model {
     /// Remove any shape with the given `Identifier` from this model.
     pub fn remove_shape(&mut self, shape_id: &Identifier) {
         let _ = self.shapes.remove(shape_id);
+    }
+
+    /// Return a list of _absolute_ shape identifiers for all shapes defined by this model.
+    pub fn defined_shapes(&self) -> Vec<ShapeID> {
+        self.shapes
+            .keys()
+            .map(|id| ShapeID::new(Some(self.namespace.clone()), id.clone(), None))
+            .collect()
     }
 
     // --------------------------------------------------------------------------------------------

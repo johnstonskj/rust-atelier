@@ -4,8 +4,9 @@ Provides an implementation of the prelude model described in the Smithy specific
 */
 
 use crate::model::builder::{shapes::SimpleShapeBuilder, ModelBuilder};
-use crate::model::Model;
+use crate::model::{Model, ShapeID};
 use crate::Version;
+use std::collections::HashMap;
 
 // ------------------------------------------------------------------------------------------------
 // Macros
@@ -133,14 +134,37 @@ string_const!(
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
+lazy_static! {
+    static ref PRELUDES: HashMap<Version, Model> = make_prelude_models();
+}
+
 ///
-/// This returns a new model representing the standard prelude as defined by `version` of the
-/// Smithy specification.
+/// Return a model representing the standard prelude for `version` of the Smithy specification.
 ///
-pub fn prelude_model(version: Version) -> Model {
-    ModelBuilder::new(PRELUDE_NAMESPACE)
-        // Smithy specification version
-        .version(version)
+pub fn prelude_model(version: Version) -> &'static Model {
+    PRELUDES.get(&version).unwrap()
+}
+
+///
+/// Return a list of shape IDs defined in the standard prelude for `version` of the Smithy
+/// specification.
+///
+pub fn prelude_model_shapes(version: Version) -> Vec<ShapeID> {
+    PRELUDES.get(&version).unwrap().defined_shapes()
+}
+
+// ------------------------------------------------------------------------------------------------
+// Private Functions
+// ------------------------------------------------------------------------------------------------
+
+fn make_prelude_models() -> HashMap<Version, Model> {
+    let mut map: HashMap<Version, Model> = Default::default();
+    let _ = map.insert(Version::V10, prelude_model_v10());
+    map
+}
+
+fn prelude_model_v10() -> Model {
+    ModelBuilder::new(PRELUDE_NAMESPACE, Some(Version::V10))
         // Simple Shapes/Types
         .shape(SimpleShapeBuilder::string(SHAPE_STRING).into())
         .shape(SimpleShapeBuilder::blob(SHAPE_BLOB).into())

@@ -38,16 +38,10 @@ impl From<ModelBuilder> for Model {
 
 impl ModelBuilder {
     /// Construct a new model builder for the given namespace.
-    pub fn new(namespace: &str) -> Self {
+    pub fn new(namespace: &str, version: Option<Version>) -> Self {
         Self {
-            model: Model::new(Namespace::from_str(namespace).unwrap()),
+            model: Model::new(Namespace::from_str(namespace).unwrap(), version),
         }
-    }
-
-    /// Set the version of Smithy this model conforms to.
-    pub fn version(&mut self, version: Version) -> &mut Self {
-        self.model.set_version(version);
-        self
     }
 
     /// Add a "uses" statement to add an external reference.

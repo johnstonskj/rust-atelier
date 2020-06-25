@@ -293,6 +293,9 @@
 #[macro_use]
 extern crate error_chain;
 
+#[macro_use]
+extern crate lazy_static;
+
 use crate::model::Model;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -304,7 +307,7 @@ use std::str::FromStr;
 ///
 /// Versions of the Smithy specification.
 ///
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub enum Version {
     /// Version 1.0 (initial, and current)
     V10,

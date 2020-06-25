@@ -5,20 +5,27 @@ document.
 */
 
 use atelier_core::error::ErrorSource;
+use atelier_core::io::debug::Debugger;
+use atelier_core::io::write_model_to_string;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::model::builder::{
     ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
     ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
+use atelier_core::Version;
 use std::str::FromStr;
 
 fn main() {
-    println!("{:#?}", make_weather_model())
+    let mut writer = Debugger::default();
+    let model = make_weather_model();
+    let output = write_model_to_string(&mut writer, &model);
+    assert!(output.is_ok());
+    println!("{}", output.unwrap())
 }
 
 fn make_weather_model() -> Model {
-    ModelBuilder::new("example.weather")
+    ModelBuilder::new("example.weather", Some(Version::V10))
         .shape(
             ServiceBuilder::new("Weather")
                 .documentation("Provides weather forecasts.")

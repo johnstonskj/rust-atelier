@@ -6,6 +6,7 @@ use atelier_core::model::builder::{
     ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
+use atelier_core::Version;
 use atelier_json::io::JsonWriter;
 use std::str::FromStr;
 
@@ -18,7 +19,7 @@ fn main() {
 }
 
 fn make_weather_model() -> Model {
-    ModelBuilder::new("example.weather")
+    ModelBuilder::new("example.weather", Some(Version::V10))
         .shape(
             ServiceBuilder::new("Weather")
                 .documentation("Provides weather forecasts.")

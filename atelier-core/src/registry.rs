@@ -4,7 +4,6 @@ Provides a run-time registry for resolving namespaces to models.
 */
 
 use crate::model::{Model, Namespace};
-use crate::Version;
 use std::collections::HashMap;
 use std::str::FromStr;
 
@@ -51,11 +50,9 @@ pub struct SimpleModelRegistry {
 
 impl Default for SimpleModelRegistry {
     fn default() -> Self {
-        let mut initial = Self {
+        Self {
             known: Default::default(),
-        };
-        initial.register(crate::prelude::prelude_model(Version::current()));
-        initial
+        }
     }
 }
 
