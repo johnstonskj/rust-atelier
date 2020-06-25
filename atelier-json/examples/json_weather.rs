@@ -10,7 +10,7 @@ use atelier_json::io::JsonWriter;
 use std::str::FromStr;
 
 fn main() {
-    let mut writer = JsonWriter::default();
+    let mut writer = JsonWriter::new(true);
     let model = make_weather_model();
     let output = write_model_to_string(&mut writer, &model);
     assert!(output.is_ok());
