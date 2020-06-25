@@ -20,53 +20,60 @@
 * shape types as subclasses of `Shape`.
 *
 * ```text
-*                                   ┌──────────┐
-*                                   ○          ○ prelude        ┌─────────────┐
-*                                  ╱│╲         ┼                │   ShapeID   │
-* ┌───────────────┐               ┌─────────────┐               ├─────────────┤
-* │     Trait     │               │    Model    │    references╱│namespace?   │
-* └───────────────┘               ├─────────────┤┼────────────○─│shape_name   │
-*        ╲│╱  ╲│╱                 │options      │              ╲│member_name? │
-*         ○    ○                  │version?     │               │             │
-*         │    │                  │namespace    │               └─────────────┘
-*         │    │                  │metadata?    │                      ┼  id
-*         │    │                  └─────────────┘                      │
-*         │    └─────────────────────┐   ┼                             │
-*         │                          │   │                             │
-*         ┼                          │   ○                             │
-* ┌───────────────┐                  ┼  ╱│╲ shapes                     │
-* │    Member     │╲members       ┌─────────────┐                      │
-* ├───────────────┤─○────────────┼│    Shape    │┼─────────────────────┘
-* │id             │╱              └─────────────┘
-* │value          │                      △          ┌─────────────────────────┐
-* └───────────────┘                      │          │         Service         │
-* ┌───────────────┐                      │          ├─────────────────────────┤
-* │ «enumeration» │                      │          │version                  │
-* │    Simple     │──────────────────────┼──────────│operations: [Operation]? │
-* ├───────────────┤                      │          │resources: [Resource]?   │
-* │Blob           │                      │          └─────────────────────────┘
-* │Boolean        │ ┌────────────┐       │          ┌─────────────────────────┐
-* │Document       │ │    List    │       │          │        Operation        │
-* │String         │ ├────────────┤       │          ├─────────────────────────┤
-* │Byte           │ │member      │───────┤          │input: Structure?        │
-* │Short          │ └────────────┘       ├──────────│output: Structure?       │
-* │Integer        │ ┌────────────┐       │          │errors: [Structure]?     │
-* │Long           │ │    Set     │       │          └─────────────────────────┘
-* │Float          │ ├────────────┤       │          ┌─────────────────────────┐
-* │Double         │ │member      │───────┤          │        Resource         │
-* │BigInteger     │ └────────────┘       │          ├─────────────────────────┤
-* │BigDecimal     │ ┌────────────┐       │          │identifiers?             │
-* │Timestamp      │ │    Map     │       │          │create: Operation?       │
-* └───────────────┘ ├────────────┤       │          │put: Operation?          │
-*                   │key         │───────┤          │read: Operation?         │
-*                   │value       │       │          │update: Operation?       │
-*                   └────────────┘       ├──────────│delete: Operation?       │
-*                   ┌────────────┐       │          │list: : Operation?       │
-*                   │ Structure  │───────┤          │operations: [Operation]? │
-*                   └────────────┘       │          │collection_operations:   │
-*                   ┌────────────┐       │          │[Operation]?             │
-*                   │   Union    │───────┘          │resources: [Resource]?   │
-*                   └────────────┘                  └─────────────────────────┘
+* ┌───────────────┐
+* │ «enumeration» │
+* │   NodeValue   │
+* ├───────────────┤                 ┌─────────┐
+* │Array          │                 ○         ○ prelude
+* │Object         │                ╱│╲        ┼
+* │Number         │               ┌─────────────┐
+* │Boolean        │metadata       │    Model    │
+* │ShapeID        │┼○─────────────├─────────────┤
+* │TextBlock      │               │namespace    │
+* │String         │control_data   │             │┼──────┐       ┌─────────────┐
+* │None           │┼○─────────────│             │       │       │   ShapeID   │
+* └───────────────┘               └─────────────┘       │       ├─────────────┤
+*   ┼     ┼     ┌───────────────┐        ┼              │      ╱│namespace?   │
+*   │     │     │     Trait     │        │              └─────○─│shape_name   │
+*   │     └─────├───────────────┤        │           references╲│member_name? │
+*   │           │id             │        │                      │             │
+*   │           └───────────────┘        │                      └─────────────┘
+*   │             ╲│╱       ╲│╱          │                             ┼ id
+*   │              ○         ○           │                             │
+*   │     ┌────────┘         └───────┐   ○                             │
+*   │     ┼                          ┼  ╱│╲ shapes                     │
+* ┌───────────────┐               ┌─────────────┐                      │
+* │    Member     │╲member┌──────┼│    Shape    │┼─────────────────────┘
+* ├───────────────┤─○─────┘       └─────────────┘   ┌─────────────────────────┐
+* │id             │╱                     △          │         Service         │
+* └───────────────┘                      │          ├─────────────────────────┤
+* ┌───────────────┐                      │          │version                  │
+* │ «enumeration» │──────────────────────┼──────────│operations: [Operation]? │
+* │    Simple     │ ┌────────────┐       │          │resources: [Resource]?   │
+* ├───────────────┤ │    List    │       │          └─────────────────────────┘
+* │Blob           │ ├────────────┤       │          ┌─────────────────────────┐
+* │Boolean        │ │member      │───────┤          │        Operation        │
+* │Document       │ └────────────┘       │          ├─────────────────────────┤
+* │String         │ ┌────────────┐       │          │input: Structure?        │
+* │Byte           │ │    Set     │       ├──────────│output: Structure?       │
+* │Short          │ ├────────────┤       │          │errors: [Structure]?     │
+* │Integer        │ │member      │───────┤          └─────────────────────────┘
+* │Long           │ └────────────┘       │          ┌─────────────────────────┐
+* │Float          │ ┌────────────┐       │          │        Resource         │
+* │Double         │ │    Map     │       │          ├─────────────────────────┤
+* │BigInteger     │ ├────────────┤       │          │identifiers?             │
+* │BigDecimal     │ │key         │       │          │create: Operation?       │
+* │Timestamp      │ │value       │───────┤          │put: Operation?          │
+* └───────────────┘ └────────────┘       │          │read: Operation?         │
+*                   ┌────────────┐       ├──────────│update: Operation?       │
+*                   │ Structure  │───────┤          │delete: Operation?       │
+*                   └────────────┘       │          │list: : Operation?       │
+*                   ┌────────────┐       │          │operations: [Operation]? │
+*                   │   Union    │───────┤          │collection_operations:   │
+*                   └────────────┘       │          │    [Operation]?         │
+*                   ┌────────────┐       │          │resources: [Resource]?   │
+*                   │   Apply    │───────┘          └─────────────────────────┘
+*                   └────────────┘
 * ```
 *
 * # Model API Example
