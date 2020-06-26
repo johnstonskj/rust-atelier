@@ -94,13 +94,14 @@
 * };
 * use atelier_core::model::values::NodeValue;
 * use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
+* use atelier_core::Version;
 * use std::str::FromStr;
 *
 * // ----------------------------------------------------------------------------------------
 * let mut error = StructureOrUnion::new();
 * error.add_member_value(
 *     Identifier::from_str("errorMessage").unwrap(),
-*     Some(NodeValue::ShapeID(ShapeID::from_str("String").unwrap())),
+*     NodeValue::ShapeID(ShapeID::from_str("String").unwrap()),
 * );
 * let mut error = Shape::new(
 *     Identifier::from_str("BadDateValue").unwrap(),
@@ -128,7 +129,7 @@
 * let mut input = StructureOrUnion::new();
 * input.add_member_value(
 *     Identifier::from_str("date").unwrap(),
-*     Some(NodeValue::ShapeID(ShapeID::from_str("Date").unwrap())),
+*     NodeValue::ShapeID(ShapeID::from_str("Date").unwrap()),
 * );
 * let input = Shape::new(
 *     Identifier::from_str("GetMessageInput").unwrap(),
@@ -183,7 +184,7 @@
 * service.add_trait(documentation);
 *
 * // ----------------------------------------------------------------------------------------
-* let mut model = Model::new(Namespace::from_str("example.motd").unwrap());
+* let mut model = Model::new(Namespace::from_str("example.motd").unwrap(), Some(Version::V10));
 * model.add_shape(message);
 * model.add_shape(date);
 * model.add_shape(get_message);
@@ -218,8 +219,9 @@
 *     ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 * };
 * use atelier_core::model::{Identifier, Model, ShapeID};
+* use atelier_core::Version;
 *
-* let model: Model = ModelBuilder::new("example.motd")
+* let model: Model = ModelBuilder::new("example.motd", Some(Version::V10))
 *     .shape(
 *         ServiceBuilder::new("MessageOfTheDay")
 *             .documentation("Provides a Message of the day.")
