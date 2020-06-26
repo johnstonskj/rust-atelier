@@ -559,7 +559,7 @@ mod tests {
 }"#;
 
     #[test]
-    fn test_parser() {
+    fn test_json_parser() {
         let mut reader = JsonReader::default();
         let result = read_model_from_string(&mut reader, JSON);
         if result.is_err() {
