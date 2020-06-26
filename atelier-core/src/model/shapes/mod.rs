@@ -8,6 +8,7 @@ enumeration, `ShapeInner`, to represent each of the productions referenced by `s
 
 */
 
+use crate::error::Result;
 use crate::model::{Annotated, Identifier, Named, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
@@ -52,6 +53,22 @@ pub enum ShapeInner {
     /// Corresponds to the ABNF production `apply_statement`.
     Apply,
 }
+
+///
+/// Implemented by structures that have values of type `Member`. These structures have more
+/// accessible getter/setters, but this can be a useful interface for tools.
+///
+pub trait HasMembers {
+    /// Return `true` if this structure has a member with the given name, else `false`.
+    fn has_member_named(&self, member_name: &Identifier) -> bool;
+
+    /// Return the `Member` with the given name if present, else `None`.
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member>;
+
+    /// Set the `Member` using the name from `Member::id`.
+    fn set_member(&mut self, member: Member) -> Result<()>;
+}
+
 // ------------------------------------------------------------------------------------------------
 // Macros
 // ------------------------------------------------------------------------------------------------

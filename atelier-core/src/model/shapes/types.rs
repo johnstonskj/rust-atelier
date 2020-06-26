@@ -1,5 +1,5 @@
-use crate::error::{invalid_value_variant, Error, ErrorKind};
-use crate::model::shapes::{Member, Valued};
+use crate::error::{invalid_value_variant, Error, ErrorKind, Result};
+use crate::model::shapes::{HasMembers, Member, Valued};
 use crate::model::values::NodeValue;
 use crate::model::{Identifier, Named, ShapeID};
 use std::collections::HashMap;
@@ -102,7 +102,7 @@ impl Display for SimpleType {
 impl FromStr for SimpleType {
     type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
             "blob" => Ok(SimpleType::Blob),
             "boolean" => Ok(SimpleType::Boolean),
@@ -123,6 +123,33 @@ impl FromStr for SimpleType {
 }
 
 // ------------------------------------------------------------------------------------------------
+
+impl HasMembers for ListOrSet {
+    fn has_member_named(&self, member_name: &Identifier) -> bool {
+        member_name.to_string() == "member"
+    }
+
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
+        if self.has_member_named(member_name) {
+            Some(&self.member)
+        } else {
+            None
+        }
+    }
+
+    fn set_member(&mut self, member: Member) -> Result<()> {
+        if self.has_member_named(member.id()) {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.member = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else {
+            Err(ErrorKind::UnknownMember(member.id().to_string()).into())
+        }
+    }
+}
 
 impl ListOrSet {
     /// Construct a new list or set with the given `ShapeID` as the reference to the member type.
@@ -150,6 +177,42 @@ impl ListOrSet {
 }
 
 // ------------------------------------------------------------------------------------------------
+
+impl HasMembers for Map {
+    fn has_member_named(&self, member_name: &Identifier) -> bool {
+        ["key", "value", "resources"].contains(&member_name.to_string().as_str())
+    }
+
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
+        if member_name.to_string() == "key" {
+            Some(&self.key)
+        } else if member_name.to_string() == "value" {
+            Some(&self.value)
+        } else {
+            None
+        }
+    }
+
+    fn set_member(&mut self, member: Member) -> Result<()> {
+        if member.id().to_string() == "key" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.key = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "value" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.value = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else {
+            Err(ErrorKind::UnknownMember(member.id().to_string()).into())
+        }
+    }
+}
 
 impl Map {
     /// Construct a new map with the given `ShapeID`s as the reference to the key and value types.
@@ -203,6 +266,30 @@ impl Default for StructureOrUnion {
     }
 }
 
+impl HasMembers for StructureOrUnion {
+    fn has_member_named(&self, member_name: &Identifier) -> bool {
+        self.has_member(member_name)
+    }
+
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
+        self.member(member_name)
+    }
+
+    fn set_member(&mut self, member: Member) -> Result<()> {
+        if self.has_member_named(member.id()) {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                // TODO: check inner types match
+                let _ = self.members.insert(member.id().clone(), member);
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else {
+            Err(ErrorKind::UnknownMember(member.id().to_string()).into())
+        }
+    }
+}
+
 impl StructureOrUnion {
     /// Construct a new, empty, structure or union.
     pub fn new() -> Self {
@@ -226,7 +313,7 @@ impl StructureOrUnion {
     }
 
     /// Returns `true` if this structure or union has a member with the given ID, else `false`.
-    pub fn has_member(&mut self, id: &Identifier) -> bool {
+    pub fn has_member(&self, id: &Identifier) -> bool {
         self.members.contains_key(id)
     }
 
@@ -235,6 +322,9 @@ impl StructureOrUnion {
         self.members.values()
     }
 
+    pub fn member(&self, id: &Identifier) -> Option<&Member> {
+        self.members.get(id)
+    }
     /// Add the given member to this structure or union; this will overwrite any existing member
     /// with the same ID.
     pub fn add_member(&mut self, member: Member) {

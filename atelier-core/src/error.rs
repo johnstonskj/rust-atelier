@@ -43,6 +43,11 @@ error_chain! {
             description("An error occurred de-serializing a model")
             display("An error occurred de-serializing a model from {} at location '{}' (context '{:?}')", representation, location, context)
         }
+        #[doc("An unknown member ID was encountered")]
+        UnknownMember(s: String) {
+            description("An unknown member ID was encountered")
+            display("An unknown member ID was encountered: {}", s)
+        }
         #[doc("An unknown type-as-string encountered")]
         UnknownType(s: String) {
             description("An unknown type-as-string encountered")

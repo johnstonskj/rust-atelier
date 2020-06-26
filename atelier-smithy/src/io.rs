@@ -7,6 +7,7 @@ More detailed description, with
 
 */
 
+use crate::parser;
 use atelier_core::error::Result;
 use atelier_core::io::{ModelReader, ModelWriter};
 use atelier_core::model::shapes::{Member, ShapeInner, Trait, Valued};
@@ -18,8 +19,16 @@ use std::io::{Read, Write};
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// Read a [Model](../atelier_core/model/struct.Model.html) from the Smithy native representation.
+///
+#[derive(Debug)]
 pub struct SmithyReader;
 
+///
+/// Write a [Model](../atelier_core/model/struct.Model.html) in the Smithy native representation.
+///
+#[derive(Debug)]
 pub struct SmithyWriter;
 
 // ------------------------------------------------------------------------------------------------
@@ -43,8 +52,10 @@ impl Default for SmithyReader {
 impl ModelReader for SmithyReader {
     const REPRESENTATION: &'static str = "Smithy";
 
-    fn read(&mut self, _r: &mut impl Read) -> Result<Model> {
-        unimplemented!()
+    fn read(&mut self, r: &mut impl Read) -> Result<Model> {
+        let mut content: String = String::new();
+        let _ = r.read_to_string(&mut content)?;
+        parser::parse(&content)
     }
 }
 

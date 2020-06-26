@@ -1,7 +1,7 @@
-use crate::error::invalid_value_variant;
-use crate::model::shapes::{Member, Valued};
+use crate::error::{invalid_value_variant, ErrorKind, Result};
+use crate::model::shapes::{HasMembers, Member, Valued};
 use crate::model::values::{Key, NodeValue};
-use crate::model::{Identifier, ShapeID};
+use crate::model::{Identifier, Named, ShapeID};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -173,6 +173,59 @@ impl Default for Service {
     }
 }
 
+impl HasMembers for Service {
+    fn has_member_named(&self, member_name: &Identifier) -> bool {
+        ["version", "operations", "resources"].contains(&member_name.to_string().as_str())
+    }
+
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
+        if member_name.to_string() == "version" {
+            Some(&self.version)
+        } else if member_name.to_string() == "operations" {
+            Some(&self.operations)
+        } else if member_name.to_string() == "resources" {
+            Some(&self.resources)
+        } else {
+            None
+        }
+    }
+
+    fn set_member(&mut self, member: Member) -> Result<()> {
+        if member.id().to_string() == "version" {
+            if let Some(NodeValue::String(_)) = member.value() {
+                self.version = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("String".to_string()).into())
+            }
+        } else if member.id().to_string() == "operations" {
+            if let Some(NodeValue::Array(vs)) = member.value() {
+                if vs.iter().all(|v| v.is_shape_id()) {
+                    self.operations = member;
+                    Ok(())
+                } else {
+                    Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+                }
+            } else {
+                Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "resources" {
+            if let Some(NodeValue::Array(vs)) = member.value() {
+                if vs.iter().all(|v| v.is_shape_id()) {
+                    self.resources = member;
+                    Ok(())
+                } else {
+                    Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+                }
+            } else {
+                Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+            }
+        } else {
+            Err(ErrorKind::UnknownMember(member.id().to_string()).into())
+        }
+    }
+}
+
 impl Service {
     pub fn version(&self) -> &String {
         match &self.version.value().as_ref().unwrap() {
@@ -201,6 +254,55 @@ impl Default for Operation {
                 Identifier::from_str("errors").unwrap(),
                 NodeValue::Array(Default::default()),
             ),
+        }
+    }
+}
+
+impl HasMembers for Operation {
+    fn has_member_named(&self, member_name: &Identifier) -> bool {
+        ["input", "output", "errors"].contains(&member_name.to_string().as_str())
+    }
+
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
+        if member_name.to_string() == "input" {
+            Some(&self.input)
+        } else if member_name.to_string() == "output" {
+            Some(&self.output)
+        } else if member_name.to_string() == "errors" {
+            Some(&self.errors)
+        } else {
+            None
+        }
+    }
+
+    fn set_member(&mut self, member: Member) -> Result<()> {
+        if member.id().to_string() == "input" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.input = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "output" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.output = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "errors" {
+            if let Some(NodeValue::Array(vs)) = member.value() {
+                if vs.iter().all(|v| v.is_shape_id()) {
+                    self.errors = member;
+                    Ok(())
+                } else {
+                    Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+                }
+            } else {
+                Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+            }
+        } else {
+            Err(ErrorKind::UnknownMember(member.id().to_string()).into())
         }
     }
 }
@@ -240,6 +342,140 @@ impl Default for Resource {
                 Identifier::from_str("resources").unwrap(),
                 NodeValue::Array(Default::default()),
             ),
+        }
+    }
+}
+
+impl HasMembers for Resource {
+    fn has_member_named(&self, member_name: &Identifier) -> bool {
+        [
+            "identifiers",
+            "create",
+            "put",
+            "read",
+            "update",
+            "delete",
+            "list",
+            "operations",
+            "collection_operations",
+            "resources",
+        ]
+        .contains(&member_name.to_string().as_str())
+    }
+
+    fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
+        if member_name.to_string() == "identifiers" {
+            Some(&self.identifiers)
+        } else if member_name.to_string() == "create" {
+            Some(&self.create)
+        } else if member_name.to_string() == "put" {
+            Some(&self.put)
+        } else if member_name.to_string() == "read" {
+            Some(&self.read)
+        } else if member_name.to_string() == "update" {
+            Some(&self.update)
+        } else if member_name.to_string() == "delete" {
+            Some(&self.delete)
+        } else if member_name.to_string() == "list" {
+            Some(&self.list)
+        } else if member_name.to_string() == "operations" {
+            Some(&self.operations)
+        } else if member_name.to_string() == "collection_operations" {
+            Some(&self.collection_operations)
+        } else if member_name.to_string() == "resources" {
+            Some(&self.resources)
+        } else {
+            None
+        }
+    }
+
+    fn set_member(&mut self, member: Member) -> Result<()> {
+        if member.id().to_string() == "identifiers" {
+            if let Some(NodeValue::Object(vs)) = member.value() {
+                if vs.iter().all(|(k, v)| k.is_identifier() && v.is_shape_id()) {
+                    self.identifiers = member;
+                    Ok(())
+                } else {
+                    Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+                }
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "create" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.create = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "put" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.put = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "read" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.read = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "update" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.update = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "delete" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.delete = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "list" {
+            if let Some(NodeValue::ShapeID(_)) = member.value() {
+                self.list = member;
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "operations" {
+            if let Some(NodeValue::Array(vs)) = member.value() {
+                if vs.iter().all(|v| v.is_shape_id()) {
+                    self.operations = member;
+                }
+                Ok(())
+            } else {
+                Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "collection_operations" {
+            if let Some(NodeValue::Array(vs)) = member.value() {
+                if vs.iter().all(|v| v.is_shape_id()) {
+                    self.collection_operations = member;
+                    Ok(())
+                } else {
+                    Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+                }
+            } else {
+                Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+            }
+        } else if member.id().to_string() == "resources" {
+            if let Some(NodeValue::Array(vs)) = member.value() {
+                if vs.iter().all(|v| v.is_shape_id()) {
+                    self.resources = member;
+                    Ok(())
+                } else {
+                    Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+                }
+            } else {
+                Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
+            }
+        } else {
+            Err(ErrorKind::UnknownMember(member.id().to_string()).into())
         }
     }
 }
