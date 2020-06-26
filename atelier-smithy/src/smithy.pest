@@ -2,27 +2,24 @@ idl =
     { SOI ~ ws ~ control_section ~ metadata_section ~ shape_section ~ EOI }
 
 ws =
-    _{ (sp | NEWLINE | line_comment )* }
+    _{ (sp | (!("///") ~ line_comment) | NEWLINE)* }
 
 sp =
     _{ " " | "\t" }
 
 br =
-    _{ sp* ~ ( NEWLINE | line_comment | EOI ) ~ sp* }
+    _{ ws ~ EOI? }
 
 // unnecessary newline = { "\u{0A}" | "\u{0D}\u{0A}" }
 
 line_comment =
-    { "/" ~ "/" ~ not_newline ~ NEWLINE ~ sp* }
-
-not_slash =
-    { "\t" | '\u{20}'..'\u{2E}' | '\u{30}'..'\u{10FFF}' }
-
-not_newline =
-    { ("\t" | '\u{20}'..'\u{10FFF}')* }
+    _{ "//" ~ ("\t" | '\u{20}'..'\u{10FFF}')* ~ NEWLINE }
 
 documentation_comment =
-    { "/" ~ "/" ~ "/" ~ not_newline ~ NEWLINE ~ sp* }
+    _{ "///" ~ documentation_text ~ NEWLINE }
+
+documentation_text =
+    { ("\t" | '\u{20}'..'\u{10FFF}')* }
 
 control_section =
     { control_statement* }
@@ -65,10 +62,10 @@ populated_node_array =
     { "[" ~ ws ~ node_value ~ ws ~ (comma ~ node_value ~ ws)* ~ trailing_comma ~ "]" }
 
 trailing_comma =
-    { comma? }
+    _{ comma? }
 
 comma =
-    { "," ~ ws }
+    _{ "," ~ ws }
 
 node_object =
     { empty_node_object | populated_node_object }
@@ -141,10 +138,10 @@ text_block =
     { three_dquotes ~ br ~ quoted_chars ~ three_dquotes }
 
 three_dquotes =
-    { DQUOTE ~ DQUOTE ~ DQUOTE }
+    _{ DQUOTE ~ DQUOTE ~ DQUOTE }
 
 DQUOTE =
-    { "\"" }
+    _{ "\"" }
 
 shape_section =
     { ( namespace_statement ~ (use_section)? ~ (shape_statements)? )? }
@@ -168,8 +165,8 @@ shape_documentation_comments =
     { documentation_comment* }
 
 shape_body =
-    { simple_shape_statement | list_statement | set_statement | map_statement | structure_statement
-    | union_statement | service_statement | operation_statement | resource_statement }
+    _{ simple_shape_statement | list_statement | set_statement | map_statement | structure_statement
+    |  union_statement | service_statement | operation_statement | resource_statement }
 
 simple_shape_statement =
     { simple_type_name ~ ws ~ identifier }
@@ -224,13 +221,13 @@ a_trait =
     { "@" ~ shape_id ~ trait_body? }
 
 trait_body =
-    { "(" ~ ws ~ trait_body_value ~ ws ~ ")" }
+    _{ "(" ~ ws ~ trait_body_value ~ ws ~ ")" }
 
 trait_body_value =
-    { trait_structure | node_value }
+    _{ trait_structure | node_value }
 
 trait_structure =
-    { trait_structure_kvp ~ (ws ~  comma ~ trait_structure_kvp)* }
+    _{ trait_structure_kvp ~ (ws ~  comma ~ trait_structure_kvp)* }
 
 trait_structure_kvp =
     { node_object_key ~ ws ~ ":" ~ ws ~ node_value }

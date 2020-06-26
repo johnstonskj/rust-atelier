@@ -34,7 +34,7 @@ pub struct SmithyParser;
 mod tests {
     use super::*;
 
-    const SMITHY: &str = r#"namespace example.weather
+    const SMITHY: &str = r#"namespace example.weather // from spec
 
 /// Provides weather forecasts.
 @paginated(inputToken: "nextToken", outputToken: "nextToken",
@@ -165,11 +165,17 @@ structure GetForecastOutput {
     chanceOfRain: Float
 }"#;
 
+    #[cfg(feature = "debug")]
     #[test]
     fn test_parser_direct() {
         use pest::Parser;
         let result = SmithyParser::parse(Rule::idl, SMITHY);
-        println!("{:#?}", result);
-        assert!(result.is_ok());
+        match result {
+            Ok(parsed) => println!("{}", pest_ascii_tree::into_ascii_tree(parsed).unwrap()),
+            Err(err) => {
+                println!("{}", err);
+                panic!("parser failed");
+            }
+        }
     }
 }
