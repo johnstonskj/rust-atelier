@@ -1,9 +1,10 @@
 use atelier_core::error::{Error, ErrorKind, Result, ResultExt};
 use atelier_core::model::shapes::{
-    HasMembers, Member, Operation, Resource, Service, Shape, ShapeInner, SimpleType, Trait,
+    HasMembers, ListOrSet, Map, Member, Operation, Resource, Service, Shape, ShapeInner,
+    SimpleType, StructureOrUnion, Trait, Valued,
 };
 use atelier_core::model::values::{Key, NodeValue, Number};
-use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
+use atelier_core::model::{Annotated, Identifier, Model, Named, Namespace, ShapeID};
 use atelier_core::Version;
 use pest::error::Error as PestError;
 use pest::iterators::Pair;
@@ -41,27 +42,59 @@ pub(crate) fn parse_and_debug(w: &mut impl Write, input: &str) -> Result<()> {
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
+macro_rules! match_eoi_rule {
+    ($pair:expr, $( $rule:ident => $match_expr:expr ),+) => {
+        match $pair.as_rule() {
+            $( Rule::$rule => $match_expr ),+
+            , Rule::EOI => {},
+            _ => unreachable!("parse_fn unreachable rule {:#?}", $pair),
+        }
+    };
+}
 
-fn parse_idl(idl: Pair<'_, Rule>) -> Result<Model> {
-    match idl.as_rule() {
+macro_rules! match_rule {
+    ($pair:expr, $( $rule:ident => $match_expr:expr ),+) => {
+        match $pair.as_rule() {
+            $( Rule::$rule => $match_expr ),+
+            _ => unreachable!("parse_fn unreachable rule {:#?}", $pair),
+        }
+    };
+}
+
+macro_rules! match_eoi_loop {
+    ($pair:expr, $( $rule:ident => $match_expr:expr ),+) => {
+        for inner in $pair.into_inner() {
+            match_eoi_rule! ( inner, $( $rule => $match_expr ),+ )
+        }
+    };
+}
+
+macro_rules! match_loop {
+    ($pair:expr, $( $rule:ident => $match_expr:expr ),+) => {
+        for inner in $pair.into_inner() {
+            match_rule! ( inner, $( $rule => $match_expr ),+ )
+        }
+    };
+}
+
+fn parse_idl(input_pair: Pair<'_, Rule>) -> Result<Model> {
+    match input_pair.as_rule() {
         Rule::idl => {
             let mut control_data: HashMap<Key, NodeValue> = Default::default();
             let mut meta_data: HashMap<Key, NodeValue> = Default::default();
             let mut shape_section: Option<(Namespace, Vec<ShapeID>, Vec<Shape>)> = None;
-            for inner in idl.into_inner() {
-                match inner.as_rule() {
-                    Rule::control_section => {
+            for inner in input_pair.into_inner() {
+                match_eoi_rule!(inner,
+                    control_section => {
                         control_data = parse_control_section(inner)?;
-                    }
-                    Rule::metadata_section => {
+                    },
+                    metadata_section => {
                         meta_data = parse_metadata_section(inner)?;
-                    }
-                    Rule::shape_section => {
+                    },
+                    shape_section => {
                         shape_section = Some(parse_shape_section(inner)?);
                     }
-                    Rule::EOI => {}
-                    _ => unreachable!("parse_model > Rule::idl > unreachable? {:#?}", inner),
-                }
+                );
             }
             let version = if let Some(NodeValue::String(version)) =
                 control_data.get(&Key::String("version".to_string()))
@@ -82,43 +115,42 @@ fn parse_idl(idl: Pair<'_, Rule>) -> Result<Model> {
             }
             Ok(model)
         }
-        _ => unreachable!("parse_model > unreachable! {:#?}", idl),
+        _ => unreachable!("parse_model > unreachable! {:#?}", input_pair),
     }
 }
 
-fn parse_control_section(control_section: Pair<'_, Rule>) -> Result<HashMap<Key, NodeValue>> {
+fn parse_control_section(input_pair: Pair<'_, Rule>) -> Result<HashMap<Key, NodeValue>> {
     Ok(Default::default())
 }
 
-fn parse_metadata_section(metadata_section: Pair<'_, Rule>) -> Result<HashMap<Key, NodeValue>> {
+fn parse_metadata_section(input_pair: Pair<'_, Rule>) -> Result<HashMap<Key, NodeValue>> {
     Ok(Default::default())
 }
 
 fn parse_shape_section(
-    shape_section: Pair<'_, Rule>,
+    input_pair: Pair<'_, Rule>,
 ) -> Result<(Namespace, Vec<ShapeID>, Vec<Shape>)> {
     let mut namespace: Option<Namespace> = None;
     let mut uses: Vec<ShapeID> = Default::default();
     let mut shapes: Vec<Shape> = Default::default();
-    for inner in shape_section.into_inner() {
-        match inner.as_rule() {
-            Rule::namespace_statement => {
+    for inner in input_pair.into_inner() {
+        match_rule!(inner,
+            namespace_statement => {
                 namespace = Some(parse_namespace_statement(inner)?);
-            }
-            Rule::use_section => {
+            },
+            use_section => {
                 uses = parse_use_section(inner)?;
-            }
-            Rule::shape_statements => {
+            },
+            shape_statements => {
                 shapes = parse_shape_statements(inner)?;
             }
-            _ => unreachable!("parse_shape_section > unreachable! {:#?}", inner),
-        }
+        );
     }
     Ok((namespace.unwrap(), uses, shapes))
 }
 
-fn parse_namespace_statement(namespace_statement: Pair<'_, Rule>) -> Result<Namespace> {
-    let namespace: Pair<'_, Rule> = namespace_statement.into_inner().next().unwrap();
+fn parse_namespace_statement(input_pair: Pair<'_, Rule>) -> Result<Namespace> {
+    let namespace: Pair<'_, Rule> = input_pair.into_inner().next().unwrap();
     if let Rule::namespace = namespace.as_rule() {
         Namespace::from_str(namespace.as_str())
     } else {
@@ -131,89 +163,80 @@ fn parse_namespace_statement(namespace_statement: Pair<'_, Rule>) -> Result<Name
     }
 }
 
-fn parse_use_section(use_section: Pair<'_, Rule>) -> Result<Vec<ShapeID>> {
+fn parse_use_section(input_pair: Pair<'_, Rule>) -> Result<Vec<ShapeID>> {
     let mut uses: Vec<ShapeID> = Default::default();
-    for use_statement in use_section.into_inner() {
-        match use_statement.as_rule() {
-            Rule::use_statement => {
-                let absolute_root_shape_id: Pair<'_, Rule> =
-                    use_statement.into_inner().next().unwrap();
-                if let Rule::absolute_root_shape_id = absolute_root_shape_id.as_rule() {
-                    uses.push(ShapeID::from_str(absolute_root_shape_id.as_str())?);
-                } else {
-                    unreachable!("parse_uses > unreachable! {:#?}", absolute_root_shape_id)
-                }
-            }
-            _ => unreachable!("parse_uses > unreachable! {:#?}", use_statement),
-        }
+    for use_statement in input_pair.into_inner() {
+        match_rule!(use_statement,
+           use_statement => {
+               let absolute_root_shape_id: Pair<'_, Rule> =
+                   use_statement.into_inner().next().unwrap();
+               if let Rule::absolute_root_shape_id = absolute_root_shape_id.as_rule() {
+                   uses.push(ShapeID::from_str(absolute_root_shape_id.as_str())?);
+               } else {
+                   unreachable!("parse_uses > unreachable! {:#?}", absolute_root_shape_id)
+               }
+           }
+        );
     }
     Ok(uses)
 }
 
-fn parse_shape_statements(shape_statements: Pair<'_, Rule>) -> Result<Vec<Shape>> {
+fn parse_shape_statements(input_pair: Pair<'_, Rule>) -> Result<Vec<Shape>> {
     let mut shapes: Vec<Shape> = Default::default();
-    for shape_statement in shape_statements.into_inner() {
-        match shape_statement.as_rule() {
-            Rule::shape_statement => {
+    for shape_statement in input_pair.into_inner() {
+        match_eoi_rule!(shape_statement,
+            shape_statement => {
                 shapes.push(parse_shape_statement(shape_statement)?);
             }
-            _ => unreachable!(
-                "parse_shape_statements > unreachable! {:#?}",
-                shape_statement
-            ),
-        }
+        );
     }
     Ok(shapes)
 }
 
-fn parse_shape_statement(shape_statement: Pair<'_, Rule>) -> Result<Shape> {
+fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> Result<Shape> {
     let mut documentation: Vec<String> = Default::default();
     let mut traits: Vec<Trait> = Default::default();
     let mut inner: Option<(Identifier, ShapeInner)> = None;
     let mut applies: Option<(ShapeID, Trait)> = None;
-    for shape_statement in shape_statement.into_inner() {
-        match shape_statement.as_rule() {
-            Rule::shape_documentation_comments => {
+    for shape_statement in input_pair.into_inner() {
+        match_eoi_rule!(shape_statement,
+            shape_documentation_comments => {
                 documentation.push(parse_shape_documentation_comments(shape_statement)?);
-            }
-            Rule::trait_statements => {
+            },
+            trait_statements => {
                 traits = parse_trait_statements(shape_statement)?;
-            }
-            Rule::simple_shape_statement => {
+            },
+            simple_shape_statement => {
                 inner = Some(parse_simple_shape_statement(shape_statement)?);
-            }
-            Rule::list_statement => {
+            },
+            list_statement => {
                 inner = Some(parse_list_statement(shape_statement)?);
-            }
-            Rule::set_statement => {
+            },
+            set_statement => {
                 inner = Some(parse_set_statement(shape_statement)?);
-            }
-            Rule::map_statement => {
+            },
+            map_statement => {
                 inner = Some(parse_map_statement(shape_statement)?);
-            }
-            Rule::structure_statement => {
+            },
+            structure_statement => {
                 inner = Some(parse_structure_statement(shape_statement)?);
-            }
-            Rule::union_statement => {
+            },
+            union_statement => {
                 inner = Some(parse_union_statement(shape_statement)?);
-            }
-            Rule::service_statement => {
+            },
+            service_statement => {
                 inner = Some(parse_service_statement(shape_statement)?);
-            }
-            Rule::operation_statement => {
+            },
+            operation_statement => {
                 inner = Some(parse_operation_statement(shape_statement)?);
-            }
-            Rule::resource_statement => {
+            },
+            resource_statement => {
                 inner = Some(parse_resource_statement(shape_statement)?);
-            }
-            Rule::apply_statement => {
+            },
+            apply_statement => {
                 applies = Some(parse_apply_statement(shape_statement)?);
             }
-            _ => unreachable!(
-                "parse_shape_statements > unreachable! {:#?}",
-                shape_statement
-            ),
-        }
+        );
     }
     if let Some((id, inner)) = inner {
         let mut shape = Shape::new(id, inner);
@@ -222,11 +245,11 @@ fn parse_shape_statement(shape_statement: Pair<'_, Rule>) -> Result<Shape> {
             shape.add_trait(a_trait);
         }
         Ok(shape)
-    // } else if let Some((id, a_trait)) = applies {
-    //     let inner = ShapeInner::Apply;
-    //     let mut shape = Shape::new(id, inner);
-    //     shape.add_trait(a_trait);
-    //     Ok(shape)
+    } else if let Some((id, a_trait)) = applies {
+        let inner = ShapeInner::Apply;
+        let mut shape = Shape::new(id, inner);
+        shape.add_trait(a_trait);
+        Ok(shape)
     } else {
         Err(ErrorKind::Deserialization(
             "Smithy".to_string(),
@@ -237,14 +260,11 @@ fn parse_shape_statement(shape_statement: Pair<'_, Rule>) -> Result<Shape> {
     }
 }
 
-fn parse_shape_documentation_comments(
-    shape_documentation_comments: Pair<'_, Rule>,
-) -> Result<String> {
-    if shape_documentation_comments.as_str().is_empty() {
+fn parse_shape_documentation_comments(input_pair: Pair<'_, Rule>) -> Result<String> {
+    if input_pair.as_str().is_empty() {
         Ok(String::new())
     } else {
-        let documentation_text: Pair<'_, Rule> =
-            shape_documentation_comments.into_inner().next().unwrap();
+        let documentation_text: Pair<'_, Rule> = input_pair.into_inner().next().unwrap();
 
         if let Rule::documentation_text = documentation_text.as_rule() {
             Ok(documentation_text.as_str().to_string())
@@ -259,33 +279,31 @@ fn parse_shape_documentation_comments(
     }
 }
 
-fn parse_trait_statements(trait_statements: Pair<'_, Rule>) -> Result<Vec<Trait>> {
+fn parse_trait_statements(input_pair: Pair<'_, Rule>) -> Result<Vec<Trait>> {
     let mut traits: Vec<Trait> = Default::default();
-    for a_trait in trait_statements.into_inner() {
-        match a_trait.as_rule() {
-            Rule::a_trait => {
+    for a_trait in input_pair.into_inner() {
+        match_rule!(a_trait,
+            a_trait => {
                 traits.push(parse_a_trait(a_trait)?);
             }
-            _ => unreachable!("parse_trait_statements > unreachable! {:#?}", a_trait),
-        }
+        );
     }
     Ok(traits)
 }
 
-fn parse_a_trait(a_trait: Pair<'_, Rule>) -> Result<Trait> {
+fn parse_a_trait(input_pair: Pair<'_, Rule>) -> Result<Trait> {
     let mut id: Option<ShapeID> = None;
     let mut node_value: Option<NodeValue> = None;
-    for inner in a_trait.into_inner() {
-        match inner.as_rule() {
-            Rule::shape_id => {
+    for inner in input_pair.into_inner() {
+        match_rule!(inner,
+            shape_id => {
                 id = Some(ShapeID::from_str(inner.as_str())?);
-            }
-            Rule::node_value => {
+            },
+            node_value => {
                 node_value = Some(parse_node_value(inner)?);
-            }
-            Rule::trait_structure_kvp => {}
-            _ => unreachable!("parse_a_trait > unreachable! {:#?}", inner),
-        }
+            },
+            trait_structure_kvp => {}
+        );
     }
     Ok(match (id, node_value) {
         (Some(id), None) => Trait::new(id),
@@ -294,29 +312,28 @@ fn parse_a_trait(a_trait: Pair<'_, Rule>) -> Result<Trait> {
     })
 }
 
-fn parse_simple_shape_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
+fn parse_simple_shape_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
     let mut id: Option<Identifier> = None;
     let mut simple_type: Option<SimpleType> = None;
-    for inner in statement.into_inner() {
-        match inner.as_rule() {
-            Rule::identifier => {
+    for inner in input_pair.into_inner() {
+        match_rule!(inner,
+            identifier => {
                 id = Some(Identifier::from_str(inner.as_str())?);
-            }
-            Rule::type_blob => simple_type = Some(SimpleType::Blob),
-            Rule::type_boolean => simple_type = Some(SimpleType::Boolean),
-            Rule::type_document => simple_type = Some(SimpleType::Document),
-            Rule::type_string => simple_type = Some(SimpleType::String),
-            Rule::type_byte => simple_type = Some(SimpleType::Byte),
-            Rule::type_short => simple_type = Some(SimpleType::Short),
-            Rule::type_integer => simple_type = Some(SimpleType::Integer),
-            Rule::type_long => simple_type = Some(SimpleType::Long),
-            Rule::type_float => simple_type = Some(SimpleType::Float),
-            Rule::type_double => simple_type = Some(SimpleType::Double),
-            Rule::type_big_integer => simple_type = Some(SimpleType::BigInteger),
-            Rule::type_big_decimal => simple_type = Some(SimpleType::BigDecimal),
-            Rule::type_timestamp => simple_type = Some(SimpleType::Timestamp),
-            _ => unreachable!("parse_simple_shape_statement > unreachable! {:#?}", inner),
-        }
+            },
+            type_blob => {simple_type = Some(SimpleType::Blob)},
+            type_boolean => {simple_type = Some(SimpleType::Boolean)},
+            type_document => {simple_type = Some(SimpleType::Document)},
+            type_string => {simple_type = Some(SimpleType::String)},
+            type_byte => {simple_type = Some(SimpleType::Byte)},
+            type_short => {simple_type = Some(SimpleType::Short)},
+            type_integer => {simple_type = Some(SimpleType::Integer)},
+            type_long => {simple_type = Some(SimpleType::Long)},
+            type_float => {simple_type = Some(SimpleType::Float)},
+            type_double => {simple_type = Some(SimpleType::Double)},
+            type_big_integer => {simple_type = Some(SimpleType::BigInteger)},
+            type_big_decimal => {simple_type = Some(SimpleType::BigDecimal)},
+            type_timestamp => {simple_type = Some(SimpleType::Timestamp)}
+        );
     }
     Ok(match (id, simple_type) {
         (Some(id), Some(simple_type)) => (id, ShapeInner::SimpleType(simple_type)),
@@ -324,24 +341,168 @@ fn parse_simple_shape_statement(statement: Pair<'_, Rule>) -> Result<(Identifier
     })
 }
 
-fn parse_list_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
-    unimplemented!("parse_list_statement")
+fn parse_list_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
+    let (id, members) = parse_membered_statement(input_pair)?;
+    println!("parse_list_statement: {:#?}", members);
+    for member in members {
+        if member.id() == &Identifier::from_str("member").unwrap() {
+            return Ok((
+                id,
+                ShapeInner::List(ListOrSet::new(
+                    member
+                        .value()
+                        .as_ref()
+                        .unwrap()
+                        .as_shape_id()
+                        .unwrap()
+                        .clone(),
+                )),
+            ));
+        }
+    }
+    unreachable!("parse_list_statement > unreachable!")
 }
 
-fn parse_set_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
-    unimplemented!("parse_set_statement")
+fn parse_set_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
+    let (id, members) = parse_membered_statement(input_pair)?;
+    for member in members {
+        if member.id() == &Identifier::from_str("member").unwrap() {
+            return Ok((
+                id,
+                ShapeInner::Set(ListOrSet::new(
+                    member
+                        .value()
+                        .as_ref()
+                        .unwrap()
+                        .as_shape_id()
+                        .unwrap()
+                        .clone(),
+                )),
+            ));
+        }
+    }
+    unreachable!("parse_set_statement > unreachable!")
 }
 
 fn parse_map_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
-    unimplemented!("parse_map_statement")
+    let (id, members) = parse_membered_statement(statement)?;
+    let mut key: Option<ShapeID> = None;
+    let mut value: Option<ShapeID> = None;
+    for member in members {
+        if member.id() == &Identifier::from_str("key").unwrap() {
+            key = Some(
+                member
+                    .value()
+                    .as_ref()
+                    .unwrap()
+                    .as_shape_id()
+                    .unwrap()
+                    .clone(),
+            )
+        } else if member.id() == &Identifier::from_str("value").unwrap() {
+            value = Some(
+                member
+                    .value()
+                    .as_ref()
+                    .unwrap()
+                    .as_shape_id()
+                    .unwrap()
+                    .clone(),
+            )
+        } else {
+            unreachable!("parse_map_statement > unreachable! {:#?}", member)
+        }
+    }
+    match (key, value) {
+        (Some(k), Some(v)) => Ok((id, ShapeInner::Map(Map::new(k, v)))),
+        _ => unreachable!("parse_map_statement > unreachable!"),
+    }
 }
 
 fn parse_structure_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
-    unimplemented!("parse_structure_statement")
+    let (id, members) = parse_membered_statement(statement)?;
+    Ok((
+        id,
+        ShapeInner::Union(StructureOrUnion::with_members(members.as_slice())),
+    ))
 }
 
 fn parse_union_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
-    unimplemented!("parse_union_statement")
+    let (id, members) = parse_membered_statement(statement)?;
+    Ok((
+        id,
+        ShapeInner::Structure(StructureOrUnion::with_members(members.as_slice())),
+    ))
+}
+
+fn parse_membered_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, Vec<Member>)> {
+    let mut id: Option<Identifier> = None;
+    let mut members: Vec<Member> = Default::default();
+    for inner in statement.into_inner() {
+        match_rule!(inner,
+            identifier => {
+                id = Some(Identifier::from_str(inner.as_str())?);
+            },
+            empty_shape_members => {},
+            populated_shape_members => {
+                members = parse_populated_shape_members(inner)?;
+            }
+        );
+    }
+    if let Some(id) = id {
+        Ok((id, members))
+    } else {
+        unreachable!("parse_membered_statement > unreachable!")
+    }
+}
+
+fn parse_populated_shape_members(populated_shape_members: Pair<'_, Rule>) -> Result<Vec<Member>> {
+    let mut members = Vec::default();
+    for inner in populated_shape_members.into_inner() {
+        match_rule!(inner,
+            shape_member_kvp => {
+                members.push(parse_shape_member_kvp(inner)?);
+            }
+        );
+    }
+    Ok(members)
+}
+
+fn parse_shape_member_kvp(shape_member_kvp: Pair<'_, Rule>) -> Result<Member> {
+    let mut documentation: Vec<String> = Default::default();
+    let mut traits: Vec<Trait> = Default::default();
+    let mut id: Option<Identifier> = None;
+    let mut shape_id: Option<ShapeID> = None;
+    for inner in shape_member_kvp.into_inner() {
+        match_rule!(inner,
+            shape_documentation_comments => {
+                documentation.push(parse_shape_documentation_comments(inner)?);
+            },
+            trait_statements => {
+                traits = parse_trait_statements(inner)?;
+            },
+            identifier => {
+                id = Some(Identifier::from_str(inner.as_str())?);
+            },
+            shape_id => {
+                shape_id = Some(ShapeID::from_str(inner.as_str())?);
+            }
+        );
+    }
+    match (id, shape_id) {
+        (Some(id), Some(shape_id)) => {
+            let mut member = Member::new(id);
+            member.set_value(NodeValue::ShapeID(shape_id));
+            for doc in documentation {
+                member.documentation(&doc);
+            }
+            for a_trait in traits {
+                member.add_trait(a_trait);
+            }
+            Ok(member)
+        }
+        _ => unreachable!("parse_shape_member_kvp > unreachable!"),
+    }
 }
 
 fn parse_service_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeInner)> {
@@ -430,14 +591,13 @@ fn parse_id_and_object(statement: Pair<'_, Rule>) -> Result<(Identifier, NodeVal
     let mut id: Option<Identifier> = None;
     let mut node_value: Option<NodeValue> = None;
     for inner in statement.into_inner() {
-        match inner.as_rule() {
-            Rule::identifier => {
+        match_rule!(inner,
+            identifier => {
                 id = Some(Identifier::from_str(inner.as_str())?);
-            }
-            Rule::empty_node_object => node_value = Some(empty_node_object()),
-            Rule::populated_node_object => node_value = Some(parse_populated_node_object(inner)?),
-            _ => unreachable!("parse_id_and_object > unreachable! {:#?}", inner),
-        }
+            },
+            empty_node_object => {node_value = Some(empty_node_object())},
+            populated_node_object => {node_value = Some(parse_populated_node_object(inner)?)}
+        );
     }
     Ok(match (id, node_value) {
         (Some(id), Some(node_value)) => (id, node_value),
@@ -449,13 +609,12 @@ fn parse_apply_statement(statement: Pair<'_, Rule>) -> Result<(ShapeID, Trait)> 
     let mut id: Option<ShapeID> = None;
     let mut a_trait: Option<Trait> = None;
     for inner in statement.into_inner() {
-        match inner.as_rule() {
-            Rule::identifier => {
+        match_rule!(inner,
+            identifier => {
                 id = Some(ShapeID::from_str(inner.as_str())?);
-            }
-            Rule::a_trait => a_trait = Some(parse_a_trait(inner)?),
-            _ => unreachable!("parse_apply_statement > unreachable! {:#?}", inner),
-        }
+            },
+            a_trait => {a_trait = Some(parse_a_trait(inner)?)}
+        );
     }
     Ok(match (id, a_trait) {
         (Some(id), Some(a_trait)) => (id, a_trait),
@@ -498,10 +657,9 @@ fn empty_node_array() -> NodeValue {
 fn parse_populated_node_array(populated_node_array: Pair<'_, Rule>) -> Result<NodeValue> {
     let mut array: Vec<NodeValue> = Default::default();
     for inner in populated_node_array.into_inner() {
-        match inner.as_rule() {
-            Rule::node_value => array.push(parse_node_value(inner)?),
-            _ => unreachable!("parse_populated_node_object > unreachable! {:#?}", inner),
-        }
+        match_rule!(inner,
+            node_value => {array.push(parse_node_value(inner)?)}
+        );
     }
     Ok(NodeValue::Array(array))
 }
@@ -513,13 +671,12 @@ fn empty_node_object() -> NodeValue {
 fn parse_populated_node_object(populated_node_object: Pair<'_, Rule>) -> Result<NodeValue> {
     let mut object: HashMap<Key, NodeValue> = Default::default();
     for inner in populated_node_object.into_inner() {
-        match inner.as_rule() {
-            Rule::node_object_kvp => {
-                let (key, value) = parse_node_object_kvp(inner)?;
-                let _ = object.insert(key, value);
-            }
-            _ => unreachable!("parse_populated_node_object > unreachable! {:#?}", inner),
-        }
+        match_rule!(inner,
+           node_object_kvp => {
+               let (key, value) = parse_node_object_kvp(inner)?;
+               let _ = object.insert(key, value);
+           }
+        );
     }
     Ok(NodeValue::Object(object))
 }
@@ -528,16 +685,15 @@ fn parse_node_object_kvp(node_object_kvp: Pair<'_, Rule>) -> Result<(Key, NodeVa
     let mut key: Option<Key> = None;
     let mut value: Option<NodeValue> = None;
     for inner in node_object_kvp.into_inner() {
-        match inner.as_rule() {
-            Rule::identifier => {
+        match_rule!(inner,
+            identifier => {
                 key = Some(Key::Identifier(Identifier::from_str(inner.as_str())?));
-            }
-            Rule::quoted_text => {
+            },
+            quoted_text => {
                 key = Some(Key::String(inner.as_str().to_string()));
-            }
-            Rule::node_value => value = Some(parse_node_value(inner)?),
-            _ => unreachable!("parse_node_object_kvp > unreachable! {:#?}", inner),
-        }
+            },
+            node_value => {value = Some(parse_node_value(inner)?)}
+        );
     }
     Ok(match (key, value) {
         (Some(key), Some(value)) => (key, value),
