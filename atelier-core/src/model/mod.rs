@@ -83,7 +83,7 @@ pub struct Model {
     // shape_section > use_section
     references: HashSet<ShapeID>,
     // shape_section > shape_statements : *(shape_statement / apply_statement)
-    shapes: HashMap<Identifier, Shape>,
+    shapes: HashMap<ShapeID, Shape>,
 }
 
 ///
@@ -200,12 +200,12 @@ impl Model {
     }
 
     /// Returns `true` if this model contains a shape with the given `Identifier`, else `false`.
-    pub fn has_shape(&self, shape_id: &Identifier) -> bool {
+    pub fn has_shape(&self, shape_id: &ShapeID) -> bool {
         self.shapes.contains_key(shape_id)
     }
 
     /// Return the shape in this model with the given `Identifier`.
-    pub fn shape(&self, shape_id: &Identifier) -> Option<&Shape> {
+    pub fn shape(&self, shape_id: &ShapeID) -> Option<&Shape> {
         self.shapes.get(shape_id)
     }
 
@@ -227,7 +227,7 @@ impl Model {
     }
 
     /// Remove any shape with the given `Identifier` from this model.
-    pub fn remove_shape(&mut self, shape_id: &Identifier) {
+    pub fn remove_shape(&mut self, shape_id: &ShapeID) {
         let _ = self.shapes.remove(shape_id);
     }
 
@@ -235,7 +235,13 @@ impl Model {
     pub fn defined_shapes(&self) -> Vec<ShapeID> {
         self.shapes
             .keys()
-            .map(|id| ShapeID::new(Some(self.namespace.clone()), id.clone(), None))
+            .map(|id: &ShapeID| {
+                if id.is_absolute() {
+                    id.clone()
+                } else {
+                    id.to_absolute(self.namespace.clone())
+                }
+            })
             .collect()
     }
 

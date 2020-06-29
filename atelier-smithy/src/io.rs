@@ -10,7 +10,7 @@ More detailed description, with
 use crate::parser;
 use atelier_core::error::Result;
 use atelier_core::io::{ModelReader, ModelWriter};
-use atelier_core::model::shapes::{Member, ShapeInner, Trait, Valued};
+use atelier_core::model::shapes::{Member, ShapeBody, Trait, Valued};
 use atelier_core::model::values::NodeValue;
 use atelier_core::model::{Annotated, Model, Named};
 use std::io::{Read, Write};
@@ -98,42 +98,42 @@ impl<'a> SmithyWriter {
 
     fn write_shapes(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         for shape in model.shapes() {
-            if !shape.inner().is_apply() {
+            if !shape.body().is_apply() {
                 for a_trait in shape.traits() {
                     self.write_trait(w, a_trait, "")?;
                 }
             }
-            match shape.inner() {
-                ShapeInner::SimpleType(st) => {
+            match shape.body() {
+                ShapeBody::SimpleType(st) => {
                     writeln!(w, "{} {}", st, shape.id())?;
                 }
-                ShapeInner::List(list) => {
+                ShapeBody::List(list) => {
                     writeln!(w, "list {} {{", shape.id())?;
                     writeln!(w, "    member: {}", list.member())?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Set(set) => {
+                ShapeBody::Set(set) => {
                     writeln!(w, "set {} {{", shape.id())?;
                     writeln!(w, "    member: {}", set.member())?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Map(map) => {
+                ShapeBody::Map(map) => {
                     writeln!(w, "map {} {{", shape.id())?;
                     writeln!(w, "    key: {}", map.key())?;
                     writeln!(w, "    value: {}", map.value())?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Structure(structured) => {
+                ShapeBody::Structure(structured) => {
                     writeln!(w, "structure {} {{", shape.id())?;
                     self.write_members(w, structured.members(), "    ")?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Union(structured) => {
+                ShapeBody::Union(structured) => {
                     writeln!(w, "union {} {{", shape.id())?;
                     self.write_members(w, structured.members(), "    ")?;
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Service(service) => {
+                ShapeBody::Service(service) => {
                     writeln!(w, "service {} {{", shape.id())?;
                     writeln!(w, "    version: {}", service.version())?;
                     if service.has_operations() {
@@ -160,7 +160,7 @@ impl<'a> SmithyWriter {
                     }
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Operation(operation) => {
+                ShapeBody::Operation(operation) => {
                     writeln!(w, "operation {} {{", shape.id())?;
                     if let Some(id) = operation.input() {
                         writeln!(w, "    input: {}", id)?;
@@ -181,7 +181,7 @@ impl<'a> SmithyWriter {
                     }
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Resource(resource) => {
+                ShapeBody::Resource(resource) => {
                     writeln!(w, "resource {} {{", shape.id())?;
                     if resource.has_identifiers() {
                         writeln!(w, "    identifiers: {{")?;
@@ -243,7 +243,7 @@ impl<'a> SmithyWriter {
                     }
                     writeln!(w, "}}")?;
                 }
-                ShapeInner::Apply => {
+                ShapeBody::Apply => {
                     for a_trait in shape.traits() {
                         write!(w, "apply {} ", shape.id())?;
                         self.write_trait(w, a_trait, "")?;

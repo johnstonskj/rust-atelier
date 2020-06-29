@@ -89,7 +89,7 @@
 *
 * ```rust
 * use atelier_core::model::shapes::{
-*     Member, Operation, Resource, Service, Shape, ShapeInner, SimpleType, StructureOrUnion,
+*     Member, Operation, Resource, Service, Shape, ShapeBody, SimpleType, StructureOrUnion,
 *     Trait, Valued,
 * };
 * use atelier_core::model::values::NodeValue;
@@ -103,9 +103,9 @@
 *     Identifier::from_str("errorMessage").unwrap(),
 *     NodeValue::ShapeID(ShapeID::from_str("String").unwrap()),
 * );
-* let mut error = Shape::new(
+* let mut error = Shape::local(
 *     Identifier::from_str("BadDateValue").unwrap(),
-*     ShapeInner::Structure(error),
+*     ShapeBody::Structure(error),
 * );
 * let mut error_trait = Trait::new(ShapeID::from_str("error").unwrap());
 * error_trait.set_value(NodeValue::String("client".to_string()));
@@ -120,9 +120,9 @@
 * let required = Trait::new(ShapeID::from_str("required").unwrap());
 * message.add_trait(required);
 * output.add_member(message);
-* let output = Shape::new(
+* let output = Shape::local(
 *     Identifier::from_str("GetMessageOutput").unwrap(),
-*     ShapeInner::Structure(output),
+*     ShapeBody::Structure(output),
 * );
 *
 * // ----------------------------------------------------------------------------------------
@@ -131,9 +131,9 @@
 *     Identifier::from_str("date").unwrap(),
 *     NodeValue::ShapeID(ShapeID::from_str("Date").unwrap()),
 * );
-* let input = Shape::new(
+* let input = Shape::local(
 *     Identifier::from_str("GetMessageInput").unwrap(),
-*     ShapeInner::Structure(input),
+*     ShapeBody::Structure(input),
 * );
 *
 * // ----------------------------------------------------------------------------------------
@@ -141,17 +141,17 @@
 * get_message.set_input(ShapeID::from_str("GetMessageInput").unwrap());
 * get_message.set_output(ShapeID::from_str("GetMessageOutput").unwrap());
 * get_message.add_error(ShapeID::from_str("BadDateValue").unwrap());
-* let mut get_message = Shape::new(
+* let mut get_message = Shape::local(
 *     Identifier::from_str("GetMessage").unwrap(),
-*     ShapeInner::Operation(get_message),
+*     ShapeBody::Operation(get_message),
 * );
 * let required = Trait::new(ShapeID::from_str("readonly").unwrap());
 * get_message.add_trait(required);
 *
 * // ----------------------------------------------------------------------------------------
-* let mut date = Shape::new(
+* let mut date = Shape::local(
 *     Identifier::from_str("Date").unwrap(),
-*     ShapeInner::SimpleType(SimpleType::String),
+*     ShapeBody::SimpleType(SimpleType::String),
 * );
 * let mut pattern_trait = Trait::new(ShapeID::from_str("pattern").unwrap());
 * pattern_trait.set_value(NodeValue::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
@@ -164,18 +164,18 @@
 *     ShapeID::from_str("Date").unwrap(),
 * );
 * message.set_read(ShapeID::from_str("GetMessage").unwrap());
-* let message = Shape::new(
+* let message = Shape::local(
 *     Identifier::from_str("Message").unwrap(),
-*     ShapeInner::Resource(message),
+*     ShapeBody::Resource(message),
 * );
 *
 * // ----------------------------------------------------------------------------------------
 * let mut service = Service::default();
 * service.set_version("2020-06-21");
 * service.add_resource(ShapeID::from_str("Message").unwrap());
-* let mut service = Shape::new(
+* let mut service = Shape::local(
 *     Identifier::from_str("MessageOfTheDay").unwrap(),
-*     ShapeInner::Service(service),
+*     ShapeBody::Service(service),
 * );
 * let documentation = Trait::with_value(
 *     ShapeID::from_str("documentation").unwrap(),

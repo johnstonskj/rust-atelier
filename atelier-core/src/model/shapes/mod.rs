@@ -21,9 +21,9 @@ use crate::model::{Annotated, Identifier, Named, ShapeID};
 ///
 #[derive(Clone, Debug)]
 pub struct Shape {
-    id: Identifier,
+    id: ShapeID,
     traits: Vec<Trait>,
-    inner: ShapeInner,
+    body: ShapeBody,
 }
 
 ///
@@ -31,7 +31,7 @@ pub struct Shape {
 ///
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
-pub enum ShapeInner {
+pub enum ShapeBody {
     /// Corresponds to the ABNF production `simple_shape_statement`.
     SimpleType(SimpleType),
     /// Corresponds to the ABNF production `list_statement`.
@@ -107,7 +107,7 @@ macro_rules! is_as {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl ShapeInner {
+impl ShapeBody {
     is_as! { is_simple, SimpleType, as_simple, SimpleType }
     is_as! { is_list, List, as_list, ListOrSet }
     is_as! { is_set, Set, as_set, ListOrSet }
@@ -120,8 +120,8 @@ impl ShapeInner {
     is_as! { is_apply, Apply }
 }
 
-impl Named<Identifier> for Shape {
-    fn id(&self) -> &Identifier {
+impl Named<ShapeID> for Shape {
+    fn id(&self) -> &ShapeID {
         &self.id
     }
 }
@@ -152,33 +152,44 @@ impl Shape {
     ///
     /// Construct a new shape with the given identifier (shape name) and shape-specific data.
     ///
-    pub fn new(id: Identifier, inner: ShapeInner) -> Self {
+    pub fn new(id: ShapeID, inner: ShapeBody) -> Self {
         Self {
             id,
             traits: Default::default(),
-            inner,
+            body: inner,
+        }
+    }
+
+    ///
+    /// Construct a new shape with the given identifier (shape name) and shape-specific data.
+    ///
+    pub fn local(id: Identifier, inner: ShapeBody) -> Self {
+        Self {
+            id: id.into(),
+            traits: Default::default(),
+            body: inner,
         }
     }
 
     ///
     /// Return a reference to the shape-specific data within the shape.
     ///
-    pub fn inner(&self) -> &ShapeInner {
-        &self.inner
+    pub fn body(&self) -> &ShapeBody {
+        &self.body
     }
 
     ///
     /// Return a mutable reference to the shape-specific data within the shape.
     ///
-    pub fn inner_mut(&mut self) -> &mut ShapeInner {
-        &mut self.inner
+    pub fn body_mut(&mut self) -> &mut ShapeBody {
+        &mut self.body
     }
 
     ///
     /// Set the shape-specific data for this shape.
     ///
-    pub fn set_inner(&mut self, inner: ShapeInner) {
-        self.inner = inner
+    pub fn set_body(&mut self, body: ShapeBody) {
+        self.body = body
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::error::ErrorSource;
 use crate::model::builder::TraitBuilder;
-use crate::model::shapes::{ListOrSet, Map, Member, Shape, ShapeInner, SimpleType, Trait, Valued};
+use crate::model::shapes::{ListOrSet, Map, Member, Shape, ShapeBody, SimpleType, Trait, Valued};
 use crate::model::values::NodeValue;
 use crate::model::{Annotated, Identifier, ShapeID};
 use std::str::FromStr;
@@ -16,8 +16,8 @@ macro_rules! simple_shape_constructor {
         pub fn $fn_name(id: &str) -> Self {
             Self {
                 inner: Shape::new(
-                    Identifier::from_str(id).unwrap(),
-                    ShapeInner::SimpleType(SimpleType::$var_name),
+                    ShapeID::from_str(id).unwrap(),
+                    ShapeBody::SimpleType(SimpleType::$var_name),
                 ),
             }
         }
@@ -64,8 +64,8 @@ macro_rules! shape_constructor {
         pub fn new(id: &str, $( $i: $t ),*) -> Self {
             Self {
                 inner: Shape::new(
-                    Identifier::from_str(id).unwrap(),
-                    ShapeInner::$shape_variant($init_expr),
+                    ShapeID::from_str(id).unwrap(),
+                    ShapeBody::$shape_variant($init_expr),
                 ),
             }
         }
@@ -75,8 +75,8 @@ macro_rules! shape_constructor {
         pub fn new(id: &str) -> Self {
             Self {
                 inner: Shape::new(
-                    Identifier::from_str(id).unwrap(),
-                    ShapeInner::$shape_variant($init_expr),
+                    ShapeID::from_str(id).unwrap(),
+                    ShapeBody::$shape_variant($init_expr),
                 ),
             }
         }
@@ -101,7 +101,7 @@ macro_rules! structured_members {
     ($shape_variant:ident) => {
         /// Add a member named `id`, as a reference to the shape `id_ref` to this shape.
         pub fn member(&mut self, id: &str, id_ref: &str) -> &mut Self {
-            if let ShapeInner::$shape_variant(inner) = self.inner.inner_mut() {
+            if let ShapeBody::$shape_variant(inner) = self.inner.body_mut() {
                 inner.add_member(MemberBuilder::new(id).refers_to(id_ref).into())
             }
             self
@@ -109,7 +109,7 @@ macro_rules! structured_members {
 
         /// Add `member` to this shape.
         pub fn add_member(&mut self, member: Member) -> &mut Self {
-            if let ShapeInner::$shape_variant(inner) = self.inner.inner_mut() {
+            if let ShapeBody::$shape_variant(inner) = self.inner.body_mut() {
                 inner.add_member(member)
             }
             self
@@ -150,7 +150,7 @@ macro_rules! shape_member {
 
         /// Append the shapes referenced by `ids` to the named member value.
         pub fn $plural(&mut self, ids: &[&str]) -> &mut Self {
-            if let ShapeInner::$shape_variant(inner) = self.inner.inner_mut() {
+            if let ShapeBody::$shape_variant(inner) = self.inner.body_mut() {
                 inner.$appender(
                     &ids.iter()
                         .map(|s| ShapeID::from_str(s).unwrap())
@@ -163,7 +163,7 @@ macro_rules! shape_member {
     ($fn_name:ident, $shape_variant:ident, $setter:ident) => {
         /// Add the named member value to the shape referenced by `id`.
         pub fn $fn_name(&mut self, id: &str) -> &mut Self {
-            if let ShapeInner::$shape_variant(inner) = &mut self.inner.inner_mut() {
+            if let ShapeBody::$shape_variant(inner) = &mut self.inner.body_mut() {
                 inner.$setter(ShapeID::from_str(id).unwrap())
             }
             self
@@ -242,43 +242,43 @@ where
 concrete_builder!(
     SimpleShapeBuilder,
     Shape,
-    "Builder for `ShapeInner::SimpleType` shapes."
+    "Builder for `ShapeBody::SimpleType` shapes."
 );
 
-concrete_builder!(ListBuilder, Shape, "Builder for `ShapeInner::List` shapes.");
+concrete_builder!(ListBuilder, Shape, "Builder for `ShapeBody::List` shapes.");
 
-concrete_builder!(SetBuilder, Shape, "Builder for `ShapeInner::Set` shapes.");
+concrete_builder!(SetBuilder, Shape, "Builder for `ShapeBody::Set` shapes.");
 
-concrete_builder!(MapBuilder, Shape, "Builder for `ShapeInner::Map` shapes.");
+concrete_builder!(MapBuilder, Shape, "Builder for `ShapeBody::Map` shapes.");
 
 concrete_builder!(
     StructureBuilder,
     Shape,
-    "Builder for `ShapeInner::Structure` shapes."
+    "Builder for `ShapeBody::Structure` shapes."
 );
 
 concrete_builder!(
     UnionBuilder,
     Shape,
-    "Builder for `ShapeInner::Union` shapes."
+    "Builder for `ShapeBody::Union` shapes."
 );
 
 concrete_builder!(
     ServiceBuilder,
     Shape,
-    "Builder for `ShapeInner::Service` shapes."
+    "Builder for `ShapeBody::Service` shapes."
 );
 
 concrete_builder!(
     OperationBuilder,
     Shape,
-    "Builder for `ShapeInner::Operation` shapes."
+    "Builder for `ShapeBody::Operation` shapes."
 );
 
 concrete_builder!(
     ResourceBuilder,
     Shape,
-    "Builder for `ShapeInner::Resource` shapes."
+    "Builder for `ShapeBody::Resource` shapes."
 );
 
 concrete_builder!(
@@ -390,7 +390,7 @@ impl ServiceBuilder {
 
     /// Set the version of this service.
     pub fn version(&mut self, version: &str) -> &mut Self {
-        if let ShapeInner::Service(inner) = &mut self.inner.inner_mut() {
+        if let ShapeBody::Service(inner) = &mut self.inner.body_mut() {
             inner.set_version(version)
         }
         self
@@ -439,7 +439,7 @@ impl ResourceBuilder {
     /// Add an identifier to this resource; this represents the local member name and shape
     /// identifier for the member's type.
     pub fn identifier(&mut self, id: &str, shape: &str) -> &mut Self {
-        if let ShapeInner::Resource(inner) = &mut self.inner.inner_mut() {
+        if let ShapeBody::Resource(inner) = &mut self.inner.body_mut() {
             inner.add_identifier(
                 Identifier::from_str(id).unwrap(),
                 ShapeID::from_str(shape).unwrap(),

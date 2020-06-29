@@ -366,10 +366,10 @@ impl ShapeID {
     /// Return a new shape ID with the current shape and member IDs unchanged but with the namespace
     /// included.
     ///
-    pub fn into_absolute<S>(self, namespace: Namespace) -> Self {
+    pub fn to_absolute(&self, namespace: Namespace) -> Self {
         Self {
             namespace: Some(namespace),
-            ..self
+            ..self.clone()
         }
     }
 
@@ -377,14 +377,14 @@ impl ShapeID {
     /// Return a new shape ID with the current shape and member IDs unchanged but with any namespace
     /// removed.
     ///
-    pub fn into_relative(self) -> Self {
+    pub fn to_relative(self) -> Self {
         if self.is_absolute() {
             Self {
                 namespace: None,
-                ..self
+                ..self.clone()
             }
         } else {
-            self
+            self.clone()
         }
     }
 }

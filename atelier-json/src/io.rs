@@ -2,7 +2,7 @@ use crate::syntax::*;
 use atelier_core::error::{AndPanic, ErrorKind, Result, ResultExt};
 use atelier_core::io::{ModelReader, ModelWriter};
 use atelier_core::model::shapes::{
-    ListOrSet, Map as MapShape, Member, Shape, ShapeInner, SimpleType, StructureOrUnion, Trait,
+    ListOrSet, Map as MapShape, Member, Shape, ShapeBody, SimpleType, StructureOrUnion, Trait,
     Valued,
 };
 use atelier_core::model::values::{Key, NodeValue, Number};
@@ -97,37 +97,37 @@ impl<'a> JsonWriter {
         if shape.has_traits() {
             let _ = shape_map.insert(K_TRAITS.to_string(), self.traits(shape.traits()));
         }
-        match shape.inner() {
-            ShapeInner::SimpleType(v) => {
+        match shape.body() {
+            ShapeBody::SimpleType(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(v.to_string()));
             }
-            ShapeInner::List(v) => {
+            ShapeBody::List(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_LIST.to_string()));
                 let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member()));
             }
-            ShapeInner::Set(v) => {
+            ShapeBody::Set(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SET.to_string()));
                 let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member()));
             }
-            ShapeInner::Map(v) => {
+            ShapeBody::Map(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_MAP.to_string()));
                 let _ = shape_map.insert(K_KEY.to_string(), self.reference(v.key()));
                 let _ = shape_map.insert(K_VALUE.to_string(), self.reference(v.value()));
             }
-            ShapeInner::Structure(v) => {
+            ShapeBody::Structure(v) => {
                 let _ =
                     shape_map.insert(K_TYPE.to_string(), Value::String(V_STRUCTURE.to_string()));
                 if v.has_members() {
                     let _ = shape_map.insert(K_MEMBERS.to_string(), self.members(v.members()));
                 }
             }
-            ShapeInner::Union(v) => {
+            ShapeBody::Union(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_UNION.to_string()));
                 if v.has_members() {
                     let _ = shape_map.insert(K_MEMBERS.to_string(), self.members(v.members()));
                 }
             }
-            ShapeInner::Service(v) => {
+            ShapeBody::Service(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SERVICE.to_string()));
                 let _ = shape_map.insert(
                     K_VERSION.to_string(),
@@ -146,7 +146,7 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeInner::Operation(v) => {
+            ShapeBody::Operation(v) => {
                 let _ =
                     shape_map.insert(K_TYPE.to_string(), Value::String(V_OPERATION.to_string()));
                 if let Some(v) = v.input() {
@@ -162,7 +162,7 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeInner::Resource(v) => {
+            ShapeBody::Resource(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_RESOURCE.to_string()));
                 if v.has_identifiers() {
                     let mut id_map: Map<String, Value> = Default::default();
@@ -212,7 +212,7 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeInner::Apply => {
+            ShapeBody::Apply => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_APPLY.to_string()));
             }
         }
@@ -375,7 +375,7 @@ impl JsonReader {
             for (k, v) in vs {
                 let id = ShapeID::from_str(k)?;
                 let inner = self.shape(v)?;
-                let mut shape = Shape::new(id.shape_name().clone(), inner);
+                let mut shape = Shape::local(id.shape_name().clone(), inner);
 
                 if let Some(Value::Object(vs)) = v.get(K_TRAITS) {
                     shape.append_traits(self.traits(vs)?.as_ref())
@@ -387,23 +387,23 @@ impl JsonReader {
         Ok(shapes)
     }
 
-    fn shape(&self, outer: &Value) -> Result<ShapeInner> {
+    fn shape(&self, outer: &Value) -> Result<ShapeBody> {
         if let Some(Value::String(s)) = outer.get(K_TYPE) {
             let s = s.as_str();
             return if let Ok(st) = SimpleType::from_str(s) {
-                Ok(ShapeInner::SimpleType(st))
+                Ok(ShapeBody::SimpleType(st))
             } else if s == V_APPLY {
-                Ok(ShapeInner::Apply)
+                Ok(ShapeBody::Apply)
             } else if s == V_LIST {
-                Ok(ShapeInner::List(ListOrSet::new(
+                Ok(ShapeBody::List(ListOrSet::new(
                     self.target(outer.get(K_MEMBER))?,
                 )))
             } else if s == V_SET {
-                Ok(ShapeInner::Set(ListOrSet::new(
+                Ok(ShapeBody::Set(ListOrSet::new(
                     self.target(outer.get(K_MEMBER))?,
                 )))
             } else if s == V_MAP {
-                Ok(ShapeInner::Map(MapShape::new(
+                Ok(ShapeBody::Map(MapShape::new(
                     self.target(outer.get(K_KEY))?,
                     self.target(outer.get(K_VALUE))?,
                 )))
@@ -416,7 +416,7 @@ impl JsonReader {
                             self.value(&v)?,
                         ));
                     }
-                    Ok(ShapeInner::Structure(StructureOrUnion::with_members(
+                    Ok(ShapeBody::Structure(StructureOrUnion::with_members(
                         members.as_slice(),
                     )))
                 } else {
