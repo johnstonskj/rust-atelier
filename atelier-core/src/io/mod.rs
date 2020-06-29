@@ -92,34 +92,10 @@ pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model)
     Ok(String::from_utf8(buffer.into_inner()).unwrap())
 }
 
-///
-/// Simple debug tools, including an implementation of the `ModelWriter` trait. This allows the easy
-/// swapping in ofa sanity check as different reader/writer implementations are used.
-///
-pub mod debug {
-    use crate::io::ModelWriter;
-    use crate::model::Model;
-    use std::io::Write;
+// ------------------------------------------------------------------------------------------------
+// Modules
+// ------------------------------------------------------------------------------------------------
 
-    ///
-    /// Simple implementation of the `ModelWriter` trait that uses the fact that all the core model
-    /// structures and enumerations implement `Debug`.
-    ///
-    #[derive(Debug)]
-    pub struct Debugger {}
+pub mod debug;
 
-    impl Default for Debugger {
-        fn default() -> Self {
-            Self {}
-        }
-    }
-
-    impl<'a> ModelWriter<'a> for Debugger {
-        const REPRESENTATION: &'static str = "Debug";
-
-        fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
-            write!(w, "{:#?}", model)?;
-            Ok(())
-        }
-    }
-}
+pub mod plant_uml;

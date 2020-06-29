@@ -5,7 +5,7 @@ document.
 */
 
 use atelier_core::error::ErrorSource;
-use atelier_core::io::debug::Debugger;
+use atelier_core::io::debug::DebugWriter;
 use atelier_core::io::write_model_to_string;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::model::builder::{
@@ -17,7 +17,7 @@ use atelier_core::Version;
 use std::str::FromStr;
 
 fn main() {
-    let mut writer = Debugger::default();
+    let mut writer = DebugWriter::default();
     let model = make_weather_model();
     let output = write_model_to_string(&mut writer, &model);
     assert!(output.is_ok());
