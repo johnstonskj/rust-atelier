@@ -40,14 +40,26 @@ pub(crate) fn parse_and_debug(w: &mut impl Write, input: &str) -> Result<()> {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Functions
+// Macros
 // ------------------------------------------------------------------------------------------------
+
+macro_rules! unexpected {
+    () => {
+        unreachable!("unexpected rule")
+    };
+    ($rule:expr) => {
+        unreachable!("unexpected rule {:#?}", $rule)
+    };
+    ($fn_name:expr, $rule:expr) => {
+        unreachable!("unexpected rule {:#?} ({:#?})", $fn_name, $rule)
+    };
+}
 macro_rules! match_eoi_rule {
     ($pair:expr, $( $rule:ident => $match_expr:expr ),+) => {
         match $pair.as_rule() {
             $( Rule::$rule => $match_expr ),+
             , Rule::EOI => {},
-            _ => unreachable!("parse_fn unreachable rule {:#?}", $pair),
+            _ => unexpected!($pair),
         }
     };
 }
@@ -56,7 +68,7 @@ macro_rules! match_rule {
     ($pair:expr, $( $rule:ident => $match_expr:expr ),+) => {
         match $pair.as_rule() {
             $( Rule::$rule => $match_expr ),+
-            _ => unreachable!("parse_fn unreachable rule {:#?}", $pair),
+            _ => unexpected!($pair),
         }
     };
 }
@@ -76,6 +88,10 @@ macro_rules! match_rule {
 //         }
 //     };
 // }
+
+// ------------------------------------------------------------------------------------------------
+// Private Functions
+// ------------------------------------------------------------------------------------------------
 
 fn parse_idl(input_pair: Pair<'_, Rule>) -> Result<Model> {
     match input_pair.as_rule() {
@@ -115,7 +131,7 @@ fn parse_idl(input_pair: Pair<'_, Rule>) -> Result<Model> {
             }
             Ok(model)
         }
-        _ => unreachable!("parse_model > unreachable! {:#?}", input_pair),
+        _ => unexpected!("parse_idl", input_pair),
     }
 }
 
@@ -326,7 +342,7 @@ fn parse_a_trait(input_pair: Pair<'_, Rule>) -> Result<Trait> {
     Ok(match (id, node_value) {
         (Some(id), None) => Trait::new(id),
         (Some(id), Some(node_value)) => Trait::with_value(id, node_value),
-        _ => unreachable!("parse_a_trait > unreachable!"),
+        _ => unexpected!("a_trait"),
     })
 }
 
@@ -355,7 +371,7 @@ fn parse_simple_shape_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifie
     }
     Ok(match (id, simple_type) {
         (Some(id), Some(simple_type)) => (id, ShapeBody::SimpleType(simple_type)),
-        _ => unreachable!("parse_simple_shape_statement > unreachable!"),
+        _ => unexpected!("simple_shape_statement"),
     })
 }
 
@@ -377,7 +393,7 @@ fn parse_list_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifier, Shape
             ));
         }
     }
-    unreachable!("parse_list_statement > unreachable!")
+    unexpected!("list_statement")
 }
 
 fn parse_set_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifier, ShapeBody)> {
@@ -398,7 +414,7 @@ fn parse_set_statement(input_pair: Pair<'_, Rule>) -> Result<(Identifier, ShapeB
             ));
         }
     }
-    unreachable!("parse_set_statement > unreachable!")
+    unexpected!("set_statement")
 }
 
 fn parse_map_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeBody)> {
@@ -427,12 +443,12 @@ fn parse_map_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, ShapeBo
                     .clone(),
             )
         } else {
-            unreachable!("parse_map_statement > unreachable! {:#?}", member)
+            unexpected!("map_statement", member)
         }
     }
     match (key, value) {
         (Some(k), Some(v)) => Ok((id, ShapeBody::Map(Map::new(k, v)))),
-        _ => unreachable!("parse_map_statement > unreachable!"),
+        _ => unexpected!("map_statement"),
     }
 }
 
@@ -469,7 +485,7 @@ fn parse_membered_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, Ve
     if let Some(id) = id {
         Ok((id, members))
     } else {
-        unreachable!("parse_membered_statement > unreachable!")
+        unexpected!("membered_statement")
     }
 }
 
@@ -518,7 +534,7 @@ fn parse_shape_member_kvp(shape_member_kvp: Pair<'_, Rule>) -> Result<Member> {
             }
             Ok(member)
         }
-        _ => unreachable!("parse_shape_member_kvp > unreachable!"),
+        _ => unexpected!("shape_member_kvp"),
     }
 }
 
@@ -538,12 +554,12 @@ fn parse_service_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, Sha
                         return Err(ErrorKind::UnknownMember(key.to_string()).into());
                     }
                 }
-                _ => unreachable!("parse_service_statement > unreachable! {:#?}", key),
+                _ => unexpected!("service_statement", key),
             }
         }
         Ok((id, ShapeBody::Service(service)))
     } else {
-        unreachable!("parse_service_statement > unreachable! {:#?}", object)
+        unexpected!("service_statement", object)
     }
 }
 
@@ -563,12 +579,12 @@ fn parse_operation_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, S
                         return Err(ErrorKind::UnknownMember(key.to_string()).into());
                     }
                 }
-                _ => unreachable!("parse_operation_statement > unreachable! {:#?}", key),
+                _ => unexpected!("operation_statement", key),
             }
         }
         Ok((id, ShapeBody::Operation(operation)))
     } else {
-        unreachable!("parse_operation_statement > unreachable! {:#?}", object)
+        unexpected!("operation_statement", object)
     }
 }
 
@@ -595,12 +611,12 @@ fn parse_resource_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, Sh
                         return Err(ErrorKind::UnknownMember(key.to_string()).into());
                     }
                 }
-                _ => unreachable!("parse_resource_statement > unreachable! {:#?}", key),
+                _ => unexpected!("resource_statement", key),
             }
         }
         Ok((id, ShapeBody::Resource(resource)))
     } else {
-        unreachable!("parse_resource_statement > unreachable! {:#?}", object)
+        unexpected!("resource_statement", object)
     }
 }
 
@@ -618,7 +634,7 @@ fn parse_id_and_object(statement: Pair<'_, Rule>) -> Result<(Identifier, NodeVal
     }
     Ok(match (id, node_value) {
         (Some(id), Some(node_value)) => (id, node_value),
-        _ => unreachable!("parse_id_and_object > unreachable!"),
+        _ => unreachable!("id_and_object"),
     })
 }
 
@@ -635,7 +651,7 @@ fn parse_apply_statement(statement: Pair<'_, Rule>) -> Result<(ShapeID, Trait)> 
     }
     Ok(match (id, a_trait) {
         (Some(id), Some(a_trait)) => (id, a_trait),
-        _ => unreachable!("parse_apply_statement > unreachable!"),
+        _ => unreachable!("apply_statement"),
     })
 }
 
