@@ -159,10 +159,10 @@ shape_statements =
     { (shape_statement | apply_statement)+ }
 
 shape_statement =
-    { (shape_documentation_comments ~ ws) ~ trait_statements ~ shape_body ~ br}
+    { shape_documentation_comments? ~ ws ~ trait_statements ~ shape_body ~ br}
 
 shape_documentation_comments =
-    { documentation_comment* }
+    { documentation_comment+ }
 
 shape_body =
     _{ simple_shape_statement | list_statement | set_statement | map_statement | structure_statement
@@ -211,7 +211,7 @@ populated_shape_members =
     { "{" ~ ws ~ shape_member_kvp ~ ws ~ (comma ~ shape_member_kvp ~ ws)* ~ trailing_comma ~ ws ~ "}" }
 
 shape_member_kvp =
-    { shape_documentation_comments? ~ trait_statements ~ identifier ~ ws ~ ":" ~ ws ~ shape_id }
+    { shape_documentation_comments? ~ ws ~ trait_statements ~ identifier ~ ws ~ ":" ~ ws ~ shape_id }
 
 list_statement =
     { "list" ~ ws ~ identifier ~ ws ~ shape_members }
