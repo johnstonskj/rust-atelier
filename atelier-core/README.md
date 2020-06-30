@@ -98,6 +98,7 @@ $ cargo run --example weather
 
 * Made debug and uml `Writer` implementations features.
 * Added module `syntax` for all string constants.
+* Added all defined `ShapeID`s to the module `prelude`.
 
 **Version 0.1.2**
 
