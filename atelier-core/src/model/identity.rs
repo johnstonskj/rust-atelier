@@ -377,7 +377,7 @@ impl ShapeID {
     /// Return a new shape ID with the current shape and member IDs unchanged but with any namespace
     /// removed.
     ///
-    pub fn to_relative(self) -> Self {
+    pub fn to_relative(&self) -> Self {
         if self.is_absolute() {
             Self {
                 namespace: None,
