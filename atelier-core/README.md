@@ -85,7 +85,7 @@ let model = ModelBuilder::new("example.motd")
 
 ## Runnable Examples
 
-Currently, there is simply one complete example, `weather.rs` in the examples directory. As usual this is executed via
+Currently, there is simply one complete example, `weather.rs` in the `examples` directory. As usual this is executed via
 cargo in the following manner. It will print, using `Debug`, the weather example model from the Smithy quick start.
 
 ```bash
@@ -94,11 +94,13 @@ $ cargo run --example weather
 
 ## Changes
 
-**Version 0.1.1** (_in progress_)
+**Version 0.1.1**
 
 * Updated the model and builder APIs to be more consistent:
   * documented method patterns, and ensured they were applied,
-  * moved from per-type `build` methods to use `Into<T>`.
+  * moved from per-type `build` methods to use `Into<T>`,
+  * added the `HasMembers` trait for a more un-typed API,
+  * changes based on the requirements of the JSON and Smithy readers.
 * Added the majority of API documentation.
 
 **Version 0.1.0**
