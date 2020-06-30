@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.1.2**
+
+* Fixed issue in ID->Shape mapping.
+
 **Version 0.1.1**
 
 * Able to read a JSON representation.
