@@ -107,6 +107,3 @@ pub mod debug;
 
 #[cfg(feature = "uml")]
 pub mod plant_uml;
-
-#[cfg(feature = "tree")]
-pub mod tree;
