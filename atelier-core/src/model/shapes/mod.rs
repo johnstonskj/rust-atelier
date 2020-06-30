@@ -120,6 +120,8 @@ impl ShapeBody {
     is_as! { is_apply, Apply }
 }
 
+// ------------------------------------------------------------------------------------------------
+
 impl Named<ShapeID> for Shape {
     fn id(&self) -> &ShapeID {
         &self.id
