@@ -1,6 +1,6 @@
 # Atelier: crate atelier_lib
 
-Combined crate for all Atelier sub-crates incorporated as features. Atelier is a Rust native
+A combined crate for all Atelier sub-crates incorporated as features. Atelier is a Rust native
 library, and tools, for the AWS [Smithy](https://github.com/awslabs/smithy) Interface Definition
 Language.
 
