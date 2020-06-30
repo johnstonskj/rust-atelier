@@ -10,7 +10,7 @@ The mapping is reasonably simple, but also effective.
       operation shape, although errors are added as classes with the `«error»` stereotype,
    1. the `resources` are shown as separate classes (see next), with an aggregate relationship
       from service to resource.
-1. Each resource is a UML class with the `«resourcer»` stereotype, and
+1. Each resource is a UML class with the `«resource»` stereotype, and
    1. the `identifiers` map is modeled as individual fields on the class,
    1. the lifecycle methods are shown as UML operations, but they use the lifecycle name, and not
       the name of the operation shape,
@@ -33,6 +33,75 @@ The mapping is reasonably simple, but also effective.
    shapes that have it applied.
 1. The `documentation` trait is also not shown in this way as it each becomes a note related to
    the shape.
+
+# Example
+
+For the _message of the day_ model, this writer will generate the following text.
+
+```text
+@startuml
+
+hide empty members
+
+package smithy.api {
+    class blob <<primitive>> { }
+    class boolean <<primitive>> { }
+    class document <<primitive>> { }
+    class string <<primitive>> { }
+    class byte <<primitive>> { }
+    class short <<primitive>> { }
+    class integer <<primitive>> { }
+    class long <<primitive>> { }
+    class float <<primitive>> { }
+    class double <<primitive>> { }
+    class bigInteger <<primitive>> { }
+    class bigDecimal <<primitive>> { }
+    class timestamp <<primitive>> { }
+}
+
+package example.motd {
+
+    class BadDateValue <<error>> {
+        errorMessage: String
+    }
+
+    class GetMessageInput {
+        date: string
+    }
+
+    class MessageOfTheDay <<service>> {
+        version: string = "2020-06-21"
+    }
+    note "Provides a Message of the day." as MessageOfTheDay_note_0
+    MessageOfTheDay .. MessageOfTheDay_note_0
+    MessageOfTheDay *-- Message
+
+    class Message <<resource>> {
+        date: string
+        create(in: GetMessageInput): GetMessageOutput
+    }
+
+    class Date <<dataType>> {
+        @pattern = "^\d\d\d\d\-\d\d-\d\d$"
+        ..
+    }
+
+    smithy.api.string <|-- Date
+
+    class GetMessageOutput {
+        message: String
+    }
+
+}
+example.motd ..> smithy.api
+
+@enduml
+```
+
+Which would produce an image like the following.
+
+![PlantUML](https://raw.githubusercontent.com/johnstonskj/rust-atelier/master/atelier-core/doc/motd-model.png)
+
 */
 
 use crate::io::ModelWriter;
