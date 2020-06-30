@@ -1,0 +1,112 @@
+{
+    "smithy": "1.0",
+    "shapes": {
+        "aws.iam#actionPermissionDescription": {
+            "type": "string",
+            "traits": {
+                "smithy.api#trait": {
+                    "selector": "operation"
+                },
+                "smithy.api#documentation": "A brief description of what granting the user permission to invoke an operation would entail. This description should begin with something similar to 'Enables the user to...' or 'Grants permission to...'"
+            }
+        },
+        "aws.iam#defineConditionKeys": {
+            "type": "map",
+            "key": {
+                "target": "aws.iam#IamIdentifier"
+            },
+            "value": {
+                "target": "aws.iam#ConditionKeyDefinition"
+            },
+            "traits": {
+                "smithy.api#trait": {
+                    "selector": "service"
+                },
+                "smithy.api#documentation": "Defines the set of condition keys that appear within a service in addition to inferred and global condition keys."
+            }
+        },
+        "aws.iam#conditionKeys": {
+            "type": "list",
+            "member": {
+                "target": "aws.iam#IamIdentifier"
+            },
+            "traits": {
+                "smithy.api#trait": {
+                    "selector": ":test(resource, operation)"
+                },
+                "smithy.api#documentation": "Applies condition keys by name to a resource or operation."
+            }
+        },
+        "aws.iam#disableConditionKeyInference": {
+            "type": "structure",
+            "traits": {
+                "smithy.api#trait": {
+                    "selector": "resource"
+                },
+                "smithy.api#documentation": "Disables the automatic inference of condition keys of a resource."
+            }
+        },
+        "aws.iam#requiredActions": {
+            "type": "list",
+            "member": {
+                "target": "aws.iam#IamIdentifier"
+            },
+            "traits": {
+                "smithy.api#trait": {
+                    "selector": "operation"
+                },
+                "smithy.api#documentation": "Other actions that the invoker must be authorized to perform when executing the targeted operation."
+            }
+        },
+        "aws.iam#IamIdentifier": {
+            "type": "string",
+            "traits": {
+                "smithy.api#private": {},
+                "smithy.api#pattern": "^([A-Za-z0-9][A-Za-z0-9-\\.]{0,62}:[^:]+)$"
+            }
+        },
+        "aws.iam#ConditionKeyDefinition": {
+            "type": "structure",
+            "members": {
+                "documentation": {
+                    "target": "smithy.api#String"
+                },
+                "externalDocumentation": {
+                    "target": "smithy.api#String"
+                },
+                "type": {
+                    "target": "aws.iam#ConditionKeyType",
+                    "traits": {
+                        "smithy.api#required": {}
+                    }
+                }
+            },
+            "traits": {
+                "smithy.api#private": {}
+            }
+        },
+        "aws.iam#ConditionKeyType": {
+            "type": "string",
+            "traits": {
+                "smithy.api#private": {},
+                "smithy.api#documentation": "The IAM policy type of the value that will supplied for this context key",
+                "smithy.api#enum": [
+                    {"value": "ARN"},
+                    {"value": "ArrayOfARN"},
+                    {"value": "Binary"},
+                    {"value": "ArrayOfBinary"},
+                    {"value": "String"},
+                    {"value": "ArrayOfString"},
+                    {"value": "Numeric"},
+                    {"value": "ArrayOfNumeric"},
+                    {"value": "Date"},
+                    {"value": "ArrayOfDate"},
+                    {"value": "Bool"},
+                    {"value": "ArrayOfBool"},
+                    {"value": "IPAddress"},
+                    {"value": "ArrayOfIPAddress"}
+                ]
+            }
+        }
+    }
+}

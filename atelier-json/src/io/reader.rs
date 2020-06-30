@@ -147,31 +147,23 @@ impl JsonReader {
                     self.target(outer.get(K_VALUE))?,
                 )))
             } else if s == V_STRUCTURE {
-                if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
-                    Ok(ShapeBody::Structure(StructureOrUnion::with_members(
-                        self.members(vs)?.as_slice(),
-                    )))
+                let members = if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
+                    self.members(vs)?
                 } else {
-                    return Err(ErrorKind::Deserialization(
-                        Self::REPRESENTATION.to_string(),
-                        "JsonReader::shape/structure".to_string(),
-                        Some(format!("{:#?}", outer)),
-                    )
-                    .into());
-                }
+                    Default::default()
+                };
+                Ok(ShapeBody::Structure(StructureOrUnion::with_members(
+                    members.as_slice(),
+                )))
             } else if s == V_UNION {
-                if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
-                    Ok(ShapeBody::Union(StructureOrUnion::with_members(
-                        self.members(vs)?.as_slice(),
-                    )))
+                let members = if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
+                    self.members(vs)?
                 } else {
-                    return Err(ErrorKind::Deserialization(
-                        Self::REPRESENTATION.to_string(),
-                        "JsonReader::shape/union".to_string(),
-                        Some(format!("{:#?}", outer)),
-                    )
-                    .into());
-                }
+                    Default::default()
+                };
+                Ok(ShapeBody::Union(StructureOrUnion::with_members(
+                    members.as_slice(),
+                )))
             } else {
                 return Err(ErrorKind::Deserialization(
                     Self::REPRESENTATION.to_string(),

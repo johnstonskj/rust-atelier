@@ -12,6 +12,8 @@ TBD
 **Version 0.1.2**
 
 * Fixed issue in ID->Shape mapping.
+* Fixed issue with missing `members` on structure and union shapes.
+* Added a set of JSON files from the AWS repository as parser tests.
 
 **Version 0.1.1**
 
