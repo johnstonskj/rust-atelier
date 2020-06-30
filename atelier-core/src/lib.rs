@@ -333,7 +333,8 @@ pub trait Validator {
 ///
 pub trait Transformer: Validator {
     ///
-    /// Transform a model into another, this will consume the original.
+    /// Transform the input model into another. This _may_ consume the input and produce an entirely
+    /// new model, or it _may_ simply mutate the model and return the modified input.
     ///
     fn transform(&self, model: Model) -> error::Result<Model>;
 }
