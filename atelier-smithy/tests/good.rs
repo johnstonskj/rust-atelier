@@ -5,12 +5,25 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
+// ------------------------------------------------------------------------------------------------
+// Test Cases
+// ------------------------------------------------------------------------------------------------
 
 #[test]
 fn test_weather_example() {
     test_file_parses("weather");
 }
+
+#[test]
+fn test_smithy_prelude() {
+    test_file_parses("prelude-traits");
+}
+
+// ------------------------------------------------------------------------------------------------
+// Private Functions
+// ------------------------------------------------------------------------------------------------
+
+const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 
 fn test_file_parses(file_name: &str) {
     let mut path = PathBuf::from_str(MANIFEST_DIR).unwrap();
