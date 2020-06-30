@@ -201,11 +201,13 @@ impl Model {
 
     /// Returns `true` if this model contains a shape with the given `Identifier`, else `false`.
     pub fn has_shape(&self, shape_id: &ShapeID) -> bool {
+        // TODO: add resolution rules.
         self.shapes.contains_key(shape_id)
     }
 
     /// Return the shape in this model with the given `Identifier`.
     pub fn shape(&self, shape_id: &ShapeID) -> Option<&Shape> {
+        // TODO: add resolution rules.
         self.shapes.get(shape_id)
     }
 
@@ -232,7 +234,7 @@ impl Model {
     }
 
     /// Return a list of _absolute_ shape identifiers for all shapes defined by this model.
-    pub fn defined_shapes(&self) -> Vec<ShapeID> {
+    pub fn defined_shapes(&self) -> HashSet<ShapeID> {
         self.shapes
             .keys()
             .map(|id: &ShapeID| {
@@ -243,6 +245,25 @@ impl Model {
                 }
             })
             .collect()
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    ///
+    /// This performs the resolution of a shape ID in the model, it handles both absolute IDs as
+    /// well as relative ones according to the following section from the Smithy specification,
+    /// section 3.1.2.1.
+    /// [Relative shape ID resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution)
+    ///
+    /// > In the Smithy IDL, relative shape IDs are resolved using the following process:
+    /// >
+    /// > 1. If a `use_statement` has imported a shape with the same name, the shape ID resolves to the imported shape ID.
+    /// > 1. If a shape is defined in the same namespace as the shape with the same name, the namespace of the shape resolves to the current namespace.
+    /// > 1. If a shape is defined in the prelude with the same name, the namespace resolves to smithy.api.
+    /// > 1. If a relative shape ID does not satisfy one of the above cases, the shape ID is invalid, and the namespace is inherited from the current namespace.
+    ///
+    pub fn resolve_id(&self, id: &ShapeID) -> Option<ShapeID> {
+        unimplemented!()
     }
 
     // --------------------------------------------------------------------------------------------
@@ -300,6 +321,7 @@ pub mod builder;
 pub mod identity;
 pub use identity::{Identifier, Namespace, ShapeID};
 
+#[doc(hidden)]
 pub mod select;
 
 pub mod shapes;

@@ -8,6 +8,7 @@
 * 1. The model [builder](model/builder/index.html) API that allow for a more _fluent_ and less repetative construction of a
 *    core model.
 * 1. The [prelude](prelude/index.html) model containing the set of shapes defined in the Smithy specification.
+* 1. Model [actions](actions/index.html) that are used to implement linters, validators, and transformations.
 * 1. Traits for [reading/writing](io/index.html) models in different representations.
 * 1. Trait and simple implementation for a model [registry](registry/index.html).
 * 1. A common [error](error/index.html) module to be used by all Atelier crates.
@@ -15,7 +16,7 @@
 * ## Data Model
 *
 * The following is a diagrammatic representation of the core model. For the most part this is a
-* direct transform from the ABNF in the specification, although some of the distinctions between
+* direct transformation from the ABNF in the specification, although some of the distinctions between
 * different ID types (`Identifier`, `ShapeID`) are not illustrated. It also shows all the
 * shape types as subclasses of `Shape`.
 *
@@ -298,7 +299,6 @@ extern crate error_chain;
 #[macro_use]
 extern crate lazy_static;
 
-use crate::model::Model;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -313,30 +313,6 @@ use std::str::FromStr;
 pub enum Version {
     /// Version 1.0 (initial, and current)
     V10,
-}
-
-///
-/// A trait implemented by tools that provide validation over a model.
-///
-pub trait Validator {
-    ///
-    /// Validate the model returning any error, or errors, it may contain.
-    ///
-    fn validate(&self, model: &Model) -> error::Result<()>;
-}
-
-///
-/// A trait implemented by tools that transform one model into another.
-///
-/// This trait requires a corresponding validator to ensure the input model is correct according to
-/// any rules required by the transformation itself.
-///
-pub trait Transformer: Validator {
-    ///
-    /// Transform the input model into another. This _may_ consume the input and produce an entirely
-    /// new model, or it _may_ simply mutate the model and return the modified input.
-    ///
-    fn transform(&self, model: Model) -> error::Result<Model>;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -379,6 +355,8 @@ impl Version {
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
+
+pub mod action;
 
 pub mod error;
 

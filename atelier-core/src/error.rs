@@ -4,6 +4,7 @@ Standard `Error`, `ErrorKind`, and `Result` types.
 
 #![allow(missing_docs)]
 
+use crate::action::ActionIssue;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -52,6 +53,11 @@ error_chain! {
         UnknownType(s: String) {
             description("An unknown type-as-string encountered")
             display("An unknown type-as-string encountered: {}", s)
+        }
+        #[doc("Reporting issues found by an Action.")]
+        ActionIssue(reasons: Vec<ActionIssue>) {
+            description("Reporting issues found by an Action.")
+            display("Reporting issues found by an Action: {:?}", reasons)
         }
     }
 
