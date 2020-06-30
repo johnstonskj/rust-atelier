@@ -13,6 +13,13 @@ use atelier_core::io::{ModelReader, ModelWriter};
 use atelier_core::model::shapes::{Member, ShapeBody, Trait, Valued};
 use atelier_core::model::values::NodeValue;
 use atelier_core::model::{Annotated, Model, Named};
+use atelier_core::syntax::{
+    MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
+    MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
+    MEMBER_PUT, MEMBER_READ, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE, MEMBER_VERSION,
+    SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET,
+    SHAPE_STRUCTURE, SHAPE_UNION,
+};
 use std::io::{Read, Write};
 
 // ------------------------------------------------------------------------------------------------
@@ -61,6 +68,13 @@ impl ModelReader for SmithyReader {
 
 // ------------------------------------------------------------------------------------------------
 
+const CONTROL_DATA_PREFIX: &str = "$";
+const TRAIT_PREFIX: &str = "@";
+
+const STATEMENT_NAMESPACE: &str = "namespace";
+const STATEMENT_USE: &str = "use";
+const STATEMENT_METADATA: &str = "metadata";
+
 impl<'a> Default for SmithyWriter {
     fn default() -> Self {
         Self {}
@@ -79,18 +93,24 @@ impl<'a> ModelWriter<'a> for SmithyWriter {
 
 impl<'a> SmithyWriter {
     fn write_header(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        writeln!(w, "$version: \"{}\"", model.version().to_string())?;
+        writeln!(w, "{}: \"{}\"", MEMBER_VERSION, model.version().to_string())?;
         writeln!(w)?;
+        if model.has_control_data() {
+            for (key, value) in model.control_data() {
+                writeln!(w, "{}{} = {}", CONTROL_DATA_PREFIX, key, value)?;
+            }
+            writeln!(w)?;
+        }
         if model.has_metadata() {
             for (key, value) in model.metadata() {
-                writeln!(w, "metadata \"{}\" = {}", key, value)?;
+                writeln!(w, "{} \"{}\" = {}", STATEMENT_METADATA, key, value)?;
             }
+            writeln!(w)?;
         }
-        writeln!(w)?;
-        writeln!(w, "namespace {}", model.namespace())?;
+        writeln!(w, "{} {}", STATEMENT_NAMESPACE, model.namespace())?;
         writeln!(w)?;
         for use_shape in model.references() {
-            writeln!(w, "use {}", use_shape)?;
+            writeln!(w, "{} {}", STATEMENT_USE, use_shape)?;
         }
         writeln!(w)?;
         Ok(())
@@ -108,38 +128,39 @@ impl<'a> SmithyWriter {
                     writeln!(w, "{} {}", st, shape.id())?;
                 }
                 ShapeBody::List(list) => {
-                    writeln!(w, "list {} {{", shape.id())?;
-                    writeln!(w, "    member: {}", list.member())?;
+                    writeln!(w, "{} {} {{", SHAPE_LIST, shape.id())?;
+                    writeln!(w, "    {}: {}", MEMBER_MEMBER, list.member())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Set(set) => {
-                    writeln!(w, "set {} {{", shape.id())?;
-                    writeln!(w, "    member: {}", set.member())?;
+                    writeln!(w, "{} {} {{", SHAPE_SET, shape.id())?;
+                    writeln!(w, "    {}: {}", MEMBER_MEMBER, set.member())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Map(map) => {
-                    writeln!(w, "map {} {{", shape.id())?;
-                    writeln!(w, "    key: {}", map.key())?;
-                    writeln!(w, "    value: {}", map.value())?;
+                    writeln!(w, "{} {} {{", SHAPE_MAP, shape.id())?;
+                    writeln!(w, "    {}: {}", MEMBER_KEY, map.key())?;
+                    writeln!(w, "    {}: {}", MEMBER_VALUE, map.value())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Structure(structured) => {
-                    writeln!(w, "structure {} {{", shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_STRUCTURE, shape.id())?;
                     self.write_members(w, structured.members(), "    ")?;
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Union(structured) => {
-                    writeln!(w, "union {} {{", shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_UNION, shape.id())?;
                     self.write_members(w, structured.members(), "    ")?;
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Service(service) => {
-                    writeln!(w, "service {} {{", shape.id())?;
-                    writeln!(w, "    version: {}", service.version())?;
+                    writeln!(w, "{} {} {{", SHAPE_SERVICE, shape.id())?;
+                    writeln!(w, "    {}: {}", MEMBER_VERSION, service.version())?;
                     if service.has_operations() {
                         writeln!(
                             w,
-                            "    operations: [{}]",
+                            "    {}: [{}]",
+                            MEMBER_OPERATIONS,
                             service
                                 .operations()
                                 .map(|s| s.to_string())
@@ -150,7 +171,8 @@ impl<'a> SmithyWriter {
                     if service.has_resources() {
                         writeln!(
                             w,
-                            "    resources: [{}]",
+                            "    {}: [{}]",
+                            MEMBER_RESOURCES,
                             service
                                 .resources()
                                 .map(|s| s.to_string())
@@ -161,17 +183,18 @@ impl<'a> SmithyWriter {
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Operation(operation) => {
-                    writeln!(w, "operation {} {{", shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_OPERATION, shape.id())?;
                     if let Some(id) = operation.input() {
-                        writeln!(w, "    input: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_INPUT, id)?;
                     }
                     if let Some(id) = operation.output() {
-                        writeln!(w, "    output: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_OUTPUT, id)?;
                     }
                     if operation.has_errors() {
                         writeln!(
                             w,
-                            "    errors: [{}]",
+                            "    {}: [{}]",
+                            MEMBER_ERRORS,
                             operation
                                 .errors()
                                 .map(|s| s.to_string())
@@ -182,36 +205,37 @@ impl<'a> SmithyWriter {
                     writeln!(w, "}}")?;
                 }
                 ShapeBody::Resource(resource) => {
-                    writeln!(w, "resource {} {{", shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_RESOURCE, shape.id())?;
                     if resource.has_identifiers() {
-                        writeln!(w, "    identifiers: {{")?;
+                        writeln!(w, "    {}: {{", MEMBER_IDENTIFIERS)?;
                         for (id, ref_id) in resource.identifiers() {
                             writeln!(w, "        {}: {}", id, ref_id)?;
                         }
                         writeln!(w, "    }}")?;
                     }
                     if let Some(id) = resource.create() {
-                        writeln!(w, "    create: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_CREATE, id)?;
                     }
                     if let Some(id) = resource.put() {
-                        writeln!(w, "    put: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_PUT, id)?;
                     }
                     if let Some(id) = resource.read() {
-                        writeln!(w, "    read: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_READ, id)?;
                     }
                     if let Some(id) = resource.update() {
-                        writeln!(w, "    update: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_UPDATE, id)?;
                     }
                     if let Some(id) = resource.delete() {
-                        writeln!(w, "    delete: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_DELETE, id)?;
                     }
                     if let Some(id) = resource.list() {
-                        writeln!(w, "    list: {}", id)?;
+                        writeln!(w, "    {}: {}", MEMBER_LIST, id)?;
                     }
                     if resource.has_operations() {
                         writeln!(
                             w,
-                            "    operations: [{}]",
+                            "    {}: [{}]",
+                            MEMBER_OPERATIONS,
                             resource
                                 .operations()
                                 .map(|s| s.to_string())
@@ -222,7 +246,8 @@ impl<'a> SmithyWriter {
                     if resource.has_collection_operations() {
                         writeln!(
                             w,
-                            "    collectionOperations: [{}]",
+                            "    {}: [{}]",
+                            MEMBER_COLLECTION_OPERATIONS,
                             resource
                                 .collection_operations()
                                 .map(|s| s.to_string())
@@ -233,7 +258,8 @@ impl<'a> SmithyWriter {
                     if resource.has_resources() {
                         writeln!(
                             w,
-                            "    resources: [{}]",
+                            "    {}: [{}]",
+                            MEMBER_RESOURCES,
                             resource
                                 .resources()
                                 .map(|s| s.to_string())
@@ -245,7 +271,7 @@ impl<'a> SmithyWriter {
                 }
                 ShapeBody::Apply => {
                     for a_trait in shape.traits() {
-                        write!(w, "apply {} ", shape.id())?;
+                        write!(w, "{} {} ", SHAPE_APPLY, shape.id())?;
                         self.write_trait(w, a_trait, "")?;
                     }
                 }
@@ -256,7 +282,7 @@ impl<'a> SmithyWriter {
     }
 
     fn write_trait(&mut self, w: &mut impl Write, a_trait: &'a Trait, prefix: &str) -> Result<()> {
-        write!(w, "{}@{}", prefix, a_trait.id())?;
+        write!(w, "{}{}{}", prefix, TRAIT_PREFIX, a_trait.id())?;
         match a_trait.value() {
             None => writeln!(w)?,
             Some(NodeValue::Object(map)) => writeln!(

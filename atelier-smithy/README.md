@@ -9,7 +9,11 @@ TBD
 
 ## Changes
 
-**Version 0.1.1** (_in progress_)
+**Version 0.1.2**
+
+* Moved most strings to use `core::syntax`.
+
+**Version 0.1.1**
 
 * Able to parse basic examples.
 
