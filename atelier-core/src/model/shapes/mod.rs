@@ -4,7 +4,7 @@ Model structures common across all shape types.
 The concept of a _shape_ in Smithy is abstract, the ABNF contains productions `shape_statements`
 and `shape_body` but they are not concrete. Shapes are then classified as _simple_, _aggregate_,
 and _service_. The model here introduces `Shape` as a common concrete structure which contains an
-enumeration, `ShapeInner`, to represent each of the productions referenced by `shape_body`.
+enumeration, `ShapeBody`, to represent each of the productions referenced by `shape_body`.
 
 */
 
@@ -17,7 +17,7 @@ use crate::model::{Annotated, Identifier, Named, ShapeID};
 
 ///
 /// This structure represents a shape within the model. The shape-specific data is within the
-/// `ShapeInner` enumeration.
+/// `ShapebBdy` enumeration.
 ///
 #[derive(Clone, Debug)]
 pub struct Shape {
@@ -152,23 +152,80 @@ impl Shape {
     ///
     /// Construct a new shape with the given identifier (shape name) and shape-specific data.
     ///
-    pub fn new(id: ShapeID, inner: ShapeBody) -> Self {
+    pub fn new(id: ShapeID, body: ShapeBody) -> Self {
         Self {
             id,
             traits: Default::default(),
-            body: inner,
+            body,
         }
     }
 
     ///
     /// Construct a new shape with the given identifier (shape name) and shape-specific data.
     ///
-    pub fn local(id: Identifier, inner: ShapeBody) -> Self {
+    pub fn local(id: Identifier, body: ShapeBody) -> Self {
         Self {
             id: id.into(),
             traits: Default::default(),
-            body: inner,
+            body,
         }
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::List` body.
+    ///
+    pub fn simple(id: Identifier, a_type: SimpleType) -> Self {
+        Self::local(id, ShapeBody::SimpleType(a_type))
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::List` body.
+    ///
+    pub fn list(id: Identifier, member: ShapeID) -> Self {
+        Self::local(id, ShapeBody::List(ListOrSet::new(member)))
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::Set` body.
+    ///
+    pub fn set(id: Identifier, member: ShapeID) -> Self {
+        Self::local(id, ShapeBody::Set(ListOrSet::new(member)))
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::Set` body.
+    ///
+    pub fn map(id: Identifier, key: ShapeID, value: ShapeID) -> Self {
+        Self::local(id, ShapeBody::Map(Map::new(key, value)))
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::Structure` body.
+    ///
+    pub fn structure(id: Identifier, members: &[Member]) -> Self {
+        Self::local(
+            id,
+            ShapeBody::Structure(StructureOrUnion::with_members(members)),
+        )
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::Structure` body.
+    ///
+    pub fn union(id: Identifier, members: &[Member]) -> Self {
+        Self::local(
+            id,
+            ShapeBody::Union(StructureOrUnion::with_members(members)),
+        )
+    }
+
+    ///
+    /// Construct a new shape with a `ShapeBody::List` body.
+    ///
+    pub fn apply(id: ShapeID, a_trait: Trait) -> Self {
+        let mut new = Self::new(id, ShapeBody::Apply);
+        new.add_trait(a_trait);
+        new
     }
 
     ///
