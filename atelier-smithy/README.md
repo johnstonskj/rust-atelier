@@ -12,6 +12,9 @@ TBD
 **Version 0.1.2**
 
 * Moved most strings to use `core::syntax`.
+* Fixed issues with multiple documentation strings.
+* Fixed issue with blank documentation traits.
+* Fixed grammar issue with empty trait bodies.
 
 **Version 0.1.1**
 

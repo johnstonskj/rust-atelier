@@ -234,8 +234,8 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> Result<Shape> {
     let mut applies: Option<(ShapeID, Trait)> = None;
     for shape_statement in input_pair.into_inner() {
         match_eoi_rule!(shape_statement,
-            shape_documentation_comments => {
-                documentation.push(parse_shape_documentation_comments(shape_statement)?);
+            documentation_text => {
+                documentation.push(parse_documentation_text(shape_statement)?);
             },
             trait_statements => {
                 traits = parse_trait_statements(shape_statement)?;
@@ -274,7 +274,9 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> Result<Shape> {
     }
     if let Some((id, inner)) = inner {
         let mut shape = Shape::local(id, inner);
-        shape.documentation(&documentation.join("\n"));
+        if !documentation.is_empty() {
+            shape.documentation(&documentation.join("\n"));
+        }
         for a_trait in traits {
             shape.add_trait(a_trait);
         }
@@ -294,22 +296,17 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> Result<Shape> {
     }
 }
 
-fn parse_shape_documentation_comments(input_pair: Pair<'_, Rule>) -> Result<String> {
-    if input_pair.as_str().is_empty() {
-        Ok(String::new())
+fn parse_documentation_text(input_pair: Pair<'_, Rule>) -> Result<String> {
+    //println!("parse_documentation_text: {:?}", inner_pair);
+    if let Rule::documentation_text = input_pair.as_rule() {
+        Ok(input_pair.as_str().to_string())
     } else {
-        let documentation_text: Pair<'_, Rule> = input_pair.into_inner().next().unwrap();
-
-        if let Rule::documentation_text = documentation_text.as_rule() {
-            Ok(documentation_text.as_str().to_string())
-        } else {
-            Err(ErrorKind::Deserialization(
-                "Smithy".to_string(),
-                "parser::parse_shape_documentation_comments".to_string(),
-                Some(documentation_text.to_string()),
-            )
-            .into())
-        }
+        Err(ErrorKind::Deserialization(
+            "Smithy".to_string(),
+            "parser::parse_shape_documentation_comments".to_string(),
+            Some(input_pair.to_string()),
+        )
+        .into())
     }
 }
 
@@ -456,7 +453,7 @@ fn parse_structure_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, S
     let (id, members) = parse_membered_statement(statement)?;
     Ok((
         id,
-        ShapeBody::Union(StructureOrUnion::with_members(members.as_slice())),
+        ShapeBody::Structure(StructureOrUnion::with_members(members.as_slice())),
     ))
 }
 
@@ -464,7 +461,7 @@ fn parse_union_statement(statement: Pair<'_, Rule>) -> Result<(Identifier, Shape
     let (id, members) = parse_membered_statement(statement)?;
     Ok((
         id,
-        ShapeBody::Structure(StructureOrUnion::with_members(members.as_slice())),
+        ShapeBody::Union(StructureOrUnion::with_members(members.as_slice())),
     ))
 }
 
@@ -508,8 +505,8 @@ fn parse_shape_member_kvp(shape_member_kvp: Pair<'_, Rule>) -> Result<Member> {
     let mut shape_id: Option<ShapeID> = None;
     for inner in shape_member_kvp.into_inner() {
         match_rule!(inner,
-            shape_documentation_comments => {
-                documentation.push(parse_shape_documentation_comments(inner)?);
+            documentation_text => {
+                documentation.push(parse_documentation_text(inner)?);
             },
             trait_statements => {
                 traits = parse_trait_statements(inner)?;
@@ -756,6 +753,7 @@ namespace example.weather // from spec
 use aws.sdk#AShape
 
 /// Provides weather forecasts.
+/// Well, only a chance of rain really.
 @paginated(inputToken: "nextToken", outputToken: "nextToken",
            pageSize: "pageSize")
 service Weather {

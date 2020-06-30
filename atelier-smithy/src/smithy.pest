@@ -14,7 +14,7 @@ line_comment =
     _{ "//" ~ ("\t" | '\u{20}'..'\u{10FFF}')* ~ NEWLINE }
 
 documentation_comment =
-    _{ "///" ~ documentation_text ~ NEWLINE }
+    _{ ws ~ "///" ~ documentation_text ~ NEWLINE }
 
 documentation_text =
     { ("\t" | '\u{20}'..'\u{10FFF}')* }
@@ -135,10 +135,14 @@ escape =
     { "\\" }
 
 text_block =
-    { three_dquotes ~ br ~ quoted_chars ~ three_dquotes }
+    { three_dquotes ~ br ~ block_quoted_chars ~ three_dquotes }
 
 three_dquotes =
     _{ DQUOTE ~ DQUOTE ~ DQUOTE }
+
+
+block_quoted_chars =
+    @{ ( sp | NEWLINE | '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFF}' | escaped_char | preserved_double)* }
 
 DQUOTE =
     _{ "\"" }
@@ -159,10 +163,7 @@ shape_statements =
     { (shape_statement | apply_statement)+ }
 
 shape_statement =
-    { shape_documentation_comments? ~ ws ~ trait_statements ~ shape_body ~ br}
-
-shape_documentation_comments =
-    { documentation_comment+ }
+    { documentation_comment* ~ ws ~ trait_statements ~ shape_body ~ br}
 
 shape_body =
     _{ simple_shape_statement | list_statement | set_statement | map_statement | structure_statement
@@ -211,7 +212,7 @@ populated_shape_members =
     { "{" ~ ws ~ shape_member_kvp ~ ws ~ (comma ~ shape_member_kvp ~ ws)* ~ trailing_comma ~ ws ~ "}" }
 
 shape_member_kvp =
-    { shape_documentation_comments? ~ ws ~ trait_statements ~ identifier ~ ws ~ ":" ~ ws ~ shape_id }
+    { documentation_comment* ~ ws ~ trait_statements ~ identifier ~ ws ~ ":" ~ ws ~ shape_id }
 
 list_statement =
     { "list" ~ ws ~ identifier ~ ws ~ shape_members }
@@ -247,6 +248,12 @@ a_trait =
     { "@" ~ shape_id ~ trait_body? }
 
 trait_body =
+    _{ empty_trait_body | populated_trait_body }
+
+empty_trait_body =
+    _{ "(" ~ ws ~  ")" }
+
+populated_trait_body =
     _{ "(" ~ ws ~ trait_body_value ~ ws ~ ")" }
 
 trait_body_value =
