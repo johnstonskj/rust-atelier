@@ -301,8 +301,8 @@ impl StructureOrUnion {
         Self::default()
     }
 
-    /// Construct a new structure or union with the provided group of members. Note that member IDs
-    /// must be unique, so duplicates in the slice will be overridden.
+    /// Construct a new structure or union with the provided group of members. Note that member
+    /// identifiers must be unique, so duplicates in the slice will be overridden.
     pub fn with_members(members: &[Member]) -> Self {
         Self {
             members: members
@@ -317,7 +317,7 @@ impl StructureOrUnion {
         !self.members.is_empty()
     }
 
-    /// Returns `true` if this structure or union has a member with the given ID, else `false`.
+    /// Returns `true` if this structure or union has a member with the given identifier, else `false`.
     pub fn has_member(&self, id: &Identifier) -> bool {
         self.members.contains_key(id)
     }
@@ -327,25 +327,27 @@ impl StructureOrUnion {
         self.members.values()
     }
 
+    /// Return the member with the given identifier, else `None`.
     pub fn member(&self, id: &Identifier) -> Option<&Member> {
         self.members.get(id)
     }
+
     /// Add the given member to this structure or union; this will overwrite any existing member
-    /// with the same ID.
+    /// with the same identifier.
     pub fn add_member(&mut self, member: Member) {
         let _ = self.members.insert(member.id().clone(), member);
     }
 
-    /// Create and add a new member with the given ID and value to this structure or union; this
-    /// will overwrite any existing member with the same ID.
+    /// Create and add a new member with the given identifier and value to this structure or union; this
+    /// will overwrite any existing member with the same identifier.
     pub fn add_member_value(&mut self, id: Identifier, value: NodeValue) {
         let _ = self
             .members
             .insert(id.clone(), Member::with_value(id, value));
     }
 
-    // Add all members of the provided group of members to this structure or union. Note that member IDs
-    // must be unique, so duplicates in the slice will be overridden.
+    // Add all members of the provided group of members to this structure or union. Note that member
+    // identifiers must be unique, so duplicates in the slice will be overridden.
     pub fn append_members(&mut self, members: &[Member]) {
         for member in members {
             self.add_member(member.clone());
