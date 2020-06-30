@@ -114,7 +114,7 @@ impl JsonReader {
             for (k, v) in vs {
                 let id = ShapeID::from_str(k)?;
                 let inner = self.shape(v)?;
-                let mut shape = Shape::local(id.shape_name().clone(), inner);
+                let mut shape = Shape::new(id.clone(), inner);
 
                 if let Some(Value::Object(vs)) = v.get(K_TRAITS) {
                     shape.append_traits(self.traits(vs)?.as_ref())
@@ -214,7 +214,7 @@ impl JsonReader {
                     .into());
                 };
                 let mut member =
-                    Member::with_value(Identifier::from_str(k)?, NodeValue::ShapeID(target));
+                    Member::with_value(Identifier::from_str(k)?, NodeValue::from(target));
                 if let Some(Value::Object(traits)) = obj.get(K_TRAITS) {
                     member.append_traits(self.traits(traits)?.as_slice());
                 }
@@ -276,8 +276,7 @@ impl JsonReader {
             Value::Object(vs) => {
                 let mut object: HashMap<Key, NodeValue> = Default::default();
                 for (k, v) in vs {
-                    // TODO: bug thing here
-                    let _ = object.insert(Key::String(k.to_string()), self.value(v)?);
+                    let _ = object.insert(Key::from(k.to_string()), self.value(v)?);
                 }
                 Ok(NodeValue::from(object))
             }
