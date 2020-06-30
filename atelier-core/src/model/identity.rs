@@ -1,4 +1,7 @@
 use crate::error;
+use crate::syntax::{
+    SHAPE_ID_ABSOLUTE_SEPARATOR, SHAPE_ID_MEMBER_SEPARATOR, SHAPE_ID_NAMESPACE_SEPARATOR,
+};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -19,7 +22,7 @@ pub struct Identifier(String);
 
 ///
 /// A component of `ShapeID`, it represents the namespace of a model, or the namespace for a
-/// qualified identifier.
+/// qualified identifier. The separator character is `CHAR_NAMESPACE_SEPARATOR`.
 ///
 /// Corresponds to the `namespace` production in §2.4.1,
 ///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
@@ -46,8 +49,10 @@ pub struct Namespace(String);
 ///
 /// * `ShapeID`; comprises the 3-tuple described above, with components as follows:
 /// * `Namespace`; the optional `Namespace` struct is a list of `Identifier` components.
+///   * Followed by the separator character `CHAR_SHAPE_ID_ABSOLUTE`.
 /// * `Shape name`; an `Identifier` value.
 /// * `Member name`; an optional `Identifier` value.
+///   * Preceded by the separator character `CHAR_SHAPE_ID_MEMBER`.
 ///
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ShapeID {
@@ -59,6 +64,8 @@ pub struct ShapeID {
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+const CHAR_UNDERSCORE: char = '_';
 
 impl Display for Identifier {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -95,8 +102,9 @@ impl Identifier {
     ///
     pub fn is_valid(s: &str) -> bool {
         !s.is_empty()
-            && s.starts_with(|c: char| c.is_alphabetic() || c == '_')
-            && s.chars().all(|c: char| c.is_alphanumeric() || c == '_')
+            && s.starts_with(|c: char| c.is_alphabetic() || c == CHAR_UNDERSCORE)
+            && s.chars()
+                .all(|c: char| c.is_alphanumeric() || c == CHAR_UNDERSCORE)
     }
 
     ///
@@ -158,7 +166,7 @@ impl Namespace {
     /// This is preferred to calling `from_str()` and determining success or failure.
     ///
     pub fn is_valid(s: &str) -> bool {
-        for id in s.split('.') {
+        for id in s.split(SHAPE_ID_NAMESPACE_SEPARATOR) {
             if !Identifier::is_valid(id) {
                 return false;
             }
@@ -193,7 +201,9 @@ impl Namespace {
     /// Return the current namespace as an iterator over the individual identifiers within it.
     ///
     pub fn split(&self) -> impl Iterator<Item = Identifier> + '_ {
-        self.0.split('.').map(|s| Identifier(s.to_string()))
+        self.0
+            .split(SHAPE_ID_NAMESPACE_SEPARATOR)
+            .map(|s| Identifier(s.to_string()))
     }
 }
 
@@ -212,11 +222,11 @@ impl From<Identifier> for ShapeID {
 impl Display for ShapeID {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if let Some(namespace) = &self.namespace {
-            write!(f, "{}#", namespace)?;
+            write!(f, "{}{}", namespace, SHAPE_ID_ABSOLUTE_SEPARATOR)?;
         }
         write!(f, "{}", self.shape_name)?;
         if let Some(member_name) = &self.member_name {
-            write!(f, "${}", member_name)?;
+            write!(f, "{}{}", SHAPE_ID_MEMBER_SEPARATOR, member_name)?;
         }
         Ok(())
     }
@@ -226,7 +236,10 @@ impl FromStr for ShapeID {
     type Err = error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = s.split('#').map(|s| s.to_string()).collect::<Vec<String>>();
+        let parts = s
+            .split(SHAPE_ID_ABSOLUTE_SEPARATOR)
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
         let (namespace, rest) = if parts.len() == 1 {
             (None, parts.get(0).unwrap())
         } else if parts.len() == 2 {
@@ -237,7 +250,7 @@ impl FromStr for ShapeID {
         };
 
         let parts = rest
-            .split('$')
+            .split(SHAPE_ID_MEMBER_SEPARATOR)
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
         let (shape_name, member_name) = if parts.len() <= 2 {

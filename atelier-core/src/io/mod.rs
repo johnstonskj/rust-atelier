@@ -2,6 +2,12 @@
 Traits for reading and writing models in different formats. Separate crates implement the ability
 to handle different representations, such as the original Smithy, JSON AST, and OpenAPI.
 
+This module also provides some useful `Writer` implementations, all are features, all are included
+by default.
+
+* **debug**; uses the `Debug` implementation of Model to write out the internal structure.
+* **uml**; uses [PlantUML](https://plantuml.com/) to generate diagrams of a model structure.
+
 # Example Model Writer
 
 The example below is pretty much the implementation of the `debug` module, it writes the model
@@ -96,6 +102,11 @@ pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model)
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[cfg(feature = "debug")]
 pub mod debug;
 
+#[cfg(feature = "uml")]
 pub mod plant_uml;
+
+#[cfg(feature = "tree")]
+pub mod tree;

@@ -1,7 +1,7 @@
 [package]
 name = "atelier_core"
 description = "Rust native core model for the AWS Smithy IDL."
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
 documentation = "https://docs.rs/atelier_core/"
@@ -14,6 +14,11 @@ publish = true
 # This sets the default target to `x86_64-unknown-linux-gnu`
 # and only builds that target for documentation.
 targets = ["x86_64-unknown-linux-gnu"]
+
+[features]
+default = ["debug", "uml"]
+debug = []
+uml = []
 
 [dependencies]
 error-chain = "0.12.2"

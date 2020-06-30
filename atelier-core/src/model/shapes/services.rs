@@ -2,6 +2,11 @@ use crate::error::{invalid_value_variant, ErrorKind, Result};
 use crate::model::shapes::{HasMembers, Member, Valued};
 use crate::model::values::{Key, NodeValue};
 use crate::model::{Identifier, Named, ShapeID};
+use crate::syntax::{
+    MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
+    MEMBER_INPUT, MEMBER_LIST, MEMBER_OPERATIONS, MEMBER_OUTPUT, MEMBER_PUT, MEMBER_READ,
+    MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VERSION,
+};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -160,7 +165,7 @@ macro_rules! array_member {
 impl Default for Service {
     fn default() -> Self {
         Self {
-            version: Member::new(Identifier::from_str("version").unwrap()),
+            version: Member::new(Identifier::from_str(MEMBER_VERSION).unwrap()),
             operations: Member::with_value(
                 Identifier::from_str("operations").unwrap(),
                 NodeValue::Array(Default::default()),
@@ -175,15 +180,16 @@ impl Default for Service {
 
 impl HasMembers for Service {
     fn has_member_named(&self, member_name: &Identifier) -> bool {
-        ["version", "operations", "resources"].contains(&member_name.to_string().as_str())
+        [MEMBER_VERSION, MEMBER_OPERATIONS, MEMBER_RESOURCES]
+            .contains(&member_name.to_string().as_str())
     }
 
     fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
-        if member_name.to_string() == "version" {
+        if member_name.to_string() == MEMBER_VERSION {
             Some(&self.version)
-        } else if member_name.to_string() == "operations" {
+        } else if member_name.to_string() == MEMBER_OPERATIONS {
             Some(&self.operations)
-        } else if member_name.to_string() == "resources" {
+        } else if member_name.to_string() == MEMBER_RESOURCES {
             Some(&self.resources)
         } else {
             None
@@ -191,14 +197,14 @@ impl HasMembers for Service {
     }
 
     fn set_member(&mut self, member: Member) -> Result<()> {
-        if member.id().to_string() == "version" {
+        if member.id().to_string() == MEMBER_VERSION {
             if let Some(NodeValue::String(_)) = member.value() {
                 self.version = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("String".to_string()).into())
             }
-        } else if member.id().to_string() == "operations" {
+        } else if member.id().to_string() == MEMBER_OPERATIONS {
             if let Some(NodeValue::Array(vs)) = member.value() {
                 if vs.iter().all(|v| v.is_shape_id()) {
                     self.operations = member;
@@ -209,7 +215,7 @@ impl HasMembers for Service {
             } else {
                 Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "resources" {
+        } else if member.id().to_string() == MEMBER_RESOURCES {
             if let Some(NodeValue::Array(vs)) = member.value() {
                 if vs.iter().all(|v| v.is_shape_id()) {
                     self.resources = member;
@@ -248,10 +254,10 @@ impl Service {
 impl Default for Operation {
     fn default() -> Self {
         Self {
-            input: Member::new(Identifier::from_str("input").unwrap()),
-            output: Member::new(Identifier::from_str("output").unwrap()),
+            input: Member::new(Identifier::from_str(MEMBER_INPUT).unwrap()),
+            output: Member::new(Identifier::from_str(MEMBER_OUTPUT).unwrap()),
             errors: Member::with_value(
-                Identifier::from_str("errors").unwrap(),
+                Identifier::from_str(MEMBER_ERRORS).unwrap(),
                 NodeValue::Array(Default::default()),
             ),
         }
@@ -260,15 +266,15 @@ impl Default for Operation {
 
 impl HasMembers for Operation {
     fn has_member_named(&self, member_name: &Identifier) -> bool {
-        ["input", "output", "errors"].contains(&member_name.to_string().as_str())
+        [MEMBER_INPUT, MEMBER_OUTPUT, MEMBER_ERRORS].contains(&member_name.to_string().as_str())
     }
 
     fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
-        if member_name.to_string() == "input" {
+        if member_name.to_string() == MEMBER_INPUT {
             Some(&self.input)
-        } else if member_name.to_string() == "output" {
+        } else if member_name.to_string() == MEMBER_OUTPUT {
             Some(&self.output)
-        } else if member_name.to_string() == "errors" {
+        } else if member_name.to_string() == MEMBER_ERRORS {
             Some(&self.errors)
         } else {
             None
@@ -276,21 +282,21 @@ impl HasMembers for Operation {
     }
 
     fn set_member(&mut self, member: Member) -> Result<()> {
-        if member.id().to_string() == "input" {
+        if member.id().to_string() == MEMBER_INPUT {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.input = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "output" {
+        } else if member.id().to_string() == MEMBER_OUTPUT {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.output = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "errors" {
+        } else if member.id().to_string() == MEMBER_ERRORS {
             if let Some(NodeValue::Array(vs)) = member.value() {
                 if vs.iter().all(|v| v.is_shape_id()) {
                     self.errors = member;
@@ -321,25 +327,25 @@ impl Default for Resource {
     fn default() -> Self {
         Self {
             identifiers: Member::with_value(
-                Identifier::from_str("identifiers").unwrap(),
+                Identifier::from_str(MEMBER_IDENTIFIERS).unwrap(),
                 NodeValue::Object(Default::default()),
             ),
-            create: Member::new(Identifier::from_str("create").unwrap()),
-            put: Member::new(Identifier::from_str("put").unwrap()),
-            read: Member::new(Identifier::from_str("read").unwrap()),
-            update: Member::new(Identifier::from_str("update").unwrap()),
-            delete: Member::new(Identifier::from_str("delete").unwrap()),
-            list: Member::new(Identifier::from_str("list").unwrap()),
+            create: Member::new(Identifier::from_str(MEMBER_CREATE).unwrap()),
+            put: Member::new(Identifier::from_str(MEMBER_PUT).unwrap()),
+            read: Member::new(Identifier::from_str(MEMBER_READ).unwrap()),
+            update: Member::new(Identifier::from_str(MEMBER_UPDATE).unwrap()),
+            delete: Member::new(Identifier::from_str(MEMBER_DELETE).unwrap()),
+            list: Member::new(Identifier::from_str(MEMBER_LIST).unwrap()),
             operations: Member::with_value(
-                Identifier::from_str("operations").unwrap(),
+                Identifier::from_str(MEMBER_OPERATIONS).unwrap(),
                 NodeValue::Array(Default::default()),
             ),
             collection_operations: Member::with_value(
-                Identifier::from_str("collection_operations").unwrap(),
+                Identifier::from_str(MEMBER_COLLECTION_OPERATIONS).unwrap(),
                 NodeValue::Array(Default::default()),
             ),
             resources: Member::with_value(
-                Identifier::from_str("resources").unwrap(),
+                Identifier::from_str(MEMBER_RESOURCES).unwrap(),
                 NodeValue::Array(Default::default()),
             ),
         }
@@ -349,38 +355,38 @@ impl Default for Resource {
 impl HasMembers for Resource {
     fn has_member_named(&self, member_name: &Identifier) -> bool {
         [
-            "identifiers",
-            "create",
-            "put",
-            "read",
-            "update",
-            "delete",
-            "list",
-            "operations",
-            "collection_operations",
-            "resources",
+            MEMBER_IDENTIFIERS,
+            MEMBER_CREATE,
+            MEMBER_PUT,
+            MEMBER_READ,
+            MEMBER_UPDATE,
+            MEMBER_DELETE,
+            MEMBER_LIST,
+            MEMBER_OPERATIONS,
+            MEMBER_COLLECTION_OPERATIONS,
+            MEMBER_RESOURCES,
         ]
         .contains(&member_name.to_string().as_str())
     }
 
     fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
-        if member_name.to_string() == "identifiers" {
+        if member_name.to_string() == MEMBER_IDENTIFIERS {
             Some(&self.identifiers)
-        } else if member_name.to_string() == "create" {
+        } else if member_name.to_string() == MEMBER_CREATE {
             Some(&self.create)
-        } else if member_name.to_string() == "put" {
+        } else if member_name.to_string() == MEMBER_PUT {
             Some(&self.put)
-        } else if member_name.to_string() == "read" {
+        } else if member_name.to_string() == MEMBER_READ {
             Some(&self.read)
-        } else if member_name.to_string() == "update" {
+        } else if member_name.to_string() == MEMBER_UPDATE {
             Some(&self.update)
-        } else if member_name.to_string() == "delete" {
+        } else if member_name.to_string() == MEMBER_DELETE {
             Some(&self.delete)
-        } else if member_name.to_string() == "list" {
+        } else if member_name.to_string() == MEMBER_LIST {
             Some(&self.list)
-        } else if member_name.to_string() == "operations" {
+        } else if member_name.to_string() == MEMBER_OPERATIONS {
             Some(&self.operations)
-        } else if member_name.to_string() == "collection_operations" {
+        } else if member_name.to_string() == MEMBER_COLLECTION_OPERATIONS {
             Some(&self.collection_operations)
         } else if member_name.to_string() == "resources" {
             Some(&self.resources)
@@ -390,7 +396,7 @@ impl HasMembers for Resource {
     }
 
     fn set_member(&mut self, member: Member) -> Result<()> {
-        if member.id().to_string() == "identifiers" {
+        if member.id().to_string() == MEMBER_IDENTIFIERS {
             if let Some(NodeValue::Object(vs)) = member.value() {
                 if vs.iter().all(|(k, v)| k.is_identifier() && v.is_shape_id()) {
                     self.identifiers = member;
@@ -401,49 +407,49 @@ impl HasMembers for Resource {
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "create" {
+        } else if member.id().to_string() == MEMBER_CREATE {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.create = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "put" {
+        } else if member.id().to_string() == MEMBER_PUT {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.put = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "read" {
+        } else if member.id().to_string() == MEMBER_READ {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.read = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "update" {
+        } else if member.id().to_string() == MEMBER_UPDATE {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.update = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "delete" {
+        } else if member.id().to_string() == MEMBER_DELETE {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.delete = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "list" {
+        } else if member.id().to_string() == MEMBER_LIST {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.list = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "operations" {
+        } else if member.id().to_string() == MEMBER_OPERATIONS {
             if let Some(NodeValue::Array(vs)) = member.value() {
                 if vs.iter().all(|v| v.is_shape_id()) {
                     self.operations = member;
@@ -452,7 +458,7 @@ impl HasMembers for Resource {
             } else {
                 Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "collection_operations" {
+        } else if member.id().to_string() == MEMBER_COLLECTION_OPERATIONS {
             if let Some(NodeValue::Array(vs)) = member.value() {
                 if vs.iter().all(|v| v.is_shape_id()) {
                     self.collection_operations = member;
@@ -463,7 +469,7 @@ impl HasMembers for Resource {
             } else {
                 Err(ErrorKind::InvalidValueVariant("Array > ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "resources" {
+        } else if member.id().to_string() == MEMBER_RESOURCES {
             if let Some(NodeValue::Array(vs)) = member.value() {
                 if vs.iter().all(|v| v.is_shape_id()) {
                     self.resources = member;

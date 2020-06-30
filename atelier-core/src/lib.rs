@@ -388,3 +388,5 @@ pub mod model;
 pub mod prelude;
 
 pub mod registry;
+
+pub mod syntax;

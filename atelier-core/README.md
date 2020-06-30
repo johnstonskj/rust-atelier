@@ -94,6 +94,11 @@ $ cargo run --example weather
 
 ## Changes
 
+**Version 0.1.3**
+
+* Made debug and uml `Writer` implementations features.
+* Added module `syntax` for all string constants.
+
 **Version 0.1.2**
 
 * Updated the model and builder APIs to support JSON and Smithy readers:

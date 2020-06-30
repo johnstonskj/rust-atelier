@@ -2,6 +2,11 @@ use crate::error::{invalid_value_variant, Error, ErrorKind, Result};
 use crate::model::shapes::{HasMembers, Member, Valued};
 use crate::model::values::NodeValue;
 use crate::model::{Identifier, Named, ShapeID};
+use crate::syntax::{
+    MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE, SHAPE_BIG_DECIMAL, SHAPE_BIG_INTEGER, SHAPE_BLOB,
+    SHAPE_BOOLEAN, SHAPE_BYTE, SHAPE_DOCUMENT, SHAPE_DOUBLE, SHAPE_FLOAT, SHAPE_INTEGER,
+    SHAPE_LONG, SHAPE_SHORT, SHAPE_STRING, SHAPE_TIMESTAMP,
+};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -81,19 +86,19 @@ impl Display for SimpleType {
             f,
             "{}",
             match self {
-                SimpleType::Blob => "blob",
-                SimpleType::Boolean => "boolean",
-                SimpleType::Document => "document",
-                SimpleType::String => "string",
-                SimpleType::Byte => "byte",
-                SimpleType::Short => "short",
-                SimpleType::Integer => "integer",
-                SimpleType::Long => "long",
-                SimpleType::Float => "float",
-                SimpleType::Double => "double",
-                SimpleType::BigInteger => "bigInteger",
-                SimpleType::BigDecimal => "bigDecimal",
-                SimpleType::Timestamp => "timestamp",
+                SimpleType::Blob => SHAPE_BLOB,
+                SimpleType::Boolean => SHAPE_BOOLEAN,
+                SimpleType::Document => SHAPE_DOCUMENT,
+                SimpleType::String => SHAPE_STRING,
+                SimpleType::Byte => SHAPE_BYTE,
+                SimpleType::Short => SHAPE_SHORT,
+                SimpleType::Integer => SHAPE_INTEGER,
+                SimpleType::Long => SHAPE_LONG,
+                SimpleType::Float => SHAPE_FLOAT,
+                SimpleType::Double => SHAPE_DOUBLE,
+                SimpleType::BigInteger => SHAPE_BIG_INTEGER,
+                SimpleType::BigDecimal => SHAPE_BIG_DECIMAL,
+                SimpleType::Timestamp => SHAPE_TIMESTAMP,
             }
         )
     }
@@ -104,19 +109,19 @@ impl FromStr for SimpleType {
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
-            "blob" => Ok(SimpleType::Blob),
-            "boolean" => Ok(SimpleType::Boolean),
-            "document" => Ok(SimpleType::Document),
-            "string" => Ok(SimpleType::String),
-            "byte" => Ok(SimpleType::Byte),
-            "short" => Ok(SimpleType::Short),
-            "integer" => Ok(SimpleType::Integer),
-            "long" => Ok(SimpleType::Long),
-            "float" => Ok(SimpleType::Float),
-            "double" => Ok(SimpleType::Double),
-            "bigInteger" => Ok(SimpleType::BigInteger),
-            "bigDecimal" => Ok(SimpleType::BigDecimal),
-            "timestamp" => Ok(SimpleType::Timestamp),
+            SHAPE_BLOB => Ok(SimpleType::Blob),
+            SHAPE_BOOLEAN => Ok(SimpleType::Boolean),
+            SHAPE_DOCUMENT => Ok(SimpleType::Document),
+            SHAPE_STRING => Ok(SimpleType::String),
+            SHAPE_BYTE => Ok(SimpleType::Byte),
+            SHAPE_SHORT => Ok(SimpleType::Short),
+            SHAPE_INTEGER => Ok(SimpleType::Integer),
+            SHAPE_LONG => Ok(SimpleType::Long),
+            SHAPE_FLOAT => Ok(SimpleType::Float),
+            SHAPE_DOUBLE => Ok(SimpleType::Double),
+            SHAPE_BIG_INTEGER => Ok(SimpleType::BigInteger),
+            SHAPE_BIG_DECIMAL => Ok(SimpleType::BigDecimal),
+            SHAPE_TIMESTAMP => Ok(SimpleType::Timestamp),
             _ => Err(ErrorKind::UnknownType(s.to_string()).into()),
         }
     }
@@ -126,7 +131,7 @@ impl FromStr for SimpleType {
 
 impl HasMembers for ListOrSet {
     fn has_member_named(&self, member_name: &Identifier) -> bool {
-        member_name.to_string() == "member"
+        member_name.to_string() == MEMBER_MEMBER
     }
 
     fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
@@ -156,7 +161,7 @@ impl ListOrSet {
     pub fn new(member: ShapeID) -> Self {
         Self {
             member: Member::with_value(
-                Identifier::from_str("member").unwrap(),
+                Identifier::from_str(MEMBER_MEMBER).unwrap(),
                 NodeValue::ShapeID(member),
             ),
         }
@@ -166,7 +171,7 @@ impl ListOrSet {
     pub fn member(&self) -> &ShapeID {
         match &self.member.value().as_ref().unwrap() {
             NodeValue::ShapeID(id) => id,
-            _ => invalid_value_variant("Ref"),
+            _ => invalid_value_variant("ShapeID"),
         }
     }
 
@@ -180,13 +185,13 @@ impl ListOrSet {
 
 impl HasMembers for Map {
     fn has_member_named(&self, member_name: &Identifier) -> bool {
-        ["key", "value", "resources"].contains(&member_name.to_string().as_str())
+        [MEMBER_KEY, MEMBER_VALUE].contains(&member_name.to_string().as_str())
     }
 
     fn get_member_named(&self, member_name: &Identifier) -> Option<&Member> {
-        if member_name.to_string() == "key" {
+        if member_name.to_string() == MEMBER_KEY {
             Some(&self.key)
-        } else if member_name.to_string() == "value" {
+        } else if member_name.to_string() == MEMBER_VALUE {
             Some(&self.value)
         } else {
             None
@@ -194,14 +199,14 @@ impl HasMembers for Map {
     }
 
     fn set_member(&mut self, member: Member) -> Result<()> {
-        if member.id().to_string() == "key" {
+        if member.id().to_string() == MEMBER_KEY {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.key = member;
                 Ok(())
             } else {
                 Err(ErrorKind::InvalidValueVariant("ShapeID".to_string()).into())
             }
-        } else if member.id().to_string() == "value" {
+        } else if member.id().to_string() == MEMBER_VALUE {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
                 self.value = member;
                 Ok(())
@@ -219,11 +224,11 @@ impl Map {
     pub fn new(key: ShapeID, value: ShapeID) -> Self {
         Self {
             key: Member::with_value(
-                Identifier::from_str("key").unwrap(),
+                Identifier::from_str(MEMBER_KEY).unwrap(),
                 NodeValue::ShapeID(key),
             ),
             value: Member::with_value(
-                Identifier::from_str("value").unwrap(),
+                Identifier::from_str(MEMBER_VALUE).unwrap(),
                 NodeValue::ShapeID(value),
             ),
         }
@@ -233,7 +238,7 @@ impl Map {
     pub fn key(&self) -> &ShapeID {
         match &self.key.value().as_ref().unwrap() {
             NodeValue::ShapeID(id) => id,
-            _ => invalid_value_variant("Ref"),
+            _ => invalid_value_variant("ShapeID"),
         }
     }
 
@@ -246,7 +251,7 @@ impl Map {
     pub fn value(&self) -> &ShapeID {
         match &self.value.value().as_ref().unwrap() {
             NodeValue::ShapeID(id) => id,
-            _ => invalid_value_variant("Ref"),
+            _ => invalid_value_variant("ShapeID"),
         }
     }
 

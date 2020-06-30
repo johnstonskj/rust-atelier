@@ -39,6 +39,13 @@ use crate::io::ModelWriter;
 use crate::model::shapes::{Shape, ShapeBody, Valued};
 use crate::model::values::NodeValue;
 use crate::model::{Annotated, Model, Named, ShapeID};
+use crate::prelude::PRELUDE_NAMESPACE;
+use crate::syntax::{
+    MEMBER_COLLECTION_OPERATIONS, MEMBER_OPERATIONS, MEMBER_VERSION, SHAPE_BIG_DECIMAL,
+    SHAPE_BIG_INTEGER, SHAPE_BLOB, SHAPE_BOOLEAN, SHAPE_BYTE, SHAPE_DOCUMENT, SHAPE_DOUBLE,
+    SHAPE_FLOAT, SHAPE_INTEGER, SHAPE_LONG, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SHORT,
+    SHAPE_STRING, SHAPE_TIMESTAMP, SHAPE_UNION,
+};
 use std::io::Write;
 use std::str::FromStr;
 
@@ -111,21 +118,21 @@ impl PlantUmlWriter {
     }
 
     fn write_smithy_model(&self, w: &mut impl Write) -> crate::error::Result<()> {
-        writeln!(w, "package smithy.api {{")?;
+        writeln!(w, "package {} {{", PRELUDE_NAMESPACE)?;
         for name in &[
-            "blob",
-            "boolean",
-            "string",
-            "byte",
-            "short",
-            "integer",
-            "long",
-            "float",
-            "double",
-            "bigInteger",
-            "bigDecimal",
-            "timestamp",
-            "document",
+            SHAPE_BLOB,
+            SHAPE_BOOLEAN,
+            SHAPE_DOCUMENT,
+            SHAPE_STRING,
+            SHAPE_BYTE,
+            SHAPE_SHORT,
+            SHAPE_INTEGER,
+            SHAPE_LONG,
+            SHAPE_FLOAT,
+            SHAPE_DOUBLE,
+            SHAPE_BIG_INTEGER,
+            SHAPE_BIG_DECIMAL,
+            SHAPE_TIMESTAMP,
         ] {
             writeln!(w, "    class {} <<primitive>> {{ }}", name)?;
         }
@@ -140,10 +147,16 @@ impl PlantUmlWriter {
         service: &Shape,
         model: &Model,
     ) -> crate::error::Result<()> {
-        writeln!(w, "    class {} <<service>> {{", service.id())?;
+        writeln!(w, "    class {} <<{}>> {{", service.id(), SHAPE_SERVICE)?;
         let notes = self.write_class_traits(w, service, model)?;
         let body = service.body().as_service().unwrap();
-        writeln!(w, "        version: String = \"{}\"", body.version())?;
+        writeln!(
+            w,
+            "        {}: {} = \"{}\"",
+            MEMBER_VERSION,
+            SHAPE_STRING,
+            body.version()
+        )?;
         for operation in body.operations() {
             self.write_operation(w, operation, model, None)?;
         }
@@ -162,7 +175,7 @@ impl PlantUmlWriter {
         resource: &Shape,
         model: &Model,
     ) -> crate::error::Result<()> {
-        writeln!(w, "    class {} <<resource>> {{", resource.id())?;
+        writeln!(w, "    class {} <<{}>> {{", resource.id(), SHAPE_RESOURCE)?;
         let notes = self.write_class_traits(w, resource, model)?;
         let body = resource.body().as_resource().unwrap();
         for (id, shape_id) in body.identifiers() {
@@ -187,13 +200,13 @@ impl PlantUmlWriter {
             self.write_operation(w, id, model, Some("create"))?;
         }
         if body.has_operations() {
-            writeln!(w, "        ..operations..")?;
+            writeln!(w, "        ..{}..", MEMBER_OPERATIONS)?;
             for operation in body.operations() {
                 self.write_operation(w, operation, model, None)?;
             }
         }
         if body.has_collection_operations() {
-            writeln!(w, "        ..collection operations..")?;
+            writeln!(w, "        ..{}..", MEMBER_COLLECTION_OPERATIONS)?;
             for operation in body.collection_operations() {
                 self.write_operation(w, operation, model, None)?;
             }
@@ -223,7 +236,7 @@ impl PlantUmlWriter {
         } else if structure.has_trait(&ShapeID::from_str("error").unwrap()) {
             writeln!(w, "    class {} <<error>> {{", structure.id())?;
         } else if is_union {
-            writeln!(w, "    class {} <<union>> {{", structure.id())?;
+            writeln!(w, "    class {} <<{}>> {{", structure.id(), SHAPE_UNION)?;
         } else {
             writeln!(w, "    class {} {{", structure.id())?;
         }
@@ -258,7 +271,13 @@ impl PlantUmlWriter {
         writeln!(w, "    {}", notes.join("\n"))?;
         if self.expand_smithy_api {
             let simple = data_type.body().as_simple().unwrap();
-            writeln!(w, "    smithy.api.{} <|-- {}", simple, data_type.id())?;
+            writeln!(
+                w,
+                "    {}.{} <|-- {}",
+                PRELUDE_NAMESPACE,
+                simple,
+                data_type.id()
+            )?;
         }
         writeln!(w)?;
         Ok(())
