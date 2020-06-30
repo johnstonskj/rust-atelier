@@ -94,13 +94,18 @@ $ cargo run --example weather
 
 ## Changes
 
+**Version 0.1.2**
+
+* Updated the model and builder APIs to support JSON and Smithy readers:
+  * added the `HasMembers` trait for a more un-typed API,
+* Finished the API documentation.
+
+
 **Version 0.1.1**
 
 * Updated the model and builder APIs to be more consistent:
   * documented method patterns, and ensured they were applied,
   * moved from per-type `build` methods to use `Into<T>`,
-  * added the `HasMembers` trait for a more un-typed API,
-  * changes based on the requirements of the JSON and Smithy readers.
 * Added the majority of API documentation.
 
 **Version 0.1.0**
