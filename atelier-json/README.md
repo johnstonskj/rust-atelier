@@ -9,9 +9,9 @@ TBD
 
 ## Changes
 
-**Version 0.1.1** (_in progress_)
+**Version 0.1.1**
 
-* Be able to read a JSON representation.
+* Able to read a JSON representation.
 
 **Version 0.1.0**
 
@@ -20,4 +20,4 @@ TBD
 
 ## TODO
 
-1. Need to have a parser.
+None.
