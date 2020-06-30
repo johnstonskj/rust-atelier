@@ -23,6 +23,12 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 ## Changes
 
+**Version 0.1.2**
+* Core API support for readers.
+* Parser for Smithy representation.
+* Parser for Smithy's JSON AST representation.
+* Additional documentation.
+
 **Version 0.1.1**
 
 * Cleaned up core and builder APIs. 
@@ -42,7 +48,5 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 1. Complete model for selector expressions.
 1. Validation (internal and external) support.
-1. Parser for Smithy representation.
-1. Parser for Smithy's JSON AST representation.
 1. Parser and writer for OpenAPI representation.
 1. Work on cargo command for processing Smithy files.
