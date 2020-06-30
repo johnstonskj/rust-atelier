@@ -247,6 +247,12 @@ impl From<String> for NodeValue {
     }
 }
 
+impl From<&str> for NodeValue {
+    fn from(v: &str) -> Self {
+        Self::String(v.to_string())
+    }
+}
+
 impl From<Vec<NodeValue>> for NodeValue {
     fn from(v: Vec<NodeValue>) -> Self {
         Self::Array(v)
