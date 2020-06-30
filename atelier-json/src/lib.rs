@@ -2,9 +2,73 @@
 Reads and writes the [JSON AST](https://awslabs.github.io/smithy/1.0/spec/core/json-ast.html)
 representation described in the specification.
 
+As that there is no separate model-level namespace, all shape names have been made absolute in
+this representation. This is a problem when constructing the model, if there are shapes from
+different namespaces present the parser will return an error at this time.
+
 # Example
 
-TBD
+The following JSON demonstrates the structure of the AST format.
+
+```json
+{
+    "smithy": "1.0",
+    "metadata": {
+        "authors": [
+            "Simon"
+        ]
+    },
+    "shapes": {
+        "smithy.example#MyString": {
+            "type": "string",
+            "traits": {
+                "smithy.api#documentation": "My documentation string",
+                "smithy.api#tags": [
+                    "a",
+                    "b"
+                ]
+            }
+        },
+        "smithy.example#MyList": {
+            "type": "list",
+            "member": {
+                "target": "smithy.api#String"
+            }
+        },
+        "smithy.example#MyStructure": {
+            "type": "structure",
+            "members": {
+                "stringMember": {
+                    "target": "smithy.api#String",
+                    "traits": {
+                        "smithy.api#required": {}
+                    }
+                },
+                "numberMember": {
+                    "target": "smithy.api#Integer"
+                }
+            }
+        }
+    }
+}
+```
+
+The following will parse the model above.
+
+```rust
+use atelier_core::io::read_model_from_string;
+use atelier_json::io::JsonReader;
+
+# const JSON: &str =
+#        r#"{ "smithy": "1.0", "shapes": { "smithy.example#MyString": { "type": "string" } } }"#;
+let mut reader = JsonReader::default();
+let result = read_model_from_string(&mut reader, JSON);
+if result.is_err() {
+    println!("{:?}", result);
+}
+assert!(result.is_ok());
+println!("{:#?}", result.unwrap());
+```
 
 */
 
@@ -32,8 +96,4 @@ TBD
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-#[doc(hidden)]
 pub mod io;
-pub use io::{JsonReader, JsonWriter};
-
-mod syntax;
