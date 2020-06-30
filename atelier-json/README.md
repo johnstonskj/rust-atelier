@@ -14,6 +14,7 @@ TBD
 * Fixed issue in ID->Shape mapping.
 * Fixed issue with missing `members` on structure and union shapes.
 * Added a set of JSON files from the AWS repository as parser tests.
+* Renamed integration test names for easier reporting. 
 
 **Version 0.1.1**
 
