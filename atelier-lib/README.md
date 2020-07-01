@@ -22,6 +22,14 @@ default feature, although the core will be included regardless of any feature se
 
 ## Changes
 
+
+**Version 0.1.2**
+
+* New dependency versions:
+  * core: v0.1.3
+  * json: v0.1.2
+  * smithy: v0.1.2
+
 **Version 0.1.1**
 
 * All re-exports configured using feature flags.
