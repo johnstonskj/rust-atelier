@@ -40,7 +40,7 @@ pub struct NamingConventions {}
 /// process stops and returns all reported issues up to that point, if `false` it continues on.
 ///
 pub fn run_linter_actions(
-    linters: &[impl Linter],
+    linters: &[Box<dyn Linter>],
     model: &Model,
     fail_fast: bool,
 ) -> Option<Vec<ActionIssue>> {
@@ -84,7 +84,10 @@ impl Linter for NamingConventions {
             if shape_name.to_camel_case() != shape_name {
                 issues.push(ActionIssue::info_at(
                     &self.label(),
-                    "Shape names should conform to UpperCamelCase",
+                    &format!(
+                        "Shape names should conform to UpperCamelCase, i.e. {}",
+                        shape_name.to_camel_case()
+                    ),
                     shape.id().clone(),
                 ));
             }
@@ -95,7 +98,10 @@ impl Linter for NamingConventions {
                         if member_name.to_mixed_case() != member_name {
                             issues.push(ActionIssue::info_at(
                                 &self.label(),
-                                "Member names should conform to lowerCamelCase",
+                                &format!(
+                                    "Member names should conform to lowerCamelCase, i.e. {}",
+                                    member_name.to_mixed_case()
+                                ),
                                 ShapeID::new(
                                     Some(model.namespace().clone()),
                                     shape.id().shape_name().clone(),

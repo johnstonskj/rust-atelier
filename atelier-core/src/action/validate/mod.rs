@@ -23,6 +23,15 @@ use std::str::FromStr;
 #[derive(Debug)]
 pub struct NoOrphanedReferences {}
 
+///
+/// This validator ensures that all shape members refer to shapes of the correct type.
+///
+/// So, a `List` cannot have members that are services and a `Service`'s operations actually have
+/// to be `Operation` shapes.
+///
+#[derive(Debug)]
+pub struct CorrectTypeReferences {}
+
 // ------------------------------------------------------------------------------------------------
 // Private Types
 // ------------------------------------------------------------------------------------------------
@@ -39,7 +48,7 @@ pub struct NoOrphanedReferences {}
 /// the process stops and returns all reported issues up to that point, if `false` it continues on.
 ///
 pub fn run_validation_actions(
-    validators: &[impl Validator],
+    validators: &[Box<dyn Validator>],
     model: &Model,
     fail_fast: bool,
 ) -> Option<Vec<ActionIssue>> {
@@ -99,6 +108,7 @@ impl Validator for NoOrphanedReferences {
         let list_id = Identifier::from_str("list").unwrap();
         let collection_operations_id = Identifier::from_str("collectionOperations").unwrap();
         let mut issues: Vec<ActionIssue> = Default::default();
+
         for shape in model.shapes() {
             let this_shape_id = shape.id();
             self.resolve_traits(&this_shape_id, shape.traits(), model, &mut issues);
@@ -269,6 +279,7 @@ impl Validator for NoOrphanedReferences {
                 _ => {}
             }
         }
+
         if issues.is_empty() {
             None
         } else {
@@ -320,6 +331,299 @@ impl NoOrphanedReferences {
 }
 
 // ------------------------------------------------------------------------------------------------
+
+impl Default for CorrectTypeReferences {
+    fn default() -> Self {
+        Self {}
+    }
+}
+
+impl Action for CorrectTypeReferences {
+    fn label(&self) -> &'static str {
+        "CorrectTypeReferences"
+    }
+}
+
+impl Validator for CorrectTypeReferences {
+    fn validate(&self, model: &Model) -> Option<Vec<ActionIssue>> {
+        let mut issues: Vec<ActionIssue> = Default::default();
+
+        for shape in model.shapes() {
+            match shape.body() {
+                ShapeBody::List(list_or_set) | ShapeBody::Set(list_or_set) => {
+                    self.check_type_only(
+                        &shape.id(),
+                        list_or_set.member(),
+                        model,
+                        "List or Set member",
+                        &mut issues,
+                    );
+                }
+                ShapeBody::Map(map) => {
+                    self.check_type_only(&shape.id(), map.key(), model, "Map key", &mut issues);
+                    self.check_type_only(&shape.id(), map.value(), model, "Map value", &mut issues);
+                }
+                ShapeBody::Structure(structured) | ShapeBody::Union(structured) => {
+                    for member in structured.members() {
+                        self.check_type_only(
+                            &shape.id().to_member(member.id().clone()),
+                            &member.value().as_ref().unwrap().as_shape_id().unwrap(),
+                            model,
+                            "Structure member",
+                            &mut issues,
+                        );
+                    }
+                }
+                ShapeBody::Service(service) => {
+                    for target in service.operations() {
+                        self.check_operation_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Service operation",
+                            &mut issues,
+                        );
+                    }
+                    for target in service.resources() {
+                        self.check_resource_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Service resource",
+                            &mut issues,
+                        );
+                    }
+                }
+                ShapeBody::Operation(operation) => {
+                    if let Some(target) = operation.input() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Operation input",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = operation.output() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Operation output",
+                            &mut issues,
+                        );
+                    }
+                    for target in operation.errors() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Operation error",
+                            &mut issues,
+                        );
+                    }
+                }
+                ShapeBody::Resource(resource) => {
+                    for (id, target) in resource.identifiers() {
+                        self.check_type_only(
+                            &shape.id().to_member(id.clone()),
+                            target,
+                            model,
+                            "Resource identifier",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = resource.create() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource create",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = resource.put() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource put",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = resource.read() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource read",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = resource.update() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource update",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = resource.delete() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource delete",
+                            &mut issues,
+                        );
+                    }
+                    if let Some(target) = resource.list() {
+                        self.check_type_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource list",
+                            &mut issues,
+                        );
+                    }
+                    for target in resource.operations() {
+                        self.check_operation_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource operation",
+                            &mut issues,
+                        );
+                    }
+                    for target in resource.collection_operations() {
+                        self.check_operation_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource collection operation",
+                            &mut issues,
+                        );
+                    }
+                    for target in resource.resources() {
+                        self.check_resource_only(
+                            &shape.id(),
+                            target,
+                            model,
+                            "Resource resource",
+                            &mut issues,
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        if issues.is_empty() {
+            None
+        } else {
+            Some(issues)
+        }
+    }
+}
+
+impl CorrectTypeReferences {
+    fn check_type_only(
+        &self,
+        shape: &ShapeID,
+        target: &ShapeID,
+        model: &Model,
+        member: &str,
+        issues: &mut Vec<ActionIssue>,
+    ) {
+        if let Some(target) = model.shape(target) {
+            let target = target.body();
+            if target.is_service()
+                || target.is_operation()
+                || target.is_resource()
+                || target.is_apply()
+            {
+                issues.push(ActionIssue::error_at(
+                    self.label(),
+                    &format!(
+                        "{} may not be a service, operation, resource or apply.",
+                        member
+                    ),
+                    shape.clone(),
+                ));
+            }
+        } else {
+            issues.push(ActionIssue::warning_at(
+                self.label(),
+                &format!(
+                    "{} type cannot be resolved in the model to validate.",
+                    member
+                ),
+                shape.clone(),
+            ));
+        }
+    }
+
+    fn check_operation_only(
+        &self,
+        shape: &ShapeID,
+        target: &ShapeID,
+        model: &Model,
+        member: &str,
+        issues: &mut Vec<ActionIssue>,
+    ) {
+        if let Some(target) = model.shape(target) {
+            let target = target.body();
+            if !target.is_operation() {
+                issues.push(ActionIssue::error_at(
+                    self.label(),
+                    &format!("{} must be an operation.", member),
+                    shape.clone(),
+                ));
+            }
+        } else {
+            issues.push(ActionIssue::warning_at(
+                self.label(),
+                &format!(
+                    "{} type cannot be resolved in the model to validate.",
+                    member
+                ),
+                shape.clone(),
+            ));
+        }
+    }
+
+    fn check_resource_only(
+        &self,
+        shape: &ShapeID,
+        target: &ShapeID,
+        model: &Model,
+        member: &str,
+        issues: &mut Vec<ActionIssue>,
+    ) {
+        if let Some(target) = model.shape(target) {
+            let target = target.body();
+            if !target.is_resource() {
+                issues.push(ActionIssue::error_at(
+                    self.label(),
+                    &format!("{} must be a resource.", member),
+                    shape.clone(),
+                ));
+            }
+        } else {
+            issues.push(ActionIssue::warning_at(
+                self.label(),
+                &format!(
+                    "{} type cannot be resolved in the model to validate.",
+                    member
+                ),
+                shape.clone(),
+            ));
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
@@ -362,7 +666,8 @@ mod tests {
             .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
             .into();
         println!("{:?}", model);
-        let result = run_validation_actions(&[NoOrphanedReferences::default()], &model, false);
+        let result =
+            run_validation_actions(&[Box::new(NoOrphanedReferences::default())], &model, false);
         assert!(result.is_some());
         let result = result.unwrap();
         println!("{:#?}", result);

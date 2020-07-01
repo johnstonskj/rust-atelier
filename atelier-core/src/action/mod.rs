@@ -14,7 +14,7 @@ The `run_validation_actions` function is commonly used to take a list of actions
 on the model in sequence.
 
 ```rust
-use atelier_core::action::validate::{NoOrphanedReferences, run_validation_actions};
+use atelier_core::action::validate::{NoOrphanedReferences, run_validation_actions, CorrectTypeReferences};
 use atelier_core::action::Validator;
 use atelier_core::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
 use atelier_core::model::Model;
@@ -37,7 +37,10 @@ let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
     )
     .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
     .into();
-let result = run_validation_actions(&[NoOrphanedReferences::default()], &model, false);
+let result = run_validation_actions(&[
+        Box::new(NoOrphanedReferences::default()),
+        Box::new(CorrectTypeReferences::default()),
+    ], &model, false);
 ```
 
 This will result in the following list of validation errors. Note that the error is denoted against
