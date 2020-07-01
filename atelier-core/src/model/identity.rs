@@ -2,6 +2,7 @@ use crate::error;
 use crate::syntax::{
     SHAPE_ID_ABSOLUTE_SEPARATOR, SHAPE_ID_MEMBER_SEPARATOR, SHAPE_ID_NAMESPACE_SEPARATOR,
 };
+use regex::Regex;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -65,7 +66,23 @@ pub struct ShapeID {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-const CHAR_UNDERSCORE: char = '_';
+lazy_static! {
+    static ref RE_IDENTIFIER: Regex =
+        Regex::new(r"^([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*$").unwrap();
+    static ref RE_NAMESPACE: Regex = Regex::new(
+        r"^([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*(\.([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*)*$"
+    )
+    .unwrap();
+    static ref RE_SHAPE_ID: Regex = Regex::new(
+        r"(?x)
+        ^
+        ((([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*(\.([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*)*)\#)?
+        (([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*)
+        (\$(([[:alpha:]]|_[[:alpha:]])[_[[:alnum:]]]*))?
+        $"
+    )
+    .unwrap();
+}
 
 impl Display for Identifier {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -101,10 +118,7 @@ impl Identifier {
     /// This is preferred to calling `from_str()` and determining success or failure.
     ///
     pub fn is_valid(s: &str) -> bool {
-        !s.is_empty()
-            && s.starts_with(|c: char| c.is_alphabetic() || c == CHAR_UNDERSCORE)
-            && s.chars()
-                .all(|c: char| c.is_alphanumeric() || c == CHAR_UNDERSCORE)
+        RE_IDENTIFIER.is_match(s)
     }
 
     ///
@@ -236,44 +250,36 @@ impl FromStr for ShapeID {
     type Err = error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = s
-            .split(SHAPE_ID_ABSOLUTE_SEPARATOR)
-            .map(|s| s.to_string())
-            .collect::<Vec<String>>();
-        let (namespace, rest) = if parts.len() == 1 {
-            (None, parts.get(0).unwrap())
-        } else if parts.len() == 2 {
-            let namespace = parts.get(0).unwrap();
-            (Some(Namespace::from_str(namespace)?), parts.get(1).unwrap())
-        } else {
-            return Err(error::ErrorKind::InvalidShapeID(s.to_string()).into());
-        };
-
-        let parts = rest
-            .split(SHAPE_ID_MEMBER_SEPARATOR)
-            .map(|s| s.to_string())
-            .collect::<Vec<String>>();
-        let (shape_name, member_name) = if parts.len() <= 2 {
-            let shape_name = Identifier::from_str(parts.get(0).unwrap())?;
-            let member_name = if parts.len() == 1 {
-                None
-            } else {
-                Some(Identifier::from_str(parts.get(1).unwrap())?)
+        if let Some(result) = RE_SHAPE_ID.captures(s) {
+            let namespace = match result.get(2) {
+                Some(v) => Some(Namespace(v.as_str().to_string())),
+                None => None,
             };
-            (shape_name, member_name)
+            let shape_name = Identifier(result.get(6).unwrap().as_str().to_string());
+            let member_name = match result.get(9) {
+                Some(v) => Some(Identifier(v.as_str().to_string())),
+                None => None,
+            };
+            Ok(Self {
+                namespace,
+                shape_name,
+                member_name,
+            })
         } else {
-            return Err(error::ErrorKind::InvalidShapeID(s.to_string()).into());
-        };
-
-        Ok(Self {
-            namespace,
-            shape_name,
-            member_name,
-        })
+            Err(error::ErrorKind::InvalidShapeID(s.to_string()).into())
+        }
     }
 }
 
 impl ShapeID {
+    ///
+    /// Returns `true` if the provided string is a valid shape identifier representation, else `false`.
+    /// This is preferred to calling `from_str()` and determining success or failure.
+    ///
+    pub fn is_valid(s: &str) -> bool {
+        RE_SHAPE_ID.is_match(s)
+    }
+
     ///
     /// Construct a new `ShapeID` from the complete set of given components.
     ///
@@ -409,6 +415,154 @@ impl ShapeID {
             }
         } else {
             self.clone()
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Unit Tests
+// ------------------------------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ID_GOOD: &[&str] = &["a", "aBc", "_aBc", "a1", "a1c", "a_c", "a_"];
+    const ID_BAD: &[&str] = &["", "_", "1", "1a", "_1", "a!"];
+
+    const NAMESPACE_GOOD: &[&str] = &["aBc", "aBc.dEf", "aBc.dEf.gHi"];
+    const NAMESPACE_BAD: &[&str] = &["", ".aBc", "aBc."];
+
+    const SHAPE_ID_GOOD: &[&str] = &[
+        "aBc",
+        "aBc#dEf",
+        "aBc.dEf#gHi",
+        "aBc$xYz",
+        "aBc#dEf$xYz",
+        "aBc.dEf#gHi$xYz",
+    ];
+    const SHAPE_ID_BAD: &[&str] = &[""];
+
+    #[test]
+    fn test_regexes() {
+        // ----------------------------------------------------------------------------------------
+        for id in ID_GOOD {
+            assert!(RE_IDENTIFIER.is_match(id));
+        }
+
+        for id in ID_BAD {
+            assert!(!RE_IDENTIFIER.is_match(id));
+        }
+
+        // ----------------------------------------------------------------------------------------
+        for id in NAMESPACE_GOOD {
+            assert!(RE_NAMESPACE.is_match(id));
+        }
+
+        for id in NAMESPACE_BAD {
+            assert!(!RE_NAMESPACE.is_match(id));
+        }
+
+        // ----------------------------------------------------------------------------------------
+        for id in SHAPE_ID_GOOD {
+            assert!(RE_SHAPE_ID.is_match(id));
+        }
+
+        for id in SHAPE_ID_BAD {
+            assert!(!RE_SHAPE_ID.is_match(id));
+        }
+    }
+
+    #[test]
+    fn test_is_value() {
+        // ----------------------------------------------------------------------------------------
+        for id in ID_GOOD {
+            assert!(Identifier::is_valid(id));
+        }
+
+        for id in ID_BAD {
+            assert!(!Identifier::is_valid(id));
+        }
+
+        // ----------------------------------------------------------------------------------------
+        for id in NAMESPACE_GOOD {
+            assert!(Namespace::is_valid(id));
+        }
+
+        for id in NAMESPACE_BAD {
+            assert!(!Namespace::is_valid(id));
+        }
+
+        // ----------------------------------------------------------------------------------------
+        for id in SHAPE_ID_GOOD {
+            assert!(ShapeID::is_valid(id));
+        }
+
+        for id in SHAPE_ID_BAD {
+            assert!(!ShapeID::is_valid(id));
+        }
+    }
+
+    #[test]
+    fn test_from_str() {
+        // ----------------------------------------------------------------------------------------
+        for id in ID_GOOD {
+            assert!(Identifier::from_str(id).is_ok());
+        }
+
+        let shape_id = ShapeID::from_str("SomeShapeName").unwrap();
+        assert!(shape_id.namespace().is_none());
+        assert_eq!(
+            shape_id.shape_name().to_string(),
+            "SomeShapeName".to_string()
+        );
+        assert!(shape_id.member_name().is_none());
+
+        let shape_id = ShapeID::from_str("com.example#SomeShapeName").unwrap();
+        assert_eq!(
+            shape_id.namespace(),
+            &Some(Namespace::from_str("com.example").unwrap())
+        );
+        assert_eq!(
+            shape_id.shape_name().to_string(),
+            "SomeShapeName".to_string()
+        );
+        assert!(shape_id.member_name().is_none());
+
+        let shape_id = ShapeID::from_str("com.example#SomeShapeName$aMember").unwrap();
+        assert_eq!(
+            shape_id.namespace(),
+            &Some(Namespace::from_str("com.example").unwrap())
+        );
+        assert_eq!(
+            shape_id.shape_name().to_string(),
+            "SomeShapeName".to_string()
+        );
+        assert_eq!(
+            shape_id.member_name(),
+            &Some(Identifier::from_str("aMember").unwrap())
+        );
+
+        for id in ID_BAD {
+            assert!(Identifier::from_str(id).is_err());
+        }
+
+        // ----------------------------------------------------------------------------------------
+        for id in NAMESPACE_GOOD {
+            assert!(Namespace::from_str(id).is_ok());
+        }
+
+        for id in NAMESPACE_BAD {
+            assert!(Namespace::from_str(id).is_err());
+        }
+
+        // ----------------------------------------------------------------------------------------
+        for id in SHAPE_ID_GOOD {
+            assert!(ShapeID::from_str(id).is_ok());
+        }
+
+        for id in SHAPE_ID_BAD {
+            assert!(ShapeID::from_str(id).is_err());
         }
     }
 }
