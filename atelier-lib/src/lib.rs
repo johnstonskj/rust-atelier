@@ -10,10 +10,10 @@ default feature, although the core will be included regardless of any feature se
 
 | Feature name | Default | Individual crate  | Target module path                | Purpose                                               |
 |--------------|---------|-------------------|-----------------------------------|-------------------------------------------------------|
-| N/A          | **Yes** | `atelier_core`    | `atelier_lib::core`               | Core models only.                                     |
-| "json"       | No      | `atelier_json`    | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
-| "openapi"    | No      | `atelier_openapi` | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
-| "smithy"     | Yes     | `atelier_smithy`  | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
+| N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)        | `atelier_lib::core`               | Core models only.                                     |
+| "json"       | No      | [atelier_json](https://docs.rs/atelier_json)        | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
+| "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
+| "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
 
 */
 

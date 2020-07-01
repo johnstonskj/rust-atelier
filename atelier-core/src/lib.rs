@@ -8,7 +8,7 @@
 * 1. The model [builder](model/builder/index.html) API that allow for a more _fluent_ and less repetative construction of a
 *    core model.
 * 1. The [prelude](prelude/index.html) model containing the set of shapes defined in the Smithy specification.
-* 1. Model [actions](actions/index.html) that are used to implement linters, validators, and transformations.
+* 1. Model [actions](action/index.html) that are used to implement linters, validators, and transformations.
 * 1. Traits for [reading/writing](io/index.html) models in different representations.
 * 1. Trait and simple implementation for a model [registry](registry/index.html).
 * 1. A common [error](error/index.html) module to be used by all Atelier crates.
