@@ -33,12 +33,14 @@ impl<'a> Default for JsonReader {
 }
 
 impl ModelReader for JsonReader {
-    const REPRESENTATION: &'static str = "JSON";
+    fn representation(&self) -> &'static str {
+        "JSON"
+    }
 
     fn read(&mut self, r: &mut impl Read) -> Result<Model> {
         let json: Value = from_reader(r).chain_err(|| {
             ErrorKind::Deserialization(
-                Self::REPRESENTATION.to_string(),
+                self.representation().to_string(),
                 "ModelReader::read".to_string(),
                 None,
             )
@@ -78,7 +80,7 @@ impl JsonReader {
             }
         }
         Err(ErrorKind::Deserialization(
-            Self::REPRESENTATION.to_string(),
+            self.representation().to_string(),
             "JsonReader::model".to_string(),
             None,
         )
@@ -90,7 +92,7 @@ impl JsonReader {
             Ok(Version::from_str(version)?)
         } else {
             Err(ErrorKind::Deserialization(
-                Self::REPRESENTATION.to_string(),
+                self.representation().to_string(),
                 "JsonReader::version".to_string(),
                 Some(format!("{:#?}", json)),
             )
@@ -166,7 +168,7 @@ impl JsonReader {
                 )))
             } else {
                 return Err(ErrorKind::Deserialization(
-                    Self::REPRESENTATION.to_string(),
+                    self.representation().to_string(),
                     "JsonReader::shape/type".to_string(),
                     Some(format!("{:#?}", outer)),
                 )
@@ -174,7 +176,7 @@ impl JsonReader {
             };
         }
         Err(ErrorKind::Deserialization(
-            Self::REPRESENTATION.to_string(),
+            self.representation().to_string(),
             "JsonReader::shape".to_string(),
             Some(format!("{:#?}", outer)),
         )
@@ -199,7 +201,7 @@ impl JsonReader {
                     ShapeID::from_str(target)?
                 } else {
                     return Err(ErrorKind::Deserialization(
-                        Self::REPRESENTATION.to_string(),
+                        self.representation().to_string(),
                         "JsonReader::members/target".to_string(),
                         Some(format!("{:#?}", obj)),
                     )
@@ -213,7 +215,7 @@ impl JsonReader {
                 members.push(member);
             } else {
                 return Err(ErrorKind::Deserialization(
-                    Self::REPRESENTATION.to_string(),
+                    self.representation().to_string(),
                     "JsonReader::members".to_string(),
                     Some(format!("{:#?}", v)),
                 )
@@ -230,7 +232,7 @@ impl JsonReader {
             }
         }
         Err(ErrorKind::Deserialization(
-            Self::REPRESENTATION.to_string(),
+            self.representation().to_string(),
             "JsonReader::target".to_string(),
             Some(format!("{:#?}", member)),
         )
@@ -250,7 +252,7 @@ impl JsonReader {
                     Ok(NodeValue::from(v.as_u64().unwrap() as i64))
                 } else {
                     Err(ErrorKind::Deserialization(
-                        Self::REPRESENTATION.to_string(),
+                        self.representation().to_string(),
                         "JsonReader::value".to_string(),
                         Some(format!("{:#?}", json)),
                     )

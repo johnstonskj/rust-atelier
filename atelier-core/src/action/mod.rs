@@ -99,6 +99,7 @@ shape or member identifier accordingly.
 
 use crate::error::Result;
 use crate::model::{Model, ShapeID};
+use std::fmt::{Display, Formatter};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -180,6 +181,22 @@ pub trait Transformer: Action {
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
+// ------------------------------------------------------------------------------------------------
+
+impl Display for IssueLevel {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                IssueLevel::Info => "info",
+                IssueLevel::Warning => "warning",
+                IssueLevel::Error => "error",
+            }
+        )
+    }
+}
+
 // ------------------------------------------------------------------------------------------------
 
 impl ActionIssue {

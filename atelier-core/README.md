@@ -101,6 +101,7 @@ $ cargo run --example weather
 * Added `NamingConventions` linter.
 * Added functions `run_linter_actions` and `run_validation_actions`, and removed `ValidateAll` type.
 * Using Regex for identity parsing.
+* Moved `REPRESENTATION` to `representation()` on `ModelReader` and `ModelWriter` traits.
 
 **Version 0.1.3**
 

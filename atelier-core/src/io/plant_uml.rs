@@ -144,7 +144,9 @@ impl Default for PlantUmlWriter {
 }
 
 impl<'a> ModelWriter<'a> for PlantUmlWriter {
-    const REPRESENTATION: &'static str = "PlantUML";
+    fn representation(&self) -> &'static str {
+        "PlantUML"
+    }
 
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
         writeln!(w, "@startuml")?;

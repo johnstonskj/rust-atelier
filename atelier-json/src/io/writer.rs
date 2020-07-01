@@ -32,7 +32,9 @@ impl<'a> Default for JsonWriter {
 }
 
 impl<'a> ModelWriter<'a> for JsonWriter {
-    const REPRESENTATION: &'static str = "JSON";
+    fn representation(&self) -> &'static str {
+        "JSON"
+    }
 
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         let mut top: Map<String, Value> = Default::default();
@@ -46,11 +48,11 @@ impl<'a> ModelWriter<'a> for JsonWriter {
 
         if self.pretty_print {
             to_writer_pretty(w, &Value::Object(top)).chain_err(|| {
-                ErrorKind::Serialization(Self::REPRESENTATION.to_string()).to_string()
+                ErrorKind::Serialization(self.representation().to_string()).to_string()
             })
         } else {
             to_writer(w, &Value::Object(top)).chain_err(|| {
-                ErrorKind::Serialization(Self::REPRESENTATION.to_string()).to_string()
+                ErrorKind::Serialization(self.representation().to_string()).to_string()
             })
         }
     }

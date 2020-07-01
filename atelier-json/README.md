@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.1.3**
+
+* Changes to the core API around `ModelReader` and `ModelWriter`.
+
 **Version 0.1.2**
 
 * Fixed issue in ID->Shape mapping.

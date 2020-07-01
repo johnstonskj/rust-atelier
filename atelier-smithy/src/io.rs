@@ -57,7 +57,9 @@ impl Default for SmithyReader {
 }
 
 impl ModelReader for SmithyReader {
-    const REPRESENTATION: &'static str = "Smithy";
+    fn representation(&self) -> &'static str {
+        "Smithy"
+    }
 
     fn read(&mut self, r: &mut impl Read) -> Result<Model> {
         let mut content: String = String::new();
@@ -82,7 +84,9 @@ impl<'a> Default for SmithyWriter {
 }
 
 impl<'a> ModelWriter<'a> for SmithyWriter {
-    const REPRESENTATION: &'static str = "Smithy";
+    fn representation(&self) -> &'static str {
+        "Smithy"
+    }
 
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         self.write_header(w, model)?;

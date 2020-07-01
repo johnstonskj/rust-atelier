@@ -51,7 +51,8 @@ use crate::model::Model;
 ///
 pub trait ModelWriter<'a>: Default {
     /// The display name of the representation this trait writes.
-    const REPRESENTATION: &'static str;
+    fn representation(&self) -> &'static str;
+
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
@@ -63,7 +64,8 @@ pub trait ModelWriter<'a>: Default {
 ///
 pub trait ModelReader: Default {
     /// The display name of the representation this trait reads.
-    const REPRESENTATION: &'static str;
+    fn representation(&self) -> &'static str;
+
     ///
     ///  Read a model from the given implementation of `Read`.
     ///

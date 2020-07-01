@@ -14,25 +14,30 @@ use std::str::FromStr;
 
 error_chain! {
     errors {
-        #[doc("invalid version number")]
+        #[doc("Invalid version number")]
         InvalidVersionNumber(v: String) {
-            description("invalid version number")
-            display("invalid version number: '{}'", v)
+            description("Invalid version number")
+            display("Invalid version number: '{}'", v)
         }
-        #[doc("invalid shape ID format")]
+        #[doc("Invalid shape ID format")]
         InvalidShapeID(id: String) {
-            description("invalid shape ID format")
-            display("invalid shape ID format: '{}'", id)
+            description("Invalid shape ID format")
+            display("Invalid shape ID format: '{}'", id)
         }
-        #[doc("invalid value variant")]
+        #[doc("Invalid value variant")]
         InvalidValueVariant(expecting: String) {
-            description("invalid value variant")
-            display("invalid value variant, expecting a `Value::{}`", expecting)
+            description("Invalid value variant")
+            display("Invalid value variant, expecting a `Value::{}`", expecting)
         }
-        #[doc("invalid error source, expecting 'client' or 'server'")]
+        #[doc("Invalid error source, expecting 'client' or 'server'")]
         InvalidErrorSource(src: String) {
-            description("invalid error source, expecting 'client' or 'server'")
-            display("invalid error source, expecting 'client' or 'server', not {}", src)
+            description("Invalid error source, expecting 'client' or 'server'")
+            display("Invalid error source, expecting 'client' or 'server', not '{}'", src)
+        }
+        #[doc("Requested action is not supported by the selected representation")]
+        InvalidRepresentation(repr: String) {
+            description("Requested action is not supported by the selected representation")
+            display("Requested action is not supported by the selected representation '{}'", repr)
         }
         #[doc("An error occurred serializing a model")]
         Serialization(repr: String) {
