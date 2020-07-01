@@ -8,8 +8,8 @@ different Atelier capabilities. The following table shows the mapping from indiv
 combined module path in this library. The column _Default_ indicates those that are included in the
 default feature, although the core will be included regardless of any feature selection.
 
-| Feature name | Default | Individual crate  | Target module path                | Purpose                                               |
-|--------------|---------|-------------------|-----------------------------------|-------------------------------------------------------|
+| Feature name | Default | Individual crate                                    | Target module path                | Purpose                                               |
+|--------------|---------|-----------------------------------------------------|-----------------------------------|-------------------------------------------------------|
 | N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)        | `atelier_lib::core`               | Core models only.                                     |
 | "json"       | No      | [atelier_json](https://docs.rs/atelier_json)        | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
 | "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
@@ -41,4 +41,37 @@ pub mod format {
 
     #[cfg(feature = "smithy")]
     pub use atelier_smithy as smithy;
+}
+
+///
+/// This module provides functions that wrap common actions into single entry points.
+///
+pub mod action {
+    use atelier_core::action::lint::{run_linter_actions, NamingConventions};
+    use atelier_core::action::validate::{
+        run_validation_actions, CorrectTypeReferences, NoOrphanedReferences,
+    };
+    use atelier_core::action::ActionIssue;
+    use atelier_core::model::Model;
+
+    ///
+    /// Execute all the standard model lint actions.
+    ///
+    pub fn standard_model_lint(model: &Model, fail_fast: bool) -> Option<Vec<ActionIssue>> {
+        run_linter_actions(&[Box::new(NamingConventions::default())], model, fail_fast)
+    }
+
+    ///
+    /// Execute all the standard model validation actions.
+    ///
+    pub fn standard_model_validation(model: &Model, fail_fast: bool) -> Option<Vec<ActionIssue>> {
+        run_validation_actions(
+            &[
+                Box::new(NoOrphanedReferences::default()),
+                Box::new(CorrectTypeReferences::default()),
+            ],
+            model,
+            fail_fast,
+        )
+    }
 }

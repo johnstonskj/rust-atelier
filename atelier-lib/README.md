@@ -13,14 +13,18 @@ different Atelier capabilities. The following table shows the mapping from indiv
 combined module path in this library. The column _Default_ indicates those that are included in the 
 default feature, although the core will be included regardless of any feature selection.
 
-| Feature name | Default | Individual crate  | Target module path                | Purpose                                               |
-|--------------|---------|-------------------|-----------------------------------|-------------------------------------------------------|
-| N/A          | **Yes** | `atelier_core`    | `atelier_lib::core`               | Core models only.                                     |
-| "json"       | No      | `atelier_json`    | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
-| "openapi"    | No      | `atelier_openapi` | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
-| "smithy"     | Yes     | `atelier_smithy`  | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
+| Feature name | Default | Individual crate                                    | Target module path                | Purpose                                               |
+|--------------|---------|-----------------------------------------------------|-----------------------------------|-------------------------------------------------------|
+| N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)        | `atelier_lib::core`               | Core models only.                                     |
+| "json"       | No      | [atelier_json](https://docs.rs/atelier_json)        | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
+| "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
+| "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
 
 ## Changes
+
+**Version 0.1.4**
+
+* Added the `action` module with `standard_model_lint` and `standard_model_validation` functions.
 
 **Version 0.1.3**
 
