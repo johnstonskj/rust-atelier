@@ -10,10 +10,11 @@ This module describes actions that can operate on models. These take three major
 
 The following example is taken from the Smithy specification discussing
 [relative name resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution).
-The
+The `run_validation_actions` function is commonly used to take a list of actions to be performed
+on the model in sequence.
 
 ```rust
-use atelier_core::action::validate::NoOrphanedReferences;
+use atelier_core::action::validate::{NoOrphanedReferences, run_validation_actions};
 use atelier_core::action::Validator;
 use atelier_core::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
 use atelier_core::model::Model;
@@ -36,15 +37,28 @@ let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
     )
     .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
     .into();
-let validator = NoOrphanedReferences::default();
-let result = validator.validate(&model);
+let result = run_validation_actions(&[NoOrphanedReferences::default()], &model, false);
 ```
 
-This will result in the following pair of validation errors. Note that the error is denoted against
-the
+This will result in the following list of validation errors. Note that the error is denoted against
+shape or member identifier accordingly.
 
 ```text
 [
+    ActionIssue {
+        reporter: "NoOrphanedReferences",
+        level: Error,
+        message: "Shape, or member, has a trait that refers to an unknown identifier: notKnown",
+        locus: Some(
+            ShapeID {
+                namespace: None,
+                shape_name: Identifier(
+                    "MyStructure",
+                ),
+                member_name: None,
+            },
+        ),
+    },
     ActionIssue {
         reporter: "NoOrphanedReferences",
         level: Error,
@@ -88,7 +102,7 @@ use crate::model::{Model, ShapeID};
 ///
 /// Denotes the level associated with an issue reported by an action.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Hash)]
 pub enum IssueLevel {
     /// Informational, linters _should only_ report informational issues.
     Info,

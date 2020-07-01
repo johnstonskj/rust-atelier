@@ -1,26 +1,18 @@
 /*!
-This module contains core `Validator` implementations.
+This module contains core `Validator` implementations. It also provides a function,
+`run_validation_actions`, that takes a list of validators to run against a model. This is the
+preferred way to run the validation actions as it allows for _fast fail_ on detecting errors
+in an action.
 */
 
-use crate::action::{Action, ActionIssue, Validator};
+use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::model::shapes::{ShapeBody, Trait, Valued};
 use crate::model::{Annotated, Identifier, Model, Named, ShapeID};
-use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
-
-///
-/// This validator will actually batch a list of other validators and execute them in order. When
-/// constructed you can specify whether it will _fail fast_ that is return the errors from the first
-/// validator that fails, or whether it will gather all validation errors and return a combined set.
-///
-pub struct ValidateAll {
-    fast_fail: bool,
-    validators: Vec<Box<dyn Validator>>,
-}
 
 ///
 /// This validator will ensure that all references to shape identifiers are valid.
@@ -39,76 +31,42 @@ pub struct NoOrphanedReferences {}
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-// ------------------------------------------------------------------------------------------------
-// Implementations
-// ------------------------------------------------------------------------------------------------
+///
+/// Run each provided `Validator`, in order, against the provided `Model`. All issues will be
+/// collated and returned together.
+///
+/// The `fail_fast` flag determines the behavior if a validation action returns an error. If `true`  
+/// the process stops and returns all reported issues up to that point, if `false` it continues on.
+///
+pub fn run_validation_actions(
+    validators: &[impl Validator],
+    model: &Model,
+    fail_fast: bool,
+) -> Option<Vec<ActionIssue>> {
+    let mut issues: Vec<ActionIssue> = Default::default();
 
-impl Debug for ValidateAll {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ValidateAll")
-            .field("fast_fail", &self.fast_fail)
-            .field(
-                "validators",
-                &self
-                    .validators
+    for validator in validators {
+        if let Some(mut new_issues) = validator.validate(model) {
+            issues.append(&mut new_issues);
+            if fail_fast
+                && new_issues
                     .iter()
-                    .map(|v| v.label().to_string())
-                    .collect::<Vec<String>>(),
-            )
-            .finish()
-    }
-}
-
-impl Action for ValidateAll {
-    fn label(&self) -> &'static str {
-        "ValidateAll"
-    }
-}
-
-impl Validator for ValidateAll {
-    fn validate(&self, model: &Model) -> Option<Vec<ActionIssue>> {
-        let mut issues: Vec<ActionIssue> = Default::default();
-        for validator in &self.validators {
-            if let Some(mut new_issues) = validator.validate(model) {
-                if self.fast_fail {
-                    return Some(issues);
-                } else {
-                    issues.append(&mut new_issues);
-                }
+                    .any(|issue| issue.level > IssueLevel::Warning)
+            {
+                return Some(issues);
             }
         }
-        if !issues.is_empty() {
-            Some(issues)
-        } else {
-            None
-        }
+    }
+
+    if issues.is_empty() {
+        None
+    } else {
+        Some(issues)
     }
 }
 
-impl ValidateAll {
-    ///
-    /// Create a validator that will call each validator in order. It will return the error from
-    /// the first validator that fails, ignoring the rest.
-    ///
-    pub fn fast_fail(validators: Vec<Box<dyn Validator>>) -> Self {
-        Self {
-            fast_fail: true,
-            validators,
-        }
-    }
-
-    ///
-    /// Create a validator that will call each validator in order. It will call all the validators
-    /// and aggregate the reasons reported by any and all that fail.
-    ///
-    pub fn run_all(validators: Vec<Box<dyn Validator>>) -> Self {
-        Self {
-            fast_fail: false,
-            validators,
-        }
-    }
-}
-
+// ------------------------------------------------------------------------------------------------
+// Implementations
 // ------------------------------------------------------------------------------------------------
 
 impl Default for NoOrphanedReferences {
@@ -375,8 +333,7 @@ impl NoOrphanedReferences {
 
 #[cfg(test)]
 mod tests {
-    use crate::action::validate::NoOrphanedReferences;
-    use crate::action::Validator;
+    use crate::action::validate::{run_validation_actions, NoOrphanedReferences};
     use crate::model::builder::{
         ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
     };
@@ -398,14 +355,14 @@ mod tests {
                     .member("f", "String")
                     .member("g", "MyBoolean")
                     .member("h", "InvalidShape")
+                    .add_trait(TraitBuilder::new("documentation").into())
                     .add_trait(TraitBuilder::new("notKnown").into())
                     .into(),
             )
             .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
             .into();
         println!("{:?}", model);
-        let validator = NoOrphanedReferences::default();
-        let result = validator.validate(&model);
+        let result = run_validation_actions(&[NoOrphanedReferences::default()], &model, false);
         assert!(result.is_some());
         let result = result.unwrap();
         println!("{:#?}", result);
