@@ -31,7 +31,7 @@ default feature, although the core will be included regardless of any feature se
 pub use atelier_core as core;
 
 #[cfg(any(feature = "json", feature = "openapi", feature = "smithy"))]
-#[doc = "Child modules implement read and write with specific representations."]
+#[doc = "Child modules that implement `Reader` and `Writer` for specific representations."]
 pub mod format {
     #[cfg(feature = "json")]
     pub use atelier_json as json;
@@ -39,6 +39,6 @@ pub mod format {
     #[cfg(feature = "openapi")]
     pub use atelier_openapi as openapi;
 
-    #[cfg(feature = "json")]
+    #[cfg(feature = "smithy")]
     pub use atelier_smithy as smithy;
 }

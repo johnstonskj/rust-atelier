@@ -10,5 +10,11 @@ license = "MIT"
 readme = "README.md"
 publish = true
 
+[package.metadata.docs.rs]
+# This sets the default target to `x86_64-unknown-linux-gnu`
+# and only builds that target for documentation.
+targets = ["x86_64-unknown-linux-gnu"]
+all-features = true
+
 [dependencies]
 atelier_core = { version = "0.1.0", path = "../atelier-core" }
