@@ -311,7 +311,7 @@ impl NoOrphanedReferences {
     fn resolve_traits(
         &self,
         referrer: &ShapeID,
-        traits: &Vec<Trait>,
+        traits: &[Trait],
         model: &Model,
         issues: &mut Vec<ActionIssue>,
     ) {

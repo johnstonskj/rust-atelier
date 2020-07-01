@@ -14,7 +14,9 @@ The `run_validation_actions` function is commonly used to take a list of actions
 on the model in sequence.
 
 ```rust
-use atelier_core::action::validate::{NoOrphanedReferences, run_validation_actions, CorrectTypeReferences};
+use atelier_core::action::validate::{
+    NoOrphanedReferences, run_validation_actions, CorrectTypeReferences
+};
 use atelier_core::action::Validator;
 use atelier_core::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
 use atelier_core::model::Model;

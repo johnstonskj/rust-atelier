@@ -3,23 +3,62 @@ This module contains core `Linter` implementations. It also provides a function,
 `run_linter_actions`, that takes a list of linters to run against a model. This is the
 preferred way to run the linter actions as it allows for _fast fail_ on detecting errors
 in an action.
+
+# Example
+
+The example model below will result in a number of errors:
+
+1. The shape named "shouldBeUpper" should be "**S**houldBeUpper",
+1. The member "BadName" in structure "MyStructure", should be "**b**adName".
+1. The trait "BadTraitName" on structure "MyStructure", should be "**b**adTraitName".
+1. The shape "ThingAsJSON", reference by "MyStructure#thing", includes a known acronym "JSON".
+
+```rust
+use atelier_core::action::lint::{run_linter_actions, NamingConventions};
+use atelier_core::action::Linter;
+use atelier_core::model::builder::{
+    ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+};
+use atelier_core::model::Model;
+use atelier_core::Version;
+
+let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+    .shape(SimpleShapeBuilder::string("shouldBeUpper").into())
+    .shape(
+        StructureBuilder::new("MyStructure")
+            .member("okName", "String")
+            .member("BadName", "MyString")
+            .member("thing", "ThingAsJSON")
+            .add_trait(TraitBuilder::new("BadTraitName").into())
+             .into(),
+    )
+    .into();
+let result = run_linter_actions(&[
+        Box::new(NamingConventions::default()),
+    ], &model, false);
+```
+
 */
 
 use crate::action::{Action, ActionIssue, IssueLevel, Linter};
-use crate::model::shapes::ShapeBody;
-use crate::model::{Model, Named, ShapeID};
+use crate::model::shapes::{ShapeBody, Trait, Valued};
+use crate::model::{Annotated, Identifier, Model, Named, ShapeID};
 use heck::{CamelCase, MixedCase};
+use regex::Regex;
+use std::collections::HashSet;
+use std::iter::FromIterator;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// This will report any violations of the naming conventions described in the Smithy specification
-/// and associated guides.
+/// This will report any violations of the naming conventions described in the Smithy [style
+/// guide](https://awslabs.github.io/smithy/1.0/guides/style-guide.html?highlight=naming#naming).
 ///
-/// * Shape names should be in UpperCamelCase.
-/// * Member names should be in lowerCamelCase.
+/// * `Shape` names should be in UpperCamelCase.
+/// * `Member` names and `Trait` names should be in lowerCamelCase.
 ///
 #[derive(Debug)]
 pub struct NamingConventions {}
@@ -70,6 +109,10 @@ pub fn run_linter_actions(
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
+lazy_static! {
+    static ref KNOWN_ACRONYMS: HashSet<&'static str> = standard_acronyms();
+}
+
 impl Default for NamingConventions {
     fn default() -> Self {
         Self {}
@@ -86,35 +129,26 @@ impl Linter for NamingConventions {
     fn check(&self, model: &Model) -> Option<Vec<ActionIssue>> {
         let mut issues: Vec<ActionIssue> = Default::default();
         for shape in model.shapes() {
-            let shape_name = shape.id().shape_name().to_string();
-            if shape_name.to_camel_case() != shape_name {
-                issues.push(ActionIssue::info_at(
-                    &self.label(),
-                    &format!(
-                        "Shape names should conform to UpperCamelCase, i.e. {}",
-                        shape_name.to_camel_case()
-                    ),
-                    shape.id().clone(),
-                ));
+            if let Some(shape) = model.shape(shape.id()) {
+                if shape.has_trait(&ShapeID::from_str("trait").unwrap()) {
+                    self.check_trait_name(shape.id(), &mut issues);
+                } else {
+                    self.check_shape_name(shape.id(), &mut issues);
+                }
+            } else {
+                self.check_shape_name(shape.id(), &mut issues);
             }
+            self.check_applied_trait_names(shape.traits(), &mut issues);
+
             match shape.body() {
                 ShapeBody::Structure(body) | ShapeBody::Union(body) => {
                     for member in body.members() {
-                        let member_name = member.id().to_string();
-                        if member_name.to_mixed_case() != member_name {
-                            issues.push(ActionIssue::info_at(
-                                &self.label(),
-                                &format!(
-                                    "Member names should conform to lowerCamelCase, i.e. {}",
-                                    member_name.to_mixed_case()
-                                ),
-                                ShapeID::new(
-                                    Some(model.namespace().clone()),
-                                    shape.id().shape_name().clone(),
-                                    Some(member.id().clone()),
-                                ),
-                            ));
-                        }
+                        self.check_member_name(shape.id(), member.id(), &mut issues);
+                        self.check_shape_name(
+                            member.value().as_ref().unwrap().as_shape_id().unwrap(),
+                            &mut issues,
+                        );
+                        self.check_applied_trait_names(member.traits(), &mut issues);
                     }
                 }
                 _ => {}
@@ -128,10 +162,136 @@ impl Linter for NamingConventions {
     }
 }
 
+impl NamingConventions {
+    fn check_shape_name(&self, id: &ShapeID, issues: &mut Vec<ActionIssue>) {
+        let shape_name = id.shape_name().to_string();
+        if shape_name.to_camel_case() != shape_name {
+            issues.push(ActionIssue::info_at(
+                &self.label(),
+                &format!(
+                    "Shape names should conform to UpperCamelCase, i.e. {}",
+                    shape_name.to_camel_case()
+                ),
+                id.clone(),
+            ));
+        }
+        self.check_for_acronyms(id, id.shape_name(), false, issues);
+    }
+    fn check_trait_name(&self, id: &ShapeID, issues: &mut Vec<ActionIssue>) {
+        let shape_name = id.shape_name().to_string();
+        if shape_name.to_mixed_case() != shape_name {
+            issues.push(ActionIssue::info_at(
+                &self.label(),
+                &format!(
+                    "Trait names should conform to lowerCamelCase, i.e. {}",
+                    shape_name.to_camel_case()
+                ),
+                id.clone(),
+            ));
+        }
+        self.check_for_acronyms(id, id.shape_name(), true, issues);
+    }
+    fn check_member_name(
+        &self,
+        shape_id: &ShapeID,
+        member_id: &Identifier,
+        issues: &mut Vec<ActionIssue>,
+    ) {
+        let member_name = member_id.to_string();
+        if member_name.to_mixed_case() != member_name {
+            issues.push(ActionIssue::info_at(
+                &self.label(),
+                &format!(
+                    "Member names should conform to lowerCamelCase, i.e. {}",
+                    member_name.to_mixed_case()
+                ),
+                shape_id.to_member(member_id.clone()),
+            ));
+        }
+        self.check_for_acronyms(shape_id, member_id, true, issues);
+    }
+    fn check_applied_trait_names(&self, traits: &[Trait], issues: &mut Vec<ActionIssue>) {
+        for a_trait in traits {
+            self.check_trait_name(a_trait.id(), issues);
+        }
+    }
+    fn check_for_acronyms(
+        &self,
+        shape_id: &ShapeID,
+        id: &Identifier,
+        lower: bool,
+        issues: &mut Vec<ActionIssue>,
+    ) {
+        let acronym = Regex::new(r"[[:lower:]]?([[:upper:]][[:upper:]]+)").unwrap();
+        let name = id.to_string();
+        println!(">> {}", name);
+        for cap in acronym.captures_iter(&name) {
+            let word = &cap[1];
+            println!(">> {} > {}", name, word);
+            if KNOWN_ACRONYMS.contains(word) {
+                issues.push(ActionIssue::info_at(
+                    &self.label(),
+                    &format!(
+                        "Name '{}' appears to contain a known acronym, consider renaming i.e. {}",
+                        name,
+                        if lower {
+                            word.to_mixed_case()
+                        } else {
+                            word.to_camel_case()
+                        }
+                    ),
+                    shape_id.clone(),
+                ));
+            }
+        }
+    }
+}
+
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
+fn standard_acronyms() -> HashSet<&'static str> {
+    HashSet::from_iter(
+        [
+            "ARN", "AWS", "DB", "HTML", "IAM", "JSON", "RDF", "SES", "SMS", "SNS", "XML",
+        ]
+        .iter()
+        .copied(),
+    )
+}
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------------
+// Unit Tests
+// ------------------------------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_something() {
+        use crate::action::lint::{run_linter_actions, NamingConventions};
+        use crate::model::builder::{
+            ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+        };
+        use crate::model::Model;
+        use crate::Version;
+
+        let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+            .shape(SimpleShapeBuilder::string("shouldBeUpper").into())
+            .shape(
+                StructureBuilder::new("MyStructure")
+                    .member("okName", "String")
+                    .member("BadName", "MyString")
+                    .member("thing", "ThingAsJSON")
+                    .add_trait(TraitBuilder::new("BadTraitName").into())
+                    .into(),
+            )
+            .into();
+        let result = run_linter_actions(&[Box::new(NamingConventions::default())], &model, false);
+        println!("{:#?}", result);
+    }
+}
