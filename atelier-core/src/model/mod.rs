@@ -50,6 +50,7 @@ For property _shapes_ of type `HashMap<K, V> where V: Named<I>` (a map of identi
 
 use crate::model::shapes::{Shape, Trait, Valued};
 use crate::model::values::{Key, NodeValue};
+use crate::prelude::{prelude_model_shape_ids, PRELUDE_NAMESPACE};
 use crate::Version;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
@@ -200,14 +201,15 @@ impl Model {
     }
 
     /// Returns `true` if this model contains a shape with the given `Identifier`, else `false`.
+    /// This only looks for locally defined shapes, to find a shape using the Smithy name resolution
+    /// process use `resolve_id`.
     pub fn has_shape(&self, shape_id: &ShapeID) -> bool {
-        // TODO: add resolution rules.
         self.shapes.contains_key(shape_id)
     }
 
-    /// Return the shape in this model with the given `Identifier`.
+    /// Return the shape in this model with the given `Identifier`. This only looks for locally
+    /// defined shapes, to find a shape using the Smithy name resolution process use `resolve_id`.
     pub fn shape(&self, shape_id: &ShapeID) -> Option<&Shape> {
-        // TODO: add resolution rules.
         self.shapes.get(shape_id)
     }
 
@@ -262,8 +264,47 @@ impl Model {
     /// > 1. If a shape is defined in the prelude with the same name, the namespace resolves to smithy.api.
     /// > 1. If a relative shape ID does not satisfy one of the above cases, the shape ID is invalid, and the namespace is inherited from the current namespace.
     ///
-    pub fn resolve_id(&self, id: &ShapeID) -> Option<ShapeID> {
-        unimplemented!()
+    pub fn resolve_id(&self, id: &ShapeID, and_absolute: bool) -> Option<ShapeID> {
+        let (id, member) = if id.is_member() {
+            (
+                ShapeID::new(id.namespace().clone(), id.shape_name().clone(), None),
+                id.member_name().clone(),
+            )
+        } else {
+            (id.clone(), None)
+        };
+        if id.is_absolute() && and_absolute {
+            if self.references.contains(&id) {
+                return Some(id);
+            } else if id.namespace().as_ref().unwrap() == &self.namespace {
+                if self.has_shape(&id.to_relative()) {
+                    // check for member
+                    return Some(id);
+                }
+            } else if id.namespace().as_ref().unwrap()
+                == &Namespace::from_str(PRELUDE_NAMESPACE).unwrap()
+                && prelude_model_shape_ids(&self.version).contains(&id)
+            {
+                return Some(id);
+            }
+        } else if id.is_absolute() && !and_absolute {
+            return Some(id);
+        } else if let Some(id) = self
+            .references
+            .iter()
+            .find(|shape_ref| shape_ref.to_relative() == id)
+        {
+            return Some(id.clone());
+        } else if self.has_shape(&id) {
+            return Some(id.to_absolute(self.namespace.clone()));
+        // check for member
+        } else if let Some(id) = prelude_model_shape_ids(&self.version)
+            .iter()
+            .find(|shape_ref| shape_ref.to_relative() == id)
+        {
+            return Some(id.clone());
+        }
+        None
     }
 
     // --------------------------------------------------------------------------------------------
@@ -327,3 +368,111 @@ pub mod select;
 pub mod shapes;
 
 pub mod values;
+
+// ------------------------------------------------------------------------------------------------
+// Unit Tests
+// ------------------------------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+
+    #[test]
+    fn test_resolve_id() {
+        //
+        // taken from https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution
+        //
+        let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+            .uses("foo.baz#Bar")
+            .shape(SimpleShapeBuilder::string("MyString").into())
+            .shape(
+                StructureBuilder::new("MyStructure")
+                    .member("a", "MyString")
+                    .member("b", "smithy.example#MyString")
+                    .member("c", "Bar")
+                    .member("d", "foo.baz#Bar")
+                    .member("e", "foo.baz#MyString")
+                    .member("f", "String")
+                    .member("g", "MyBoolean")
+                    .member("h", "InvalidShape")
+                    .into(),
+            )
+            .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
+            .into();
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("MyString").unwrap(), true),
+            Some(ShapeID::from_str("smithy.example#MyString").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("MyString").unwrap(), false),
+            Some(ShapeID::from_str("smithy.example#MyString").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("smithy.example#MyString").unwrap(), true),
+            Some(ShapeID::from_str("smithy.example#MyString").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(
+                &ShapeID::from_str("smithy.example#MyString").unwrap(),
+                false
+            ),
+            Some(ShapeID::from_str("smithy.example#MyString").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("Bar").unwrap(), true),
+            Some(ShapeID::from_str("foo.baz#Bar").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("Bar").unwrap(), true),
+            Some(ShapeID::from_str("foo.baz#Bar").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("foo.baz#Bar").unwrap(), true),
+            Some(ShapeID::from_str("foo.baz#Bar").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("foo.baz#Bar").unwrap(), false),
+            Some(ShapeID::from_str("foo.baz#Bar").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("foo.baz#MyString").unwrap(), true),
+            None
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("foo.baz#MyString").unwrap(), false),
+            Some(ShapeID::from_str("foo.baz#MyString").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("String").unwrap(), true),
+            Some(ShapeID::from_str("smithy.api#String").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("String").unwrap(), false),
+            Some(ShapeID::from_str("smithy.api#String").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("MyBoolean").unwrap(), true),
+            Some(ShapeID::from_str("smithy.example#MyBoolean").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("MyBoolean").unwrap(), false),
+            Some(ShapeID::from_str("smithy.example#MyBoolean").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("InvalidShape").unwrap(), true),
+            None
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("InvalidShape").unwrap(), false),
+            None
+        );
+    }
+}

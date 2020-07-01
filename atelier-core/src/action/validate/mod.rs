@@ -214,7 +214,7 @@ impl NoOrphanedReferences {
         model: &Model,
         issues: &mut Vec<ActionIssue>,
     ) {
-        if let None = model.resolve_id(shape_id) {
+        if model.resolve_id(shape_id, true).is_none() {
             issues.push(ActionIssue::error_at(
                 self.label(),
                 &format!(
@@ -234,3 +234,52 @@ impl NoOrphanedReferences {
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------------
+// Unit Tests
+// ------------------------------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use crate::action::validate::NoOrphanedReferences;
+    use crate::action::Validator;
+    use crate::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+    use crate::model::Model;
+    use crate::Version;
+
+    #[test]
+    fn test_no_orphaned_references() {
+        //
+        // taken from https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution
+        //
+        let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+            .uses("foo.baz#Bar")
+            .shape(SimpleShapeBuilder::string("MyString").into())
+            .shape(
+                StructureBuilder::new("MyStructure")
+                    .member("a", "MyString")
+                    .member("b", "smithy.example#MyString")
+                    .member("c", "Bar")
+                    .member("d", "foo.baz#Bar")
+                    .member("e", "foo.baz#MyString")
+                    .member("f", "String")
+                    .member("g", "MyBoolean")
+                    .member("h", "InvalidShape")
+                    .into(),
+            )
+            .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
+            .into();
+        let validator = NoOrphanedReferences::default();
+        let result = validator.validate(&model);
+        assert!(result.is_some());
+        let result = result.unwrap();
+        assert_eq!(result.len(), 2);
+        let result = result
+            .iter()
+            .map(|issue| issue.message().clone())
+            .collect::<Vec<String>>()
+            .join("\n");
+        assert!(result.contains(": InvalidShape"));
+        assert!(result.contains(": foo.baz#MyString"));
+    }
+}

@@ -99,6 +99,8 @@ $ cargo run --example weather
 * Made debug and uml `Writer` implementations features.
 * Added module `syntax` for all string constants.
 * Added all defined `ShapeID`s to the module `prelude`.
+* Implemented the foundation for actions, also started on validation.
+* Implemented `Model::resolve_id` according to the Smithy spec.
 
 **Version 0.1.2**
 
