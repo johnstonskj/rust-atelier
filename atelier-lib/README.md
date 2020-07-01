@@ -22,6 +22,9 @@ default feature, although the core will be included regardless of any feature se
 
 ## Changes
 
+**Version 0.1.3**
+
+* Documentation fixes.
 
 **Version 0.1.2**
 
