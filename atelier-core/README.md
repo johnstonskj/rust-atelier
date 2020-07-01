@@ -94,6 +94,10 @@ $ cargo run --example weather
 
 ## Changes
 
+**Version 0.1.4**
+
+* Completed the `NoOrphanedReferences` validator.
+
 **Version 0.1.3**
 
 * Made debug and uml `Writer` implementations features.

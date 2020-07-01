@@ -3,9 +3,10 @@ This module contains core `Validator` implementations.
 */
 
 use crate::action::{Action, ActionIssue, Validator};
-use crate::model::shapes::{ShapeBody, Valued};
-use crate::model::{Model, Named, ShapeID};
+use crate::model::shapes::{ShapeBody, Trait, Valued};
+use crate::model::{Annotated, Identifier, Model, Named, ShapeID};
 use std::fmt::{Debug, Formatter};
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -23,6 +24,9 @@ pub struct ValidateAll {
 
 ///
 /// This validator will ensure that all references to shape identifiers are valid.
+///
+/// For every shape it will ensure all members refer to shapes that can be resolved. It also
+/// ensures that all traits on shapes and members have names that can be resolved.
 ///
 #[derive(Debug)]
 pub struct NoOrphanedReferences {}
@@ -121,20 +125,54 @@ impl Action for NoOrphanedReferences {
 
 impl Validator for NoOrphanedReferences {
     fn validate(&self, model: &Model) -> Option<Vec<ActionIssue>> {
+        let member_id = Identifier::from_str("member").unwrap();
+        let key_id = Identifier::from_str("key").unwrap();
+        let value_id = Identifier::from_str("value").unwrap();
+        let operations_id = Identifier::from_str("operations").unwrap();
+        let resources_id = Identifier::from_str("resources").unwrap();
+        let input_id = Identifier::from_str("input").unwrap();
+        let output_id = Identifier::from_str("output").unwrap();
+        let errors_id = Identifier::from_str("errors").unwrap();
+        let create_id = Identifier::from_str("create").unwrap();
+        let put_id = Identifier::from_str("put").unwrap();
+        let read_id = Identifier::from_str("read").unwrap();
+        let update_id = Identifier::from_str("update").unwrap();
+        let delete_id = Identifier::from_str("delete").unwrap();
+        let list_id = Identifier::from_str("list").unwrap();
+        let collection_operations_id = Identifier::from_str("collectionOperations").unwrap();
         let mut issues: Vec<ActionIssue> = Default::default();
         for shape in model.shapes() {
+            let this_shape_id = shape.id();
+            self.resolve_traits(&this_shape_id, shape.traits(), model, &mut issues);
             match shape.body() {
                 ShapeBody::List(body) | ShapeBody::Set(body) => {
-                    self.resolve(shape.id(), body.member(), model, &mut issues);
+                    self.resolve(
+                        &this_shape_id.to_member(member_id.clone()),
+                        body.member(),
+                        model,
+                        &mut issues,
+                    );
                 }
                 ShapeBody::Map(body) => {
-                    self.resolve(shape.id(), body.key(), model, &mut issues);
-                    self.resolve(shape.id(), body.value(), model, &mut issues);
+                    self.resolve(
+                        &this_shape_id.to_member(key_id.clone()),
+                        body.key(),
+                        model,
+                        &mut issues,
+                    );
+                    self.resolve(
+                        &this_shape_id.to_member(value_id.clone()),
+                        body.value(),
+                        model,
+                        &mut issues,
+                    );
                 }
                 ShapeBody::Structure(body) | ShapeBody::Union(body) => {
                     for member in body.members() {
+                        let this_member_id = &this_shape_id.to_member(member.id().clone());
+                        self.resolve_traits(&this_member_id, member.traits(), model, &mut issues);
                         self.resolve(
-                            shape.id(),
+                            &this_member_id,
                             member.value().as_ref().unwrap().as_shape_id().unwrap(),
                             model,
                             &mut issues,
@@ -143,57 +181,132 @@ impl Validator for NoOrphanedReferences {
                 }
                 ShapeBody::Service(body) => {
                     for operation in body.operations() {
-                        self.resolve(shape.id(), operation, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(operations_id.clone()),
+                            operation,
+                            model,
+                            &mut issues,
+                        );
                     }
                     for resource in body.resources() {
-                        self.resolve(shape.id(), resource, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(resources_id.clone()),
+                            resource,
+                            model,
+                            &mut issues,
+                        );
                     }
                 }
                 ShapeBody::Operation(body) => {
                     if let Some(input) = body.input() {
-                        self.resolve(shape.id(), input, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(input_id.clone()),
+                            input,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(output) = body.output() {
-                        self.resolve(shape.id(), output, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(output_id.clone()),
+                            output,
+                            model,
+                            &mut issues,
+                        );
                     }
                     for error in body.errors() {
-                        self.resolve(shape.id(), error, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(errors_id.clone()),
+                            error,
+                            model,
+                            &mut issues,
+                        );
                     }
                 }
                 ShapeBody::Resource(body) => {
-                    for (_, shape_id) in body.identifiers() {
-                        self.resolve(shape.id(), shape_id, model, &mut issues);
+                    for (id_id, shape_id) in body.identifiers() {
+                        self.resolve(
+                            &this_shape_id.to_member(id_id.clone()),
+                            shape_id,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(create) = body.create() {
-                        self.resolve(shape.id(), create, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(create_id.clone()),
+                            create,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(put) = body.put() {
-                        self.resolve(shape.id(), put, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(put_id.clone()),
+                            put,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(read) = body.read() {
-                        self.resolve(shape.id(), read, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(read_id.clone()),
+                            read,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(update) = body.update() {
-                        self.resolve(shape.id(), update, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(update_id.clone()),
+                            update,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(delete) = body.delete() {
-                        self.resolve(shape.id(), delete, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(delete_id.clone()),
+                            delete,
+                            model,
+                            &mut issues,
+                        );
                     }
                     if let Some(list) = body.list() {
-                        self.resolve(shape.id(), list, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(list_id.clone()),
+                            list,
+                            model,
+                            &mut issues,
+                        );
                     }
                     for operation in body.operations() {
-                        self.resolve(shape.id(), operation, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(operations_id.clone()),
+                            operation,
+                            model,
+                            &mut issues,
+                        );
                     }
                     for operation in body.collection_operations() {
-                        self.resolve(shape.id(), operation, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(collection_operations_id.clone()),
+                            operation,
+                            model,
+                            &mut issues,
+                        );
                     }
                     for resource in body.resources() {
-                        self.resolve(shape.id(), resource, model, &mut issues);
+                        self.resolve(
+                            &this_shape_id.to_member(resources_id.clone()),
+                            resource,
+                            model,
+                            &mut issues,
+                        );
                     }
                 }
                 ShapeBody::Apply => {
-                    self.resolve(shape.id(), shape.id(), model, &mut issues);
+                    self.resolve(this_shape_id, this_shape_id, model, &mut issues);
                 }
                 _ => {}
             }
@@ -225,6 +338,27 @@ impl NoOrphanedReferences {
             ));
         }
     }
+
+    fn resolve_traits(
+        &self,
+        referrer: &ShapeID,
+        traits: &Vec<Trait>,
+        model: &Model,
+        issues: &mut Vec<ActionIssue>,
+    ) {
+        for a_trait in traits {
+            if model.resolve_id(a_trait.id(), true).is_none() {
+                issues.push(ActionIssue::error_at(
+                    self.label(),
+                    &format!(
+                        "Shape, or member, has a trait that refers to an unknown identifier: {}",
+                        a_trait.id()
+                    ),
+                    referrer.clone(),
+                ));
+            }
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -243,15 +377,14 @@ impl NoOrphanedReferences {
 mod tests {
     use crate::action::validate::NoOrphanedReferences;
     use crate::action::Validator;
-    use crate::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+    use crate::model::builder::{
+        ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+    };
     use crate::model::Model;
     use crate::Version;
 
     #[test]
     fn test_no_orphaned_references() {
-        //
-        // taken from https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution
-        //
         let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
             .uses("foo.baz#Bar")
             .shape(SimpleShapeBuilder::string("MyString").into())
@@ -265,20 +398,24 @@ mod tests {
                     .member("f", "String")
                     .member("g", "MyBoolean")
                     .member("h", "InvalidShape")
+                    .add_trait(TraitBuilder::new("notKnown").into())
                     .into(),
             )
             .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
             .into();
+        println!("{:?}", model);
         let validator = NoOrphanedReferences::default();
         let result = validator.validate(&model);
         assert!(result.is_some());
         let result = result.unwrap();
-        assert_eq!(result.len(), 2);
+        println!("{:#?}", result);
+        assert_eq!(result.len(), 3);
         let result = result
             .iter()
             .map(|issue| issue.message().clone())
             .collect::<Vec<String>>()
             .join("\n");
+        assert!(result.contains(": notKnown"));
         assert!(result.contains(": InvalidShape"));
         assert!(result.contains(": foo.baz#MyString"));
     }

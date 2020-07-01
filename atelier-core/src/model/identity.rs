@@ -376,6 +376,17 @@ impl ShapeID {
     }
 
     ///
+    /// Return a new shape ID with the current namespace shape name unchanged but with the member
+    /// name set.
+    ///
+    pub fn to_member(&self, member_name: Identifier) -> Self {
+        Self {
+            member_name: Some(member_name),
+            ..self.clone()
+        }
+    }
+
+    ///
     /// Return a new shape ID with the current shape and member IDs unchanged but with the namespace
     /// included.
     ///

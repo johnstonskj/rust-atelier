@@ -1,11 +1,80 @@
 /*!
 This module describes actions that can operate on models. These take three major forms:
 
-1. **Linters**; these inspect the model for stylistic issues, they are not validators other
-   than these style rules.
+1. **Linters**; these inspect the model for stylistic issues, they are a subset of validators.
 1. **Validators**; these inspect models for errors and warnings that may produce errors when the
    model is used.
 1. **Transformers**; these take in a model and transform it into another model.
+
+# Example
+
+The following example is taken from the Smithy specification discussing
+[relative name resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution).
+The
+
+```rust
+use atelier_core::action::validate::NoOrphanedReferences;
+use atelier_core::action::Validator;
+use atelier_core::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+use atelier_core::model::Model;
+use atelier_core::Version;
+
+let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+    .uses("foo.baz#Bar")
+    .shape(SimpleShapeBuilder::string("MyString").into())
+    .shape(
+        StructureBuilder::new("MyStructure")
+            .member("a", "MyString")
+            .member("b", "smithy.example#MyString")
+            .member("c", "Bar")
+            .member("d", "foo.baz#Bar")
+            .member("e", "foo.baz#MyString")
+            .member("f", "String")
+            .member("g", "MyBoolean")
+            .member("h", "InvalidShape")
+            .into(),
+    )
+    .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
+    .into();
+let validator = NoOrphanedReferences::default();
+let result = validator.validate(&model);
+```
+
+This will result in the following pair of validation errors. Note that the error is denoted against
+the
+
+```text
+[
+    ActionIssue {
+        reporter: "NoOrphanedReferences",
+        level: Error,
+        message: "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
+        locus: Some(
+            ShapeID {
+                namespace: None,
+                shape_name: Identifier(
+                    "MyStructure",
+                ),
+                member_name: None,
+            },
+        ),
+    },
+    ActionIssue {
+        reporter: "NoOrphanedReferences",
+        level: Error,
+        message: "Shape, or member, refers to an unknown identifier: InvalidShape",
+        locus: Some(
+            ShapeID {
+                namespace: None,
+                shape_name: Identifier(
+                    "MyStructure",
+                ),
+                member_name: None,
+            },
+        ),
+    },
+]
+```
 
 */
 
