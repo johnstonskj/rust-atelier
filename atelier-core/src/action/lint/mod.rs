@@ -70,6 +70,12 @@ pub fn run_linter_actions(
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
+impl Default for NamingConventions {
+    fn default() -> Self {
+        Self {}
+    }
+}
+
 impl Action for NamingConventions {
     fn label(&self) -> &'static str {
         "NamingConventions"

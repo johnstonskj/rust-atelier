@@ -97,6 +97,7 @@ $ cargo run --example weather
 **Version 0.1.4**
 
 * Completed the `NoOrphanedReferences` validator.
+* Added `CorrectTypeReferences` validator.
 * Added functions `run_linter_actions` and `run_validation_actions`, and removed `ValidateAll` type.
 
 **Version 0.1.3**
