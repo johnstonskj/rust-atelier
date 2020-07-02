@@ -1,0 +1,65 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-core"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-json"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-openapi"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-smithy"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-lib"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/cargo-atelier"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
