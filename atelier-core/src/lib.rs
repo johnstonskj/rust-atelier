@@ -366,4 +366,6 @@ pub mod model;
 
 pub mod prelude;
 
+pub mod select;
+
 pub mod syntax;

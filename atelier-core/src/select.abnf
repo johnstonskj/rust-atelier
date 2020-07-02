@@ -1,0 +1,122 @@
+selector =
+    selector_expression *(selector_expression)
+
+selector_expression =
+    selector_shape_types
+  / selector_attr
+  / selector_scoped_attr
+  / selector_function_args
+  / selector_forward_undirected_neighbor
+  / selector_reverse_undirected_neighbor
+  / selector_forward_directed_neighbor
+  / selector_reverse_directed_neighbor
+  / selector_forward_recursive_neighbor
+  / selector_variable_set
+  / selector_variable_get
+
+selector_shape_types =
+    "*" / identifier
+
+selector_forward_undirected_neighbor =
+    ">"
+
+selector_reverse_undirected_neighbor =
+    "<"
+
+selector_forward_directed_neighbor =
+    "-[" selector_directed_relationships "]->"
+
+selector_reverse_directed_neighbor =
+    "<-[" selector_directed_relationships "]-"
+
+selector_directed_relationships =
+    identifier *("," identifier)
+
+selector_forward_recursive_neighbor =
+    "~>"
+
+selector_attr =
+    "[" selector_key [selector_attr_comparison] "]"
+
+selector_attr_comparison =
+    selector_comparator selector_attr_values ["i"]
+
+selector_key =
+    identifier ["|" selector_path]
+
+selector_path =
+    selector_path_segment *("|" selector_path_segment)
+
+selector_path_segment =
+    selector_value / selector_function_property
+
+selector_value =
+    selector_text / number / root_shape_id
+
+selector_function_property =
+    "(" identifier ")"
+
+selector_attr_values =
+    selector_value *("," selector_value)
+
+selector_comparator =
+    selector_string_comparator
+  / selector_numeric_comparator
+  / selector_projection_comparator
+
+selector_string_comparator =
+    "^=" / "$=" / "*=" / "!=" / "=" / "?="
+
+selector_numeric_comparator =
+    ">=" / ">" / "<=" / "<"
+
+selector_projection_comparator =
+    "{=}" / "{!=}" / "{<}" / "{<<}"
+
+selector_absolute_root_shape_id =
+    namespace "#" identifier
+
+selector_scoped_attr =
+    "[@" [selector_key] ":" selector_scoped_assertions "]"
+
+selector_scoped_assertions =
+    selector_scoped_assertion *("&&" selector_scoped_assertion)
+
+selector_scoped_assertion =
+    selector_scoped_value selector_comparator selector_scoped_values ["i"]
+
+selector_scoped_value =
+    selector_value / selector_context_value
+
+selector_context_value =
+    "@{" selector_path "}"
+
+selector_scoped_values =
+    selector_scoped_value *("," selector_scoped_value)
+
+selector_function =
+    ":" identifier "(" selector_function_args ")"
+
+selector_function_args =
+    selector *("," selector)
+
+selector_text =
+    selector_single_quoted_text / selector_double_quoted_text
+
+selector_single_quoted_text =
+    "'" 1*selector_single_quoted_char "'"
+
+selector_double_quoted_text =
+    DQUOTE 1*selector_double_quoted_char DQUOTE
+
+selector_single_quoted_char =
+    %x20-26 / %x28-5B / %x5D-10FFFF ; Excludes (')
+
+selector_double_quoted_char =
+    %x20-21 / %x23-5B / %x5D-10FFFF ; Excludes (")
+
+selector_variable_set =
+    "$" identifier "(" selector ")"
+
+selector_variable_get =
+    "${" identifier "}"
