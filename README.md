@@ -24,6 +24,11 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 ## Changes
 
 **Version 0.1.2**
+
+* cargo command working, validation and linters started
+
+**Version 0.1.2**
+
 * Core API support for readers.
 * Parser for Smithy representation.
 * Parser for Smithy's JSON AST representation.
