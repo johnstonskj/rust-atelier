@@ -28,7 +28,7 @@ impl Default for Debugger {
 }
 
 impl<'a> ModelWriter<'a> for Debugger {
-    const REPRESENTATION: &'static str = "Debug";
+    fn representation(&self) -> &'static str { "Debug" }
 
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         write!(w, "{:#?}", model)?;
