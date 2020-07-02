@@ -1,7 +1,7 @@
 [package]
 name = "cargo_atelier"
 description = "Cargo integration for the AWS Smithy IDL."
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
 documentation = "https://docs.rs/cargo_atelier/"
@@ -22,5 +22,5 @@ name = "cargo-atelier"
 path = "src/bin/main.rs"
 
 [dependencies]
-atelier_lib = { version = "0.1.4", path = "../atelier-lib", features = ["json", "openapi", "smithy"]}
+atelier_lib = { version = "0.1.5", path = "../atelier-lib", features = ["json", "openapi", "smithy"]}
 structopt = "0.3.14"

@@ -29,6 +29,10 @@ SUBCOMMANDS:
 
 ## Changes
 
+**Version 0.1.2**
+
+* Updated library dependency to get the latest Smithy reader.
+
 **Version 0.1.1**
 
 * Linter and Validator commands working
