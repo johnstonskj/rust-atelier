@@ -7,7 +7,7 @@ More detailed description, with
 
 */
 
-use crate::{Command, File, FileCommand, FileFormat, TransformCommand};
+use crate::{Command, File, FileCommand, FileFormat, Options, TransformCommand};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
@@ -23,6 +23,11 @@ pub(crate) struct CommandLine {
     /// The level of logging to perform; from off to trace
     #[structopt(long, short = "v", parse(from_occurrences))]
     verbose: i8,
+
+    #[cfg(feature = "color")]
+    /// Turn off color in the output
+    #[structopt(long, short)]
+    no_color: bool,
 
     #[structopt(subcommand)]
     cmd: SubCommand,
@@ -84,40 +89,53 @@ pub struct CommandLineError {}
 pub fn parse() -> Result<Command, Box<dyn Error>> {
     let args = CommandLine::from_args();
 
+    let options = Options {
+        use_color: !args.no_color,
+    };
+
     match args.cmd {
         SubCommand::Lint {
             in_file,
             read_format,
-        } => Ok(Command::Lint(FileCommand {
-            input_file: File {
-                file_name: in_file,
-                format: read_format,
+        } => Ok(Command::Lint(
+            FileCommand {
+                input_file: File {
+                    file_name: in_file,
+                    format: read_format,
+                },
             },
-        })),
+            options,
+        )),
         SubCommand::Validate {
             in_file,
             read_format,
-        } => Ok(Command::Validate(FileCommand {
-            input_file: File {
-                file_name: in_file,
-                format: read_format,
+        } => Ok(Command::Validate(
+            FileCommand {
+                input_file: File {
+                    file_name: in_file,
+                    format: read_format,
+                },
             },
-        })),
+            options,
+        )),
         SubCommand::Convert {
             in_file,
             read_format,
             out_file,
             write_format,
-        } => Ok(Command::Convert(TransformCommand {
-            input_file: File {
-                file_name: in_file,
-                format: read_format,
+        } => Ok(Command::Convert(
+            TransformCommand {
+                input_file: File {
+                    file_name: in_file,
+                    format: read_format,
+                },
+                output_file: File {
+                    file_name: out_file,
+                    format: write_format,
+                },
             },
-            output_file: File {
-                file_name: out_file,
-                format: write_format,
-            },
-        })),
+            options,
+        )),
     }
 }
 

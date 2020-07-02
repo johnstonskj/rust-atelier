@@ -19,10 +19,15 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 #[derive(Debug)]
+pub struct Options {
+    pub use_color: bool,
+}
+
+#[derive(Debug)]
 pub enum Command {
-    Lint(FileCommand),
-    Validate(FileCommand),
-    Convert(TransformCommand),
+    Lint(FileCommand, Options),
+    Validate(FileCommand, Options),
+    Convert(TransformCommand, Options),
 }
 
 #[derive(Debug)]
