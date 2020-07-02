@@ -7,7 +7,9 @@ in an action.
 
 use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::model::shapes::{ShapeBody, Trait, Valued};
-use crate::model::{Annotated, Identifier, Model, Named, ShapeID};
+use crate::model::{Annotated, Identifier, Model, Named, Namespace, ShapeID};
+use crate::prelude::{prelude_model_simple_shape_ids, PRELUDE_NAMESPACE};
+use crate::Version;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -434,56 +436,56 @@ impl Validator for CorrectTypeReferences {
                         );
                     }
                     if let Some(target) = resource.create() {
-                        self.check_type_only(
+                        self.check_operation_only(
                             &shape.id(),
                             target,
                             model,
-                            "Resource create",
+                            "Resource operation 'create'",
                             &mut issues,
                         );
                     }
                     if let Some(target) = resource.put() {
-                        self.check_type_only(
+                        self.check_operation_only(
                             &shape.id(),
                             target,
                             model,
-                            "Resource put",
+                            "Resource operation 'put'",
                             &mut issues,
                         );
                     }
                     if let Some(target) = resource.read() {
-                        self.check_type_only(
+                        self.check_operation_only(
                             &shape.id(),
                             target,
                             model,
-                            "Resource read",
+                            "Resource operation 'read'",
                             &mut issues,
                         );
                     }
                     if let Some(target) = resource.update() {
-                        self.check_type_only(
+                        self.check_operation_only(
                             &shape.id(),
                             target,
                             model,
-                            "Resource update",
+                            "Resource operation 'update'",
                             &mut issues,
                         );
                     }
                     if let Some(target) = resource.delete() {
-                        self.check_type_only(
+                        self.check_operation_only(
                             &shape.id(),
                             target,
                             model,
-                            "Resource delete",
+                            "Resource operation 'delete'",
                             &mut issues,
                         );
                     }
                     if let Some(target) = resource.list() {
-                        self.check_type_only(
+                        self.check_operation_only(
                             &shape.id(),
                             target,
                             model,
-                            "Resource list",
+                            "Resource operation 'list'",
                             &mut issues,
                         );
                     }
@@ -546,21 +548,24 @@ impl CorrectTypeReferences {
                 issues.push(ActionIssue::error_at(
                     self.label(),
                     &format!(
-                        "{} may not be a service, operation, resource or apply.",
+                        "{} may not refer to a service, operation, resource or apply.",
                         member
                     ),
                     shape.clone(),
                 ));
             }
         } else {
-            issues.push(ActionIssue::warning_at(
-                self.label(),
-                &format!(
-                    "{} type cannot be resolved in the model to validate.",
-                    member
-                ),
-                shape.clone(),
-            ));
+            let target = target.to_absolute(Namespace::from_str(PRELUDE_NAMESPACE).unwrap());
+            if !prelude_model_simple_shape_ids(&Version::current()).contains(&target) {
+                issues.push(ActionIssue::warning_at(
+                    self.label(),
+                    &format!(
+                        "{}'s type ({}) cannot be resolved to a shape in this model.",
+                        member, target,
+                    ),
+                    shape.clone(),
+                ));
+            }
         }
     }
 
@@ -585,8 +590,8 @@ impl CorrectTypeReferences {
             issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(
-                    "{} type cannot be resolved in the model to validate.",
-                    member
+                    "{}'s type ({}) cannot be resolved to a shape in this model.",
+                    member, target,
                 ),
                 shape.clone(),
             ));
@@ -614,8 +619,8 @@ impl CorrectTypeReferences {
             issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(
-                    "{} type cannot be resolved in the model to validate.",
-                    member
+                    "{} type ({}) cannot be resolved to a shape in this model.",
+                    member, target,
                 ),
                 shape.clone(),
             ));

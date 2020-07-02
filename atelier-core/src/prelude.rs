@@ -585,8 +585,18 @@ string_const!(
 // ------------------------------------------------------------------------------------------------
 
 lazy_static! {
+    static ref PRELUDE_SIMPLE_SHAPES: HashMap<Version, HashSet<ShapeID>> =
+        make_prelude_model_simple_shape_ids();
     static ref PRELUDE_IDENTIFIERS: HashMap<Version, HashSet<ShapeID>> =
-        make_prelude_model_shape_ids();
+        make_prelude_model_all_shape_ids();
+}
+
+///
+/// Return a list of just the simple shape IDs defined in the standard prelude for `version` of
+/// the Smithy specification.
+///
+pub fn prelude_model_simple_shape_ids(version: &Version) -> &HashSet<ShapeID> {
+    PRELUDE_SIMPLE_SHAPES.get(version).unwrap()
 }
 
 ///
@@ -601,7 +611,45 @@ pub fn prelude_model_shape_ids(version: &Version) -> &HashSet<ShapeID> {
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-fn make_prelude_model_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
+fn make_prelude_model_simple_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
+    let namespace = Namespace::from_str(PRELUDE_NAMESPACE).unwrap();
+    let names = [
+        SHAPE_STRING,
+        SHAPE_BLOB,
+        SHAPE_BIGINTEGER,
+        SHAPE_BIGDECIMAL,
+        SHAPE_TIMESTAMP,
+        SHAPE_DOCUMENT,
+        SHAPE_BOOLEAN,
+        SHAPE_PRIMITIVEBOOLEAN,
+        SHAPE_BYTE,
+        SHAPE_PRIMITIVEBYTE,
+        SHAPE_SHORT,
+        SHAPE_PRIMITIVESHORT,
+        SHAPE_INTEGER,
+        SHAPE_PRIMITIVEINTEGER,
+        SHAPE_LONG,
+        SHAPE_PRIMITIVELONG,
+        SHAPE_FLOAT,
+        SHAPE_PRIMITIVEFLOAT,
+        SHAPE_DOUBLE,
+        SHAPE_PRIMITIVEDOUBLE,
+    ]
+    .iter()
+    .map(|shape_name| {
+        ShapeID::new(
+            Some(namespace.clone()),
+            Identifier::from_str(shape_name).unwrap(),
+            None,
+        )
+    })
+    .collect::<HashSet<ShapeID>>();
+    let mut hash: HashMap<Version, HashSet<ShapeID>> = Default::default();
+    let _ = hash.insert(Version::V10, names);
+    hash
+}
+
+fn make_prelude_model_all_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
     let namespace = Namespace::from_str(PRELUDE_NAMESPACE).unwrap();
     let names = [
         SHAPE_STRING,
