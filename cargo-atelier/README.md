@@ -29,9 +29,10 @@ SUBCOMMANDS:
 
 ## Changes
 
-**Version 0.1.0**
+**Version 0.1.1**
 
 * Linter and Validator commands working
+* Convert from json/smithy to json/smithy/uml
 
 **Version 0.1.0**
 

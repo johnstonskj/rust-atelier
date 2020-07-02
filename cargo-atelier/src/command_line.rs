@@ -7,7 +7,7 @@ More detailed description, with
 
 */
 
-use crate::{Command, File, FileCommand, FileFormat};
+use crate::{Command, File, FileCommand, FileFormat, TransformCommand};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
@@ -32,26 +32,42 @@ pub(crate) struct CommandLine {
 pub(crate) enum SubCommand {
     /// Run standard linter rules on a model file
     Lint {
-        /// The file to read, or <stdin>
+        /// The file to read [default: <stdin>]
         #[structopt(long, short)]
         in_file: Option<PathBuf>,
 
-        /// The representation of the input file, the default is 'smithy'
+        /// The representation of the input file
         #[structopt(short, long, default_value = "smithy")]
-        format: FileFormat,
+        read_format: FileFormat,
     },
     /// Run standard validators on a model file
     Validate {
-        /// The file to read, or <stdin>
+        /// The file to read [default: <stdin>]
         #[structopt(long, short)]
         in_file: Option<PathBuf>,
 
-        /// The representation of the input file, must be present if no file specified
+        /// The representation of the input file,
         #[structopt(short, long, default_value = "smithy")]
-        format: FileFormat,
+        read_format: FileFormat,
     },
-    /// Convert file from one format to another
-    Convert,
+    /// Convert model from one representation to another
+    Convert {
+        /// The file to read [default: <stdin>]
+        #[structopt(long, short)]
+        in_file: Option<PathBuf>,
+
+        /// The representation of the input file
+        #[structopt(short, long, default_value = "smithy")]
+        read_format: FileFormat,
+
+        /// The file to write to [default: <stdout>]
+        #[structopt(long, short)]
+        out_file: Option<PathBuf>,
+
+        /// The representation of the output file
+        #[structopt(short, long, default_value = "json")]
+        write_format: FileFormat,
+    },
 }
 
 #[derive(Debug)]
@@ -69,19 +85,39 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
     let args = CommandLine::from_args();
 
     match args.cmd {
-        SubCommand::Lint { in_file, format } => Ok(Command::Lint(FileCommand {
+        SubCommand::Lint {
+            in_file,
+            read_format,
+        } => Ok(Command::Lint(FileCommand {
             input_file: File {
                 file_name: in_file,
-                format,
+                format: read_format,
             },
         })),
-        SubCommand::Validate { in_file, format } => Ok(Command::Validate(FileCommand {
+        SubCommand::Validate {
+            in_file,
+            read_format,
+        } => Ok(Command::Validate(FileCommand {
             input_file: File {
                 file_name: in_file,
-                format,
+                format: read_format,
             },
         })),
-        _ => Err(CommandLineError::boxed()),
+        SubCommand::Convert {
+            in_file,
+            read_format,
+            out_file,
+            write_format,
+        } => Ok(Command::Convert(TransformCommand {
+            input_file: File {
+                file_name: in_file,
+                format: read_format,
+            },
+            output_file: File {
+                file_name: out_file,
+                format: write_format,
+            },
+        })),
     }
 }
 
