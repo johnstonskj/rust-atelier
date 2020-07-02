@@ -22,6 +22,10 @@ default feature, although the core will be included regardless of any feature se
 
 ## Changes
 
+**Version 0.1.5**
+
+Bumped versions of core, json, and smithy crates.
+
 **Version 0.1.4**
 
 * Added the `action` module with `standard_model_lint` and `standard_model_validation` functions.
