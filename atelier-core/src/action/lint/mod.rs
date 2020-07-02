@@ -175,7 +175,7 @@ impl NamingConventions {
                 id.clone(),
             ));
         }
-        self.check_for_acronyms(id, id.shape_name(), false, issues);
+        self.check_for_acronyms("Shape", id, id.shape_name(), false, issues);
     }
     fn check_trait_name(&self, id: &ShapeID, issues: &mut Vec<ActionIssue>) {
         let shape_name = id.shape_name().to_string();
@@ -184,12 +184,12 @@ impl NamingConventions {
                 &self.label(),
                 &format!(
                     "Trait names should conform to lowerCamelCase, i.e. {}",
-                    shape_name.to_camel_case()
+                    shape_name.to_mixed_case()
                 ),
                 id.clone(),
             ));
         }
-        self.check_for_acronyms(id, id.shape_name(), true, issues);
+        self.check_for_acronyms("Trait", id, id.shape_name(), true, issues);
     }
     fn check_member_name(
         &self,
@@ -208,7 +208,7 @@ impl NamingConventions {
                 shape_id.to_member(member_id.clone()),
             ));
         }
-        self.check_for_acronyms(shape_id, member_id, true, issues);
+        self.check_for_acronyms("Member", shape_id, member_id, true, issues);
     }
     fn check_applied_trait_names(&self, traits: &[Trait], issues: &mut Vec<ActionIssue>) {
         for a_trait in traits {
@@ -217,6 +217,7 @@ impl NamingConventions {
     }
     fn check_for_acronyms(
         &self,
+        shape_kind: &str,
         shape_id: &ShapeID,
         id: &Identifier,
         lower: bool,
@@ -230,9 +231,27 @@ impl NamingConventions {
                 issues.push(ActionIssue::info_at(
                     &self.label(),
                     &format!(
-                        "Name '{}' appears to contain a known acronym, consider renaming i.e. {}",
+                        "{} name '{}' appears to contain a known acronym, consider renaming i.e. {}",
+                        shape_kind,
                         name,
-                        if lower {
+                        if lower && name.starts_with(word) {
+                            word.to_mixed_case()
+                        } else {
+                            word.to_camel_case()
+                        }
+                    ),
+                    shape_id.clone(),
+                ));
+            }
+            let word = &word[..word.len() - 1];
+            if word.len() >= 2 && KNOWN_ACRONYMS.contains(word) {
+                issues.push(ActionIssue::info_at(
+                    &self.label(),
+                    &format!(
+                        "{} name '{}' appears to contain a known acronym, consider renaming i.e. {}",
+                        shape_kind,
+                        name,
+                        if lower && name.starts_with(word) {
                             word.to_mixed_case()
                         } else {
                             word.to_camel_case()
@@ -252,8 +271,8 @@ impl NamingConventions {
 fn standard_acronyms() -> HashSet<&'static str> {
     HashSet::from_iter(
         [
-            "ARN", "AWS", "DB", "HTML", "IAM", "ID", "JSON", "RDF", "REST", "SES", "SMS", "SNS",
-            "SQS", "XML",
+            "ARN", "AWS", "CPU", "DB", "HTML", "IAM", "ID", "JSON", "OK", "PID", "RDF", "REST",
+            "SES", "SMS", "SNS", "SQS", "XHML", "XML",
         ]
         .iter()
         .copied(),
