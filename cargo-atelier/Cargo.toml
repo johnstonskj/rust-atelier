@@ -1,7 +1,7 @@
 [package]
 name = "cargo_atelier"
 description = "Cargo integration for the AWS Smithy IDL."
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
 documentation = "https://docs.rs/cargo_atelier/"
@@ -9,6 +9,7 @@ repository = "https://github.com/johnstonskj/rust-atelier.git"
 license = "MIT"
 readme = "README.md"
 publish = true
+default-run = "cargo-atelier"
 
 [package.metadata.docs.rs]
 # This sets the default target to `x86_64-unknown-linux-gnu`
@@ -16,5 +17,10 @@ publish = true
 targets = ["x86_64-unknown-linux-gnu"]
 all-features = true
 
+[[bin]]
+name = "cargo-atelier"
+path = "src/bin/main.rs"
+
 [dependencies]
-atelier_lib = { version = "0.1.0", path = "../atelier-lib" }
+atelier_lib = { version = "0.1.4", path = "../atelier-lib", features = ["json", "openapi", "smithy"]}
+structopt = "0.3.14"
