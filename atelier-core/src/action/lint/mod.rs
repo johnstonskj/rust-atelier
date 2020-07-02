@@ -224,10 +224,8 @@ impl NamingConventions {
     ) {
         let acronym = Regex::new(r"[[:lower:]]?([[:upper:]][[:upper:]]+)").unwrap();
         let name = id.to_string();
-        println!(">> {}", name);
         for cap in acronym.captures_iter(&name) {
             let word = &cap[1];
-            println!(">> {} > {}", name, word);
             if KNOWN_ACRONYMS.contains(word) {
                 issues.push(ActionIssue::info_at(
                     &self.label(),

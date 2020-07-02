@@ -297,7 +297,6 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> Result<Shape> {
 }
 
 fn parse_documentation_text(input_pair: Pair<'_, Rule>) -> Result<String> {
-    //println!("parse_documentation_text: {:?}", inner_pair);
     if let Rule::documentation_text = input_pair.as_rule() {
         Ok(input_pair.as_str().to_string())
     } else {
