@@ -283,7 +283,6 @@ impl HasMembers for StructureOrUnion {
     fn set_member(&mut self, member: Member) -> Result<()> {
         if self.has_member_named(member.id()) {
             if let Some(NodeValue::ShapeID(_)) = member.value() {
-                // TODO: check inner types match
                 let _ = self.members.insert(member.id().clone(), member);
                 Ok(())
             } else {
