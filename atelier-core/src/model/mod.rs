@@ -48,7 +48,7 @@ For property _shapes_ of type `HashMap<K, V> where V: Named<I>` (a map of identi
 
 */
 
-use crate::model::shapes::{Shape, Trait, Valued};
+use crate::model::shapes::{HasMembers, Shape, ShapeBody, Trait, Valued};
 use crate::model::values::{Key, NodeValue};
 use crate::prelude::{prelude_model_shape_ids, PRELUDE_NAMESPACE};
 use crate::Version;
@@ -264,7 +264,13 @@ impl Model {
     /// > 1. If a shape is defined in the prelude with the same name, the namespace resolves to smithy.api.
     /// > 1. If a relative shape ID does not satisfy one of the above cases, the shape ID is invalid, and the namespace is inherited from the current namespace.
     ///
+    /// If `and_absolute` is true however this implementation will attempt to resolve even absolute
+    /// shape identifiers against the model, any references and the prelude. Also, this implementation
+    /// also resolves members, so that if the shape can be resolved the member within it will also
+    /// be checked.
+    ///
     pub fn resolve_id(&self, id: &ShapeID, and_absolute: bool) -> Option<ShapeID> {
+        // Cache the member name, if present, for later.
         let (id, member) = if id.is_member() {
             (
                 ShapeID::new(id.namespace().clone(), id.shape_name().clone(), None),
@@ -273,14 +279,34 @@ impl Model {
         } else {
             (id.clone(), None)
         };
+
         if id.is_absolute() && and_absolute {
             if self.references.contains(&id) {
                 return Some(id);
             } else if id.namespace().as_ref().unwrap() == &self.namespace {
-                if self.has_shape(&id.to_relative()) {
-                    // check for member
-                    return Some(id);
-                }
+                return if let Some(shape) = self.shape(&id.to_relative()) {
+                    if let Some(member_name) = member {
+                        if match shape.body() {
+                            ShapeBody::List(body) => body.has_member_named(&member_name),
+                            ShapeBody::Set(body) => body.has_member_named(&member_name),
+                            ShapeBody::Map(body) => body.has_member_named(&member_name),
+                            ShapeBody::Structure(body) => body.has_member_named(&member_name),
+                            ShapeBody::Union(body) => body.has_member_named(&member_name),
+                            ShapeBody::Service(body) => body.has_member_named(&member_name),
+                            ShapeBody::Operation(body) => body.has_member_named(&member_name),
+                            ShapeBody::Resource(body) => body.has_member_named(&member_name),
+                            _ => false,
+                        } {
+                            Some(id.to_member(member_name.clone()))
+                        } else {
+                            None
+                        }
+                    } else {
+                        Some(id.clone())
+                    }
+                } else {
+                    None
+                };
             } else if id.namespace().as_ref().unwrap()
                 == &Namespace::from_str(PRELUDE_NAMESPACE).unwrap()
                 && prelude_model_shape_ids(&self.version).contains(&id)
@@ -288,7 +314,10 @@ impl Model {
                 return Some(id);
             }
         } else if id.is_absolute() && !and_absolute {
-            return Some(id);
+            return match member {
+                None => Some(id),
+                Some(member) => Some(id.to_member(member)),
+            };
         } else if let Some(id) = self
             .references
             .iter()
@@ -296,8 +325,30 @@ impl Model {
         {
             return Some(id.clone());
         } else if self.has_shape(&id) {
-            return Some(id.to_absolute(self.namespace.clone()));
-        // check for member
+            let absolute_id = id.to_absolute(self.namespace.clone());
+            return if let Some(shape) = self.shape(&id.to_relative()) {
+                if let Some(member_name) = member {
+                    if match shape.body() {
+                        ShapeBody::List(body) => body.has_member_named(&member_name),
+                        ShapeBody::Set(body) => body.has_member_named(&member_name),
+                        ShapeBody::Map(body) => body.has_member_named(&member_name),
+                        ShapeBody::Structure(body) => body.has_member_named(&member_name),
+                        ShapeBody::Union(body) => body.has_member_named(&member_name),
+                        ShapeBody::Service(body) => body.has_member_named(&member_name),
+                        ShapeBody::Operation(body) => body.has_member_named(&member_name),
+                        ShapeBody::Resource(body) => body.has_member_named(&member_name),
+                        _ => false,
+                    } {
+                        Some(absolute_id.to_member(member_name.clone()))
+                    } else {
+                        None
+                    }
+                } else {
+                    Some(absolute_id)
+                }
+            } else {
+                None
+            };
         } else if let Some(id) = prelude_model_shape_ids(&self.version)
             .iter()
             .find(|shape_ref| shape_ref.to_relative() == id)
@@ -473,6 +524,47 @@ mod tests {
         assert_eq!(
             model.resolve_id(&ShapeID::from_str("InvalidShape").unwrap(), false),
             None
+        );
+
+        // Members ----------
+
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("MyStructure$a").unwrap(), true),
+            Some(ShapeID::from_str("smithy.example#MyStructure$a").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(&ShapeID::from_str("MyStructure$a").unwrap(), false),
+            Some(ShapeID::from_str("smithy.example#MyStructure$a").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(
+                &ShapeID::from_str("smithy.example#MyStructure$a").unwrap(),
+                true
+            ),
+            Some(ShapeID::from_str("smithy.example#MyStructure$a").unwrap())
+        );
+        assert_eq!(
+            model.resolve_id(
+                &ShapeID::from_str("smithy.example#MyStructure$a").unwrap(),
+                false
+            ),
+            Some(ShapeID::from_str("smithy.example#MyStructure$a").unwrap())
+        );
+
+        assert_eq!(
+            model.resolve_id(
+                &ShapeID::from_str("smithy.example#MyStructure$notPresent").unwrap(),
+                true
+            ),
+            None
+        );
+        assert_eq!(
+            model.resolve_id(
+                &ShapeID::from_str("smithy.example#MyStructure$notPresent").unwrap(),
+                false
+            ),
+            Some(ShapeID::from_str("smithy.example#MyStructure$notPresent").unwrap())
         );
     }
 }
