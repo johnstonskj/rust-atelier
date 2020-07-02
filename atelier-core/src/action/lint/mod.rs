@@ -252,7 +252,8 @@ impl NamingConventions {
 fn standard_acronyms() -> HashSet<&'static str> {
     HashSet::from_iter(
         [
-            "ARN", "AWS", "DB", "HTML", "IAM", "JSON", "RDF", "SES", "SMS", "SNS", "XML",
+            "ARN", "AWS", "DB", "HTML", "IAM", "ID", "JSON", "RDF", "REST", "SES", "SMS", "SNS",
+            "SQS", "XML",
         ]
         .iter()
         .copied(),
