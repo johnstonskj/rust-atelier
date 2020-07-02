@@ -278,38 +278,3 @@ fn standard_acronyms() -> HashSet<&'static str> {
         .copied(),
     )
 }
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Unit Tests
-// ------------------------------------------------------------------------------------------------
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_something() {
-        use crate::action::lint::{run_linter_actions, NamingConventions};
-        use crate::model::builder::{
-            ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
-        };
-        use crate::model::Model;
-        use crate::Version;
-
-        let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
-            .shape(SimpleShapeBuilder::string("shouldBeUpper").into())
-            .shape(
-                StructureBuilder::new("MyStructure")
-                    .member("okName", "String")
-                    .member("BadName", "MyString")
-                    .member("thing", "ThingAsJSON")
-                    .add_trait(TraitBuilder::new("BadTraitName").into())
-                    .into(),
-            )
-            .into();
-        let result = run_linter_actions(&[Box::new(NamingConventions::default())], &model, false);
-        println!("{:#?}", result);
-    }
-}
