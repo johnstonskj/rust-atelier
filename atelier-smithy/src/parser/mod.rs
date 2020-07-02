@@ -347,7 +347,9 @@ fn parse_trait_structure_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<(Key, Nod
                         }
                     );
                 }
-                return ParserError::unreachable("parse_trait_structure_kvp").in_rule("quoted_text").into()
+                if id.is_none() {
+                    return ParserError::unreachable("parse_trait_structure_kvp").in_rule("quoted_text").into()
+                }
             },
             identifier => {
                 id = Some(Key::Identifier(Identifier::from_str(inner.as_str())?))
