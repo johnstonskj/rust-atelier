@@ -13,12 +13,12 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 | crate                                  | Content                                                | Status                              |
 |----------------------------------------|--------------------------------------------------------|-------------------------------------|
-| [`atelier_core`](./atelier-core)       | The Model, Builder, and Selector types and I/O traits. | Model: 80%, Builder: 75%, Selector: 20%, Tests: 0% |
-| [`atelier_smithy`](./atelier_smithy)   | The serializer/de-serializer for native Smithy.        | Writer: 90%, Reader: 0%, Tests: 5%                 |
-| [`atelier_json`](./atelier_json)       | The serializer/de-serializer for the JSON AST          | Writer: 90%, Reader: 0%, Tests: 5%                 |
-| [`atelier_openapi`](./atelier_openapi) | TBD                                                    | Not Started                         |
-| [`atelier_lib`](./atelier_lib)         | Re-export structures from previous crates.             | Done.      |
-| [`cargo_atelier`](./cargo_atelier)     | TBD                                                    | Not Started                         |
+| [`atelier_core`](./atelier-core)       | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Selector: 20%, Tests: 5% |
+| [`atelier_smithy`](./atelier-smithy)   | The serializer/de-serializer for native Smithy.        | Writer: 95%, Reader: 95%, Tests: 5% |
+| [`atelier_json`](./atelier-json)       | The serializer/de-serializer for the JSON AST          | Writer: 95%, Reader: 95%, Tests: 5% |
+| [`atelier_openapi`](./atelier-openapi) | A Serializer only to OpenAPI                           | Not Started                         |
+| [`atelier_lib`](./atelier-lib)         | Re-export structures from previous crates.             | Done.                               |
+| [`cargo_atelier`](./cargo-atelier)     | Cargo command to lint, validate, and convert models.   | Commands working correctly.         |
 
 
 ## Changes
