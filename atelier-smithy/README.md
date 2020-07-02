@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.1.4**
+
+* Validated round-tripping Smithy files, read into a model then write back out again.
+
 **Version 0.1.3**
 
 * Changes to the core API around `ModelReader` and `ModelWriter`.
