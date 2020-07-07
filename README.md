@@ -23,9 +23,15 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 ## Changes
 
+**Version 0.1.3**
+
+* Added book structure, will be a project on its own.
+* Added `Model::merge`, changed Model namespace handling, and `ShapeID` comparisons.
+* Added `ModelAssembler` to library crate.
+
 **Version 0.1.2**
 
-* cargo command working, validation and linters started
+* cargo command working, validation and linters started.
 
 **Version 0.1.2**
 

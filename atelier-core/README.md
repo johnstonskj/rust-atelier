@@ -94,6 +94,13 @@ $ cargo run --example weather
 
 ## Changes
 
+**Version 0.1.5**
+
+* Added `UnwelcomeTerms` linter.
+* API changes for `ModelReader` and `ModelWriter`.
+  * removed `representation` method
+* Added `Model::merge` method.
+
 **Version 0.1.4**
 
 * Completed the `NoOrphanedReferences` validator.
