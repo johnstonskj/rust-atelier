@@ -48,7 +48,7 @@ For property _shapes_ of type `HashMap<K, V> where V: Named<I>` (a map of identi
 
 */
 
-use crate::error::Result;
+use crate::error::{ErrorKind, Result};
 use crate::model::shapes::{HasMembers, Shape, ShapeBody, Trait, Valued};
 use crate::model::values::{Key, NodeValue};
 use crate::prelude::{prelude_model_shape_ids, PRELUDE_NAMESPACE};
@@ -155,9 +155,29 @@ impl Model {
     /// [Merging models](https://awslabs.github.io/smithy/1.0/spec/core/merging-models.html) of
     /// the Smithy specification.
     ///
-    pub fn merge(&mut self, _other: Model) -> Result<()> {
-        // TODO: implement merge
-        unimplemented!()
+    /// > _Smithy models MAY be divided into multiple files so that they are easier to maintain and
+    /// > evolve. Smithy tools MUST take the following steps to merge two models together to form a
+    /// > composite model_:
+    /// >
+    /// > * _Assert that both models use a version that is compatible with the tool versions specified_.
+    /// > * _Duplicate shape names, if found, MUST cause the model merge to fail. See Shape ID
+    /// >   conflicts for more information_.
+    /// > * _Merge any conflicting trait definitions using trait conflict resolution_.
+    /// > * _Merge the metadata properties of both models using the metadata merge rules_.
+    ///
+    pub fn merge(&mut self, other: Model) -> Result<()> {
+        // Ensure version match
+        if other.version != self.version {
+            return Err(ErrorKind::InvalidVersionNumber(other.version.to_string()).into());
+        }
+
+        // shape names
+
+        // traits
+
+        // metadata
+
+        Ok(())
     }
 
     // --------------------------------------------------------------------------------------------
@@ -324,12 +344,12 @@ impl Model {
                             ShapeBody::Resource(body) => body.has_member_named(&member_name),
                             _ => false,
                         } {
-                            Some(id.to_member(member_name.clone()))
+                            Some(id.to_member(member_name))
                         } else {
                             None
                         }
                     } else {
-                        Some(id.clone())
+                        Some(id)
                     }
                 } else {
                     None
@@ -366,7 +386,7 @@ impl Model {
                         ShapeBody::Resource(body) => body.has_member_named(&member_name),
                         _ => false,
                     } {
-                        Some(absolute_id.to_member(member_name.clone()))
+                        Some(absolute_id.to_member(member_name))
                     } else {
                         None
                     }
