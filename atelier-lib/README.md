@@ -22,6 +22,13 @@ default feature, although the core will be included regardless of any feature se
 
 ## Changes
 
+**Version 0.1.6**
+
+* Added `UnwelcomeTerms` linter to standard set.
+* Added `assembler` module.
+* Pulled most things out of `lib.rs` into separate modules.
+* Made "json" a default feature.
+
 **Version 0.1.5**
 
 Bumped versions of core, json, and smithy crates.
