@@ -41,15 +41,20 @@ impl<'a> Default for SmithyWriter {
 
 impl<'a> ModelWriter<'a> for SmithyWriter {
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        self.write_header(w, model)?;
-        self.write_shapes(w, model)?;
-        self.write_footer(w, model)
+        self.write_control_section(w, model)?;
+        self.write_metadata_section(w, model)?;
+        self.write_shape_section(w, model)
     }
 }
 
 impl<'a> SmithyWriter {
-    fn write_header(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        writeln!(w, "{}: \"{}\"", MEMBER_VERSION, model.version().to_string())?;
+    fn write_control_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+        writeln!(
+            w,
+            "${}: \"{}\"",
+            MEMBER_VERSION,
+            model.version().to_string()
+        )?;
         writeln!(w)?;
         if model.has_control_data() {
             for (key, value) in model.control_data() {
@@ -57,14 +62,31 @@ impl<'a> SmithyWriter {
             }
             writeln!(w)?;
         }
+        Ok(())
+    }
+
+    fn write_metadata_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         if model.has_metadata() {
             for (key, value) in model.metadata() {
                 writeln!(w, "{} \"{}\" = {}", STATEMENT_METADATA, key, value)?;
             }
             writeln!(w)?;
         }
+        Ok(())
+    }
+
+    fn write_shape_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+        self.write_namespace_statement(w, model)?;
+        self.write_use_section(w, model)?;
+        self.write_shape_statements(w, model)
+    }
+    fn write_namespace_statement(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         writeln!(w, "{} {}", STATEMENT_NAMESPACE, model.namespace())?;
         writeln!(w)?;
+        Ok(())
+    }
+
+    fn write_use_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         for use_shape in model.references() {
             writeln!(w, "{} {}", STATEMENT_USE, use_shape)?;
         }
@@ -72,7 +94,7 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_shapes(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write_shape_statements(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         for shape in model.shapes() {
             if !shape.body().is_apply() {
                 for a_trait in shape.traits() {
@@ -277,10 +299,6 @@ impl<'a> SmithyWriter {
             member.id(),
             member.value().as_ref().unwrap()
         )?;
-        Ok(())
-    }
-
-    fn write_footer(&mut self, _: &mut impl Write, _: &'a Model) -> Result<()> {
         Ok(())
     }
 }
