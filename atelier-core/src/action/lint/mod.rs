@@ -44,9 +44,8 @@ use crate::action::{Action, ActionIssue, IssueLevel, Linter};
 use crate::model::shapes::{ShapeBody, Trait, Valued};
 use crate::model::{Annotated, Identifier, Model, Named, ShapeID};
 use heck::{CamelCase, MixedCase};
-use regex::Regex;
+use std::cell::RefCell;
 use std::collections::HashSet;
-use std::iter::FromIterator;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -62,6 +61,15 @@ use std::str::FromStr;
 ///
 #[derive(Debug)]
 pub struct NamingConventions {}
+
+///
+/// This will report any use of any unwelcome, or problematic terms in names.
+///
+#[derive(Debug)]
+pub struct UnwelcomeTerms {
+    checked: RefCell<HashSet<Identifier>>,
+    issues: RefCell<Vec<ActionIssue>>,
+}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -109,10 +117,6 @@ pub fn run_linter_actions(
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-lazy_static! {
-    static ref KNOWN_ACRONYMS: HashSet<&'static str> = standard_acronyms();
-}
-
 impl Default for NamingConventions {
     fn default() -> Self {
         Self {}
@@ -141,6 +145,11 @@ impl Linter for NamingConventions {
             self.check_applied_trait_names(shape.traits(), &mut issues);
 
             match shape.body() {
+                // TODO: term used in names
+                // simple shape, list/set/map/structure/union should not contain other's terms
+                // operation usage should check any prefix for the correct verb
+                // operation input/output should check suffix
+                //
                 ShapeBody::Structure(body) | ShapeBody::Union(body) => {
                     for member in body.members() {
                         self.check_member_name(shape.id(), member.id(), &mut issues);
@@ -175,7 +184,6 @@ impl NamingConventions {
                 id.clone(),
             ));
         }
-        self.check_for_acronyms("Shape", id, id.shape_name(), false, issues);
     }
     fn check_trait_name(&self, id: &ShapeID, issues: &mut Vec<ActionIssue>) {
         let shape_name = id.shape_name().to_string();
@@ -189,7 +197,6 @@ impl NamingConventions {
                 id.clone(),
             ));
         }
-        self.check_for_acronyms("Trait", id, id.shape_name(), true, issues);
     }
     fn check_member_name(
         &self,
@@ -208,73 +215,103 @@ impl NamingConventions {
                 shape_id.to_member(member_id.clone()),
             ));
         }
-        self.check_for_acronyms("Member", shape_id, member_id, true, issues);
     }
     fn check_applied_trait_names(&self, traits: &[Trait], issues: &mut Vec<ActionIssue>) {
         for a_trait in traits {
             self.check_trait_name(a_trait.id(), issues);
         }
     }
-    fn check_for_acronyms(
-        &self,
-        shape_kind: &str,
-        shape_id: &ShapeID,
-        id: &Identifier,
-        lower: bool,
-        issues: &mut Vec<ActionIssue>,
-    ) {
-        let acronym = Regex::new(r"[[:lower:]]?([[:upper:]][[:upper:]]+)").unwrap();
-        let name = id.to_string();
-        for cap in acronym.captures_iter(&name) {
-            let word = &cap[1];
-            if KNOWN_ACRONYMS.contains(word) {
-                issues.push(ActionIssue::info_at(
-                    &self.label(),
-                    &format!(
-                        "{} name '{}' appears to contain a known acronym, consider renaming i.e. {}",
-                        shape_kind,
-                        name,
-                        if lower && name.starts_with(word) {
-                            word.to_mixed_case()
-                        } else {
-                            word.to_camel_case()
-                        }
-                    ),
-                    shape_id.clone(),
-                ));
+}
+
+// ------------------------------------------------------------------------------------------------
+
+impl Default for UnwelcomeTerms {
+    fn default() -> Self {
+        Self {
+            checked: RefCell::new(Default::default()),
+            issues: RefCell::new(Default::default()),
+        }
+    }
+}
+
+impl Action for UnwelcomeTerms {
+    fn label(&self) -> &'static str {
+        "UnwelcomeTerms"
+    }
+}
+
+impl Linter for UnwelcomeTerms {
+    fn check(&self, model: &Model) -> Option<Vec<ActionIssue>> {
+        for shape in model.shapes() {
+            self.check_shape_id(shape.id());
+            for a_trait in shape.traits() {
+                self.check_shape_id(a_trait.id());
             }
-            let word = &word[..word.len() - 1];
-            if word.len() >= 2 && KNOWN_ACRONYMS.contains(word) {
-                issues.push(ActionIssue::info_at(
-                    &self.label(),
-                    &format!(
-                        "{} name '{}' appears to contain a known acronym, consider renaming i.e. {}",
-                        shape_kind,
-                        name,
-                        if lower && name.starts_with(word) {
-                            word.to_mixed_case()
-                        } else {
-                            word.to_camel_case()
+
+            match shape.body() {
+                ShapeBody::Structure(body) | ShapeBody::Union(body) => {
+                    for member in body.members() {
+                        self.check_identifier(member.id(), Some(shape.id()));
+                        self.check_shape_id(
+                            member.value().as_ref().unwrap().as_shape_id().unwrap(),
+                        );
+                        for a_trait in member.traits() {
+                            self.check_shape_id(a_trait.id());
                         }
-                    ),
-                    shape_id.clone(),
-                ));
+                    }
+                }
+                _ => {}
+            }
+        }
+        if self.issues.borrow().is_empty() {
+            None
+        } else {
+            Some(self.issues.borrow().clone())
+        }
+    }
+}
+
+impl UnwelcomeTerms {
+    fn check_shape_id(&self, shape_id: &ShapeID) {
+        if let Some(namespace) = shape_id.namespace() {
+            for id in namespace.split() {
+                self.check_identifier(&id, Some(shape_id));
+            }
+        }
+        self.check_identifier(&shape_id.shape_name(), Some(shape_id));
+        if let Some(member_name) = shape_id.member_name() {
+            self.check_identifier(member_name, Some(shape_id));
+        }
+    }
+
+    #[inline]
+    fn check_identifier(&self, id: &Identifier, in_shape: Option<&ShapeID>) {
+        if !self.checked.borrow().contains(id) {
+            let _ = self.checked.borrow_mut().insert(id.clone());
+            for word in terms::split_words(&id.to_string()) {
+                if terms::is_unwelcome_term(&word) {
+                    self.issues.borrow_mut().push(match in_shape {
+                        None => ActionIssue::warning(
+                            &self.label(),
+                            &format!(
+                                "The term '{}' is considered either insensitive, divisive, or otherwise unwelcome",
+                                word
+                            )),
+                        Some(in_shape) => ActionIssue::warning_at(
+                            &self.label(),
+                            &format!(
+                                "The term '{}' is considered either insensitive, divisive, or otherwise unwelcome",
+                                word
+                            ), in_shape.clone())
+                    })
+                }
             }
         }
     }
 }
 
 // ------------------------------------------------------------------------------------------------
-// Private Functions
+// Modules
 // ------------------------------------------------------------------------------------------------
 
-fn standard_acronyms() -> HashSet<&'static str> {
-    HashSet::from_iter(
-        [
-            "ARN", "AWS", "CPU", "DB", "HTML", "IAM", "ID", "JSON", "OK", "PID", "RDF", "REST",
-            "SES", "SMS", "SNS", "SQS", "XHML", "XML",
-        ]
-        .iter()
-        .copied(),
-    )
-}
+mod terms;

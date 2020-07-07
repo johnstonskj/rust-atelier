@@ -348,6 +348,15 @@ impl Validator for CorrectTypeReferences {
 
         for shape in model.shapes() {
             match shape.body() {
+                ShapeBody::SimpleType(_) => {
+                    if !shape.has_traits() {
+                        issues.push(ActionIssue::info_at(
+                            self.label(),
+                            &format!("The simple shape ({}) is simply a synonym, did you mean to add any constraint traits?", shape.id()),
+                            shape.id().clone(),
+                        ));
+                    }
+                }
                 ShapeBody::List(list_or_set) | ShapeBody::Set(list_or_set) => {
                     self.check_type_only(
                         &shape.id(),
@@ -544,15 +553,16 @@ impl CorrectTypeReferences {
                 issues.push(ActionIssue::error_at(
                     self.label(),
                     &format!(
-                        "{} may not refer to a service, operation, resource or apply.",
+                        "{} must not refer to a service, operation, resource or apply.",
                         member
                     ),
                     shape.clone(),
                 ));
             }
         } else {
-            let target = target.to_absolute(Namespace::from_str(PRELUDE_NAMESPACE).unwrap());
-            if !prelude_model_simple_shape_ids(&Version::current()).contains(&target) {
+            let prelude_target =
+                target.to_absolute(Namespace::from_str(PRELUDE_NAMESPACE).unwrap());
+            if !prelude_model_simple_shape_ids(&Version::current()).contains(&prelude_target) {
                 issues.push(ActionIssue::warning_at(
                     self.label(),
                     &format!(

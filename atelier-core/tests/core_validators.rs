@@ -1,13 +1,14 @@
-use atelier_core::action::validate::{run_validation_actions, NoOrphanedReferences};
+use atelier_core::action::validate::{
+    run_validation_actions, CorrectTypeReferences, NoOrphanedReferences,
+};
 use atelier_core::model::builder::{
     ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::Model;
 use atelier_core::Version;
 
-#[test]
-fn test_no_orphaned_references() {
-    let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+fn make_model() -> Model {
+    ModelBuilder::new("smithy.example", Some(Version::V10))
         .uses("foo.baz#Bar")
         .shape(SimpleShapeBuilder::string("MyString").into())
         .shape(
@@ -25,20 +26,54 @@ fn test_no_orphaned_references() {
                 .into(),
         )
         .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
-        .into();
-    println!("{:?}", model);
+        .into()
+}
+
+#[test]
+fn test_no_orphaned_references() {
+    let expected = [
+        "Shape, or member, has a trait that refers to an unknown identifier: notKnown",
+        "Shape, or member, refers to an unknown identifier: InvalidShape",
+        "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
+    ];
+    let model: Model = make_model();
     let result =
         run_validation_actions(&[Box::new(NoOrphanedReferences::default())], &model, false);
     assert!(result.is_some());
-    let result = result.unwrap();
-    println!("{:#?}", result);
-    assert_eq!(result.len(), 3);
-    let result = result
+    let actual = result.unwrap();
+    assert_eq!(actual.len(), expected.len());
+    let actual: Vec<String> = actual
         .iter()
-        .map(|issue| issue.message().clone())
-        .collect::<Vec<String>>()
-        .join("\n");
-    assert!(result.contains(": notKnown"));
-    assert!(result.contains(": InvalidShape"));
-    assert!(result.contains(": foo.baz#MyString"));
+        .map(|issue| issue.message())
+        .cloned()
+        .collect();
+    for message in &expected {
+        assert!(actual.contains(&message.to_string()));
+    }
+}
+
+#[test]
+fn test_correct_type_references() {
+    let expected = [
+        "The simple shape (MyString) is simply a synonym, did you mean to add any constraint traits?",
+        "The simple shape (MyBoolean) is simply a synonym, did you mean to add any constraint traits?",
+        "Structure member\'s type (Bar) cannot be resolved to a shape in this model.",
+        "Structure member\'s type (foo.baz#Bar) cannot be resolved to a shape in this model.",
+        "Structure member\'s type (foo.baz#MyString) cannot be resolved to a shape in this model.",
+        "Structure member\'s type (InvalidShape) cannot be resolved to a shape in this model."
+    ];
+    let model: Model = make_model();
+    let result =
+        run_validation_actions(&[Box::new(CorrectTypeReferences::default())], &model, false);
+    assert!(result.is_some());
+    let actual = result.unwrap();
+    assert_eq!(actual.len(), expected.len());
+    let actual: Vec<String> = actual
+        .iter()
+        .map(|issue| issue.message())
+        .cloned()
+        .collect();
+    for message in &expected {
+        assert!(actual.contains(&message.to_string()));
+    }
 }
