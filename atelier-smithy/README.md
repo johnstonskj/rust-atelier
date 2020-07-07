@@ -9,6 +9,13 @@ TBD
 
 ## Changes
 
+**Version 0.1.5**
+
+* API changes for `ModelReader` and `ModelWriter`.
+  * removed `representation` method
+  * added `FILE_EXTENSION` constant.
+* Changed internal module organization to mirror the json crate.
+
 **Version 0.1.4**
 
 * Validated round-tripping Smithy files, read into a model then write back out again.

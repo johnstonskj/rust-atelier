@@ -1,15 +1,5 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
-use crate::parser;
 use atelier_core::error::Result;
-use atelier_core::io::{ModelReader, ModelWriter};
+use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{Member, ShapeBody, Trait, Valued};
 use atelier_core::model::values::NodeValue;
 use atelier_core::model::{Annotated, Model, Named};
@@ -20,17 +10,11 @@ use atelier_core::syntax::{
     SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET,
     SHAPE_STRUCTURE, SHAPE_UNION,
 };
-use std::io::{Read, Write};
+use std::io::Write;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
-
-///
-/// Read a [Model](../atelier_core/model/struct.Model.html) from the Smithy native representation.
-///
-#[derive(Debug)]
-pub struct SmithyReader;
 
 ///
 /// Write a [Model](../atelier_core/model/struct.Model.html) in the Smithy native representation.
@@ -39,35 +23,7 @@ pub struct SmithyReader;
 pub struct SmithyWriter;
 
 // ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
 // Implementations
-// ------------------------------------------------------------------------------------------------
-
-impl Default for SmithyReader {
-    fn default() -> Self {
-        Self {}
-    }
-}
-
-impl ModelReader for SmithyReader {
-    fn representation(&self) -> &'static str {
-        "Smithy"
-    }
-
-    fn read(&mut self, r: &mut impl Read) -> Result<Model> {
-        let mut content: String = String::new();
-        let _ = r.read_to_string(&mut content)?;
-        parser::parse(&content)
-    }
-}
-
 // ------------------------------------------------------------------------------------------------
 
 const CONTROL_DATA_PREFIX: &str = "$";
@@ -84,10 +40,6 @@ impl<'a> Default for SmithyWriter {
 }
 
 impl<'a> ModelWriter<'a> for SmithyWriter {
-    fn representation(&self) -> &'static str {
-        "Smithy"
-    }
-
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         self.write_header(w, model)?;
         self.write_shapes(w, model)?;

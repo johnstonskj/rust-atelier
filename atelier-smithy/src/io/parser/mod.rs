@@ -1,4 +1,4 @@
-use crate::parser::error::ParserError;
+use crate::io::parser::error::ParserError;
 use atelier_core::error::{Error, ErrorKind, Result as CoreResult, ResultExt};
 use atelier_core::model::shapes::{
     HasMembers, ListOrSet, Map, Member, Operation, Resource, Service, Shape, ShapeBody, SimpleType,
