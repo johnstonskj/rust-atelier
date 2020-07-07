@@ -1,0 +1,57 @@
+table {
+    font-size: small;
+}
+
+main img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+main .caption {
+    display: block;
+    text-align: center;
+    font-size: small;
+}
+
+main .caption.figure::before {
+    content: "Figure\a0";
+    font-weight: bold;
+}
+
+main .caption.table::before {
+    content: "Table\a0";
+    font-weight: bold;
+}
+
+main .bibref {
+    font-size: smaller;
+    vertical-align: super;
+}
+
+main .bibref::before {
+    content: "[";
+}
+
+main .bibref::after {
+    content: "]";
+}
+
+main .biblio ol {
+    counter-reset: item;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+main .biblio ol li {
+    display: block;
+    margin-left: 2.5em;
+}
+
+main .biblio ol li::before {
+    display: inline-block;
+    content: "[" counter(item) "] ";
+    counter-increment: item;
+    width: 2.5em;
+    margin-left: -2.5em;
+}
