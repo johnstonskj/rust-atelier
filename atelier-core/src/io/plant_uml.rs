@@ -131,6 +131,11 @@ pub struct PlantUmlWriter {
     expand_smithy_api: bool,
 }
 
+///
+/// The extension to use when reading from, or writing to, files of this type.
+///
+pub const FILE_EXTENSION: &str = "uml";
+
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
@@ -144,10 +149,6 @@ impl Default for PlantUmlWriter {
 }
 
 impl<'a> ModelWriter<'a> for PlantUmlWriter {
-    fn representation(&self) -> &'static str {
-        "PlantUML"
-    }
-
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
         writeln!(w, "@startuml")?;
         writeln!(w)?;

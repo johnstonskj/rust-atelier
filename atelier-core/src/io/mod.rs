@@ -28,8 +28,6 @@ impl Default for Debugger {
 }
 
 impl<'a> ModelWriter<'a> for Debugger {
-    fn representation(&self) -> &'static str { "Debug" }
-
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
@@ -50,9 +48,6 @@ use crate::model::Model;
 /// Trait implemented to write a model in a specific representation.
 ///
 pub trait ModelWriter<'a>: Default {
-    /// The display name of the representation this trait writes.
-    fn representation(&self) -> &'static str;
-
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
@@ -63,9 +58,6 @@ pub trait ModelWriter<'a>: Default {
 /// Trait implemented to read a model from a specific representation.
 ///
 pub trait ModelReader: Default {
-    /// The display name of the representation this trait reads.
-    fn representation(&self) -> &'static str;
-
     ///
     ///  Read a model from the given implementation of `Read`.
     ///
@@ -96,7 +88,7 @@ where
 pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model) -> Result<String> {
     use std::io::Cursor;
     let mut buffer = Cursor::new(Vec::new());
-    w.write(&mut buffer, model)?;
+    w.write(&mut Box::new(&mut buffer), model)?;
     Ok(String::from_utf8(buffer.into_inner()).unwrap())
 }
 

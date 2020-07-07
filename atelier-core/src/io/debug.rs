@@ -29,10 +29,6 @@ impl Default for DebugWriter {
 }
 
 impl<'a> ModelWriter<'a> for DebugWriter {
-    fn representation(&self) -> &'static str {
-        "Debug"
-    }
-
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
