@@ -48,6 +48,7 @@ For property _shapes_ of type `HashMap<K, V> where V: Named<I>` (a map of identi
 
 */
 
+use crate::error::Result;
 use crate::model::shapes::{HasMembers, Shape, ShapeBody, Trait, Valued};
 use crate::model::values::{Key, NodeValue};
 use crate::prelude::{prelude_model_shape_ids, PRELUDE_NAMESPACE};
@@ -147,6 +148,20 @@ impl Model {
         }
     }
 
+    // --------------------------------------------------------------------------------------------
+
+    ///
+    /// Merge the other model into this one. This follows the rules set out in section 20,
+    /// [Merging models](https://awslabs.github.io/smithy/1.0/spec/core/merging-models.html) of
+    /// the Smithy specification.
+    ///
+    pub fn merge(&mut self, _other: Model) -> Result<()> {
+        // TODO: implement merge
+        unimplemented!()
+    }
+
+    // --------------------------------------------------------------------------------------------
+
     /// Return the Smithy version this model conforms to.
     pub fn version(&self) -> &Version {
         &self.version
@@ -210,7 +225,19 @@ impl Model {
     /// Return the shape in this model with the given `Identifier`. This only looks for locally
     /// defined shapes, to find a shape using the Smithy name resolution process use `resolve_id`.
     pub fn shape(&self, shape_id: &ShapeID) -> Option<&Shape> {
-        self.shapes.get(shape_id)
+        match self.shapes.get(shape_id) {
+            None => match shape_id.namespace() {
+                None => None,
+                Some(namespace) => {
+                    if namespace == &self.namespace {
+                        self.shapes.get(&shape_id.to_relative())
+                    } else {
+                        None
+                    }
+                }
+            },
+            shape @ Some(_) => shape,
+        }
     }
 
     /// Returns an iterator over all the shapes in this model.
