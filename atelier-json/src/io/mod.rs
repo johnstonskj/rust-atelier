@@ -2,6 +2,11 @@
 Provides both `JsonReader` and `JsonWriter` implementations.
 */
 
+///
+/// The extension to use when reading from, or writing to, files of this type.
+///
+pub const FILE_EXTENSION: &str = "json";
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------

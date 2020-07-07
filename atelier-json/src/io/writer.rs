@@ -1,4 +1,5 @@
 use crate::io::syntax::*;
+use crate::io::FILE_EXTENSION;
 use atelier_core::error::{AndPanic, ErrorKind, Result, ResultExt};
 use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{Member, Shape, ShapeBody, Trait, Valued};
@@ -32,10 +33,6 @@ impl<'a> Default for JsonWriter {
 }
 
 impl<'a> ModelWriter<'a> for JsonWriter {
-    fn representation(&self) -> &'static str {
-        "JSON"
-    }
-
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         let mut top: Map<String, Value> = Default::default();
 
@@ -47,13 +44,11 @@ impl<'a> ModelWriter<'a> for JsonWriter {
         let _ = top.insert(K_SHAPES.to_string(), self.shapes(model));
 
         if self.pretty_print {
-            to_writer_pretty(w, &Value::Object(top)).chain_err(|| {
-                ErrorKind::Serialization(self.representation().to_string()).to_string()
-            })
+            to_writer_pretty(w, &Value::Object(top))
+                .chain_err(|| ErrorKind::Serialization(FILE_EXTENSION.to_string()).to_string())
         } else {
-            to_writer(w, &Value::Object(top)).chain_err(|| {
-                ErrorKind::Serialization(self.representation().to_string()).to_string()
-            })
+            to_writer(w, &Value::Object(top))
+                .chain_err(|| ErrorKind::Serialization(FILE_EXTENSION.to_string()).to_string())
         }
     }
 }

@@ -9,6 +9,12 @@ TBD
 
 ## Changes
 
+**Version 0.1.4**
+
+* API changes for `ModelReader` and `ModelWriter`.
+  * removed `representation` method
+  * added `FILE_EXTENSION` constant.
+
 **Version 0.1.3**
 
 * Changes to the core API around `ModelReader` and `ModelWriter`.
