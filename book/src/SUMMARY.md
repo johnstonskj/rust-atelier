@@ -11,8 +11,9 @@
 1. [Model Assembly](using/assembly.md)
 1. [Cargo Integration](using/cargo.md)
 1. [Extending Atelier](extending/extending.md)
-   1. [Adding a File Representation](extending/file_io.md)
+   1. [Adding an Artifact Representation](extending/file_io.md)
    1. [Adding a Linter](extending/linter.md)
    1. [Adding a Validator](extending/validator.md)
+   1. [Adding a Model Transformation](extending/transformer.md)
 
 [Appendix: Initial issues in Smithy Documentation](reference/smithy_issues.md)

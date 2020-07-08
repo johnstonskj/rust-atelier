@@ -14,7 +14,9 @@ The following figure demonstrates the framework elements and their relations.
 * **Mapping**; is a set of rules that allow for reading and writing a representation. Some representations may not provide a meaningful mapping for read or write.
 * **Artifact**; is a file on the file system, in a particular representation. Models may be split across multiple stored artifacts, and those artifacts do not need the same representation.
 
-The build process takes multiple artifacts, validates them, and combines them into a single instance of the abstract model. Files may represent different parts of the IDL for a given application but also their dependencies thus enabling the sharing of common shapes.
+The build process takes multiple artifacts, validates them, and combines them into a single instance of the abstract model. The process may also perform model transformations to add or remove shapes and metadata before any final artifact generation. 
+
+Artifacts may represent different parts of the IDL for a given application but also their dependencies thus enabling the sharing of common shapes.
 
 ### Transformations
 
