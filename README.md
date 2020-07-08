@@ -25,7 +25,7 @@ Given that a Smithy is "_the workshop of a smith_", this project has been named 
 
 **Version 0.1.3**
 
-* Added book structure, will be a project on its own.
+* Added book structure, will be a project on its own, published to [GitHub Pages](https://simonkjohnston.life/rust-atelier/introduction/smithy.html).
 * Added `Model::merge`, changed Model namespace handling, and `ShapeID` comparisons.
 * Added `ModelAssembler` to library crate.
 
