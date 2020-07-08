@@ -1,5 +1,5 @@
+use crate::builder::TraitBuilder;
 use crate::error::ErrorSource;
-use crate::model::builder::TraitBuilder;
 use crate::model::shapes::{ListOrSet, Map, Member, Shape, ShapeBody, SimpleType, Trait, Valued};
 use crate::model::values::NodeValue;
 use crate::model::{Annotated, Identifier, ShapeID};

@@ -17,6 +17,7 @@ use std::str::FromStr;
 ///
 #[derive(Debug)]
 pub struct ModelBuilder {
+    namespace: Option<Namespace>,
     model: Model,
 }
 
@@ -40,7 +41,8 @@ impl ModelBuilder {
     /// Construct a new model builder for the given namespace.
     pub fn new(namespace: &str, version: Option<Version>) -> Self {
         Self {
-            model: Model::new(Namespace::from_str(namespace).unwrap(), version),
+            namespace: Some(Namespace::from_str(namespace).unwrap()),
+            model: Model::new(version),
         }
     }
 

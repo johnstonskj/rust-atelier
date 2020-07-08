@@ -1,6 +1,6 @@
+use crate::builder::values::ObjectBuilder;
 use crate::error::ErrorKind;
 use crate::error::{AndPanic, ErrorSource};
-use crate::model::builder::values::ObjectBuilder;
 use crate::model::shapes::{Trait, Valued};
 use crate::model::values::{Key, NodeValue, Number};
 use crate::model::{Identifier, ShapeID};
