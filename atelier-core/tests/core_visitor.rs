@@ -1,4 +1,3 @@
-use atelier_core::action::{walk_model, ModelVisitor};
 use atelier_core::error::ErrorSource;
 use atelier_core::model::builder::{
     MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder, ShapeBuilder,
@@ -7,6 +6,7 @@ use atelier_core::model::builder::{
 use atelier_core::model::shapes::{
     Operation, Resource, Service, SimpleType, StructureOrUnion, Trait,
 };
+use atelier_core::model::visitor::{walk_model, ModelVisitor};
 use atelier_core::model::{Model, ShapeID};
 use atelier_core::Version;
 use std::cell::RefCell;
