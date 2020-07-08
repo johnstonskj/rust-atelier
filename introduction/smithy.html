@@ -1,0 +1,289 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Smithy Overview - Atelier — Smithy for Rust</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+        <link rel="stylesheet" href="../atelier.css">
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html" class="active"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Reading and Writing Models</a></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">5.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">6.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">7.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">7.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">7.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">7.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">7.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/smithy_issues.html">Appendix: Initial issues in Smithy Documentation</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Atelier — Smithy for Rust</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/johnstonskj/rust-atelier" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#smithy-overview" id="smithy-overview">Smithy Overview</a></h1>
+<p>Smithy is effectively a framework consisting of an semantic model, a custom IDL language, a mapping to/from JSON, and a build process. The semantic model is therefore consistent across different representations while different representations may be used for human usage as well as machine/tool usage. </p>
+<p>Figures in this section use a combined ER notation to denote cardinality alongside UML inheritance relationships as needed.</p>
+<h2><a class="header" href="#framework" id="framework">Framework</a></h2>
+<p>The following figure demonstrates the framework elements and their relations.</p>
+<p><a name="fig_1_1"></a><img src="../img/smithy-model-concept.svg" alt="Smithy Conceptual Model" /></p>
+<div class="caption figure">1.1: Smithy Conceptual Model</div>
+<ul>
+<li><strong>Semantic Model</strong>; is the in-memory model used by tool. The semantic model has no file or format details associated with it, it may be serialized using a representation into a model file.</li>
+<li><strong>Representation</strong>; is a particular model file format such as the Smithy IDL or JSON AST.</li>
+<li><strong>Mapping</strong>; is a set of rules that allow for reading and writing a representation. Some representations may not provide a meaningful mapping for read or write.</li>
+<li><strong>Model File</strong>; is a file on the file system, in a particular representation. Models may be split across multiple stored artifacts, and those artifacts do not need the same representation.</li>
+</ul>
+<p>The build process takes multiple model files, validates them, and combines them into a single instance of the semantic model. The process may also perform model transformations to add or remove shapes and metadata before any final artifact generation. </p>
+<p>Artifacts may represent different parts of the IDL for a given application but also their dependencies thus enabling the sharing of common shapes.</p>
+<h3><a class="header" href="#transformations" id="transformations">Transformations</a></h3>
+<p>The build process mentioned above takes advantage of a number of transformations and while the term process is useful in the build sense the following transformation terms are more specific.</p>
+<ul>
+<li><em>model-to-model</em>; the act of creating one output model from one or more input model, such as a projection to select only certain shapes from the input model(s).</li>
+<li><em>model-to-artifact</em>; the act of creating model files, <em>or</em> generating code or infrastructure artifacts.</li>
+<li><em>artifact-to-model</em>; the act of creating a model from one or more model files or other artifacts such as an OpenAPI file.</li>
+</ul>
+<p>The following figure shows that a transform has to have one or more models and may have zero or more artifacts.</p>
+<p><a name="fig_1_2"></a><img src="../img/smithy-model-transforms.svg" alt="Transformations" /></p>
+<div class="caption figure">1.2: Transformations</div>
+<h2><a class="header" href="#the-semantic-model" id="the-semantic-model">The Semantic Model</a></h2>
+<p>The semantic model is a specified in-memory model used by tools. It is separate from potential serialization representations. Most tools will only ever deal with the semantic model interfaces with serialization and deserialization simply handled by representation mappings.</p>
+<p><a name="fig_1_3"></a><img src="../img/smithy-model-model.svg" alt="The Semantic Model" /></p>
+<div class="caption figure">1.3: The Semantic Model</div>
+<ul>
+<li><strong>Semantic Model</strong>; a container of shapes and optional <a href="#values">metadata</a>.</li>
+<li><strong>Shape</strong>; a defined thing, shapes are either <em>simple</em>, <em>aggregate</em> or <em>service</em> types as described <a href="#shapes">below</a>.</li>
+<li><strong>Applied Trait</strong>; <a href="#traits">traits</a> are a meta feature that allows for values to be associated with shapes. Trait applications  are typically used by tools for validation and code generation.</li>
+<li><strong>ShapeID</strong>; the identifier for all shapes defined in a model, all members of defined shapes, and the names of all traits.</li>
+</ul>
+<h3><a class="header" href="#shape-ids" id="shape-ids">Shape IDs</a></h3>
+<p>The shape identifier is a key element of the semantic model and representations. From the Smithy spec:</p>
+<blockquote>
+<p><em>A shape identifier is used to identify and connect shapes. Every shape in the model is assigned a shape ID which can be referenced by other parts of the model like member targets, resource bindings, operation bindings, and traits. All shape identifiers in the semantic model must be absolute identifiers (that is, they include a shape name and namespace)</em>.</p>
+</blockquote>
+<p><a name="fig_1_4"></a><img src="../img/smithy-model-shapeid.svg" alt="Shape IDs" /></p>
+<div class="caption figure">1.4: Shape IDs</div>
+<p>Shape ID has three query methods, <code>is_absolute</code> is true if the id has a namespace; <code>is_relative</code> is true if the id <em>does not</em> have a namespace; and <code>is_member</code> returns true if the id has a member name. It also has four conversion methods, <code>to_absolute</code> returns a new id with the shape name and any member name intact but with the provided namespace; <code>to_relative</code> returns a new id with the shape name and any member name intact but any previous namespace is removed; <code>to_member</code> returns a new id with the namespace and any shape name intact but with the provided member name; and <code>to_shape</code> returns a new id with the namespace and any shape name intact but any previous member name is removed.</p>
+<h2><a class="header" href="#shapes" id="shapes">Shapes</a></h2>
+<p>Shapes come in three kinds; <em>simple</em>, <em>aggregate</em>, and <em>service</em>. A simple shape is the typpe for an atomic or primitive value such as <code>integer</code> or <code>string</code>. Aggregate shapes have members such as a <code>list</code> of <code>string</code>s or an address <code>structure</code>. Service shapes have specific semantics, unlike the very generic simple and aggregate shapes, as they represent either a <em>service</em>, a <em>resource</em> managed by a service, or <em>operations</em> on services and resources.</p>
+<p><a name="fig_1_5"></a><img src="../img/smithy-model-shapes.svg" alt="Shapes" /></p>
+<div class="caption figure">1.5: Shapes</div>
+<p>Note that the inheritance relationships in this model are not necessary to implement the semantic model semantics but do make it more understandable.</p>
+<h3><a class="header" href="#traits" id="traits">Traits</a></h3>
+<p>Traits in the Smithy IDL look very much like Java annotations, and fulfill a similar role; <em>In the Java computer programming language, an annotation is a form of syntactic metadata that can be added to Java source code.</em> — <em>Wikipedia</em>. However, in Java and other programming languages that support annotations these <em>must</em> be added to the declaration of the source element. In contrast, Smithy allows traits to be <em>applied</em> to a shape in a different artifact or different model entirely.</p>
+<p>The term <em>applied trait</em> refers to the usage of a trait either directly or indirectly applied to a shape or member. A <em>trait declaration</em> is simply a simple or aggregate shape declaration with the meta-trait <code>trait</code> applied to it.</p>
+<h2><a class="header" href="#values" id="values">Values</a></h2>
+<p>There are a few places in the semantic model where data values are used and the following demonstrates the values supported by the model. </p>
+<p><a name="fig_1_6"></a><img src="../img/smithy-model-values.svg" alt="Data" /></p>
+<div class="caption figure">1.6: Data</div>
+<ul>
+<li><strong>metadata</strong>; every Model has an optional metadata <code>Object</code> which is often used to store tool or process specific values.</li>
+<li><strong>nodeValue</strong>; a trait application has values for the structure that defines the trait itself.</li>
+<li><strong>members</strong>; the aggregate values, <code>Array</code> and <code>Object</code>, contain <code>Value</code> members.</li>
+</ul>
+<p>Note that there is no value type for <code>ShapeID</code>, these are stored in the semantic model as simply strings, their validation happens before the creation of the model and are treated only as opaque values by the model itself.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../introduction/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../introduction/crates.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../introduction/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="../introduction/crates.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+        <script type="text/javascript" src="../smithy.js"></script>
+        
+        <script type="text/javascript" src="../atelier.js"></script>
+        
+
+        
+
+    </body>
+</html>

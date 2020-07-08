@@ -1,1 +1,0 @@
-# Adding an Artifact Representation
