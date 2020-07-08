@@ -97,8 +97,10 @@ $ cargo run --example weather
 **Version 0.1.5**
 
 * Added `UnwelcomeTerms` linter.
-* API changes for `ModelReader` and `ModelWriter`.
+* API changes for `ModelReader` and `ModelWriter`;
   * removed `representation` method
+* Made `ActionIssue` an `std::error::Error`.
+* Added `ModelVisitor` to `action` module.
 * Added `Model::merge` method.
 
 **Version 0.1.4**
