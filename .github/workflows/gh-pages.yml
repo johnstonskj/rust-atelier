@@ -1,0 +1,32 @@
+name: mdbook to pages
+
+on:
+  push:
+    branches:
+      - master
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./book
+
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: '0.3.7'
+          # mdbook-version: 'latest'
+
+      - name: Build
+        run: mdbook build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/book
