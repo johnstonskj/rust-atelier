@@ -30,6 +30,8 @@ default feature, although the core will be included regardless of any feature se
 
 pub use atelier_core as core;
 
+pub use atelier_select as select;
+
 pub mod action;
 
 pub mod assembler;
