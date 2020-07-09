@@ -16,4 +16,4 @@
    1. [Adding a Validator](extending/validator.md)
    1. [Adding a Model Transformation](extending/transformer.md)
 
-[Appendix: Initial issues in Smithy Documentation](reference/smithy_issues.md)
+[Appendix: Java/Rust Differences](reference/java_to_rust.md)
