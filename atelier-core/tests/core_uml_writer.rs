@@ -1,10 +1,10 @@
-use atelier_core::error::ErrorSource;
-use atelier_core::io::plant_uml::PlantUmlWriter;
-use atelier_core::io::write_model_to_string;
-use atelier_core::model::builder::{
+use atelier_core::builder::{
     MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder, ShapeBuilder,
     SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
+use atelier_core::error::ErrorSource;
+use atelier_core::io::plant_uml::PlantUmlWriter;
+use atelier_core::io::write_model_to_string;
 use atelier_core::model::Model;
 use atelier_core::Version;
 

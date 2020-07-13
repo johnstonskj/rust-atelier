@@ -1,9 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
+Future home of the OpenAPI writer for Smithy.
 
 */
 
@@ -32,3 +28,11 @@ More detailed description, with
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
+
+#[doc(hidden)]
+pub mod urn;
+pub use urn::SmithyUrn;
+
+pub mod read;
+
+pub mod write;

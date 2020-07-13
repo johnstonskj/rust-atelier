@@ -1,9 +1,7 @@
 use atelier_core::action::validate::{
     run_validation_actions, CorrectTypeReferences, NoOrphanedReferences,
 };
-use atelier_core::model::builder::{
-    ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
-};
+use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder};
 use atelier_core::model::Model;
 use atelier_core::Version;
 

@@ -24,6 +24,11 @@ error_chain! {
             description("Invalid shape ID format")
             display("Invalid shape ID format: '{}'", id)
         }
+        #[doc("Expected an absolute shape ID")]
+        AbsoluteShapeIDExpected(id: String) {
+            description("Expected an absolute shape ID")
+            display("Expected an absolute shape ID: '{}'", id)
+        }
         #[doc("Invalid value variant")]
         InvalidValueVariant(expecting: String) {
             description("Invalid value variant")
@@ -93,14 +98,6 @@ pub trait AndPanic: Display {
     fn panic(&self) -> ! {
         panic!(self.to_string())
     }
-}
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-pub(crate) fn invalid_value_variant(var: &str) -> ! {
-    ErrorKind::InvalidValueVariant(var.to_string()).panic()
 }
 
 // ------------------------------------------------------------------------------------------------

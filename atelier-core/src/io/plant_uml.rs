@@ -105,9 +105,9 @@ Which would produce an image like the following.
 */
 
 use crate::io::ModelWriter;
-use crate::model::shapes::{Shape, ShapeBody, Valued};
-use crate::model::values::NodeValue;
-use crate::model::{Annotated, Model, Named, ShapeID};
+use crate::model::shapes::{Shape, ShapeKind};
+use crate::model::values::Value;
+use crate::model::{Model, Namespace, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
 use crate::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_OPERATIONS, MEMBER_VERSION, SHAPE_BIG_DECIMAL,
@@ -115,6 +115,7 @@ use crate::syntax::{
     SHAPE_FLOAT, SHAPE_INTEGER, SHAPE_LONG, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SHORT,
     SHAPE_STRING, SHAPE_TIMESTAMP, SHAPE_UNION,
 };
+use std::collections::HashSet;
 use std::io::Write;
 use std::str::FromStr;
 
@@ -157,22 +158,28 @@ impl<'a> ModelWriter<'a> for PlantUmlWriter {
         if self.expand_smithy_api {
             self.write_smithy_model(w)?;
         }
-        writeln!(w, "package {} {{", model.namespace())?;
-        writeln!(w)?;
-        for element in model.shapes() {
-            match element.body() {
-                ShapeBody::SimpleType(_) => self.write_data_type(w, element, model)?,
-                ShapeBody::Service(_) => self.write_service(w, element, model)?,
-                ShapeBody::Resource(_) => self.write_resource(w, element, model)?,
-                ShapeBody::Structure(_) | ShapeBody::Union(_) => {
-                    self.write_class(w, element, model)?
+        let namespaces: HashSet<&Namespace> = model
+            .shape_names()
+            .map(|id| id.namespace().as_ref().unwrap())
+            .collect();
+        for namespace in namespaces {
+            writeln!(w, "package {} {{", namespace)?;
+            writeln!(w)?;
+            for element in model.shapes() {
+                match element.body() {
+                    ShapeKind::Simple(_) => self.write_data_type(w, element, model)?,
+                    ShapeKind::Service(_) => self.write_service(w, element, model)?,
+                    ShapeKind::Resource(_) => self.write_resource(w, element, model)?,
+                    ShapeKind::Structure(_) | ShapeKind::Union(_) => {
+                        self.write_class(w, element, model)?
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
-        }
-        writeln!(w, "}}")?;
-        if self.expand_smithy_api {
-            writeln!(w, "{} ..> smithy.api", model.namespace())?;
+            writeln!(w, "}}")?;
+            if self.expand_smithy_api {
+                writeln!(w, "{} ..> smithy.api", namespace)?;
+            }
         }
         writeln!(w)?;
         writeln!(w, "@enduml")?;
@@ -251,7 +258,7 @@ impl PlantUmlWriter {
         let notes = self.write_class_traits(w, resource, model)?;
         let body = resource.body().as_resource().unwrap();
         for (id, shape_id) in body.identifiers() {
-            writeln!(w, "        {}: {}", id, self.type_string(shape_id, model))?;
+            writeln!(w, "        {}: {}", id, shape_id)?;
         }
         if let Some(id) = body.create() {
             self.write_operation(w, id, model, Some("create"))?;
@@ -299,8 +306,8 @@ impl PlantUmlWriter {
         model: &Model,
     ) -> crate::error::Result<()> {
         let (is_union, body) = match structure.body() {
-            ShapeBody::Structure(s) => (false, s),
-            ShapeBody::Union(s) => (true, s),
+            ShapeKind::Structure(s) => (false, s),
+            ShapeKind::Union(s) => (true, s),
             _ => unreachable!(),
         };
         if structure.has_trait(&ShapeID::from_str("trait").unwrap()) {
@@ -314,12 +321,12 @@ impl PlantUmlWriter {
         }
         let notes = self.write_class_traits(w, structure, model)?;
         for member in body.members() {
-            if let Some(NodeValue::ShapeID(shape_id)) = member.value() {
+            if member.is_member() {
                 writeln!(
                     w,
                     "        {}: {}",
                     member.id(),
-                    self.type_string(shape_id, model)
+                    member.body().as_member().unwrap().target()
                 )?;
             } else {
                 unreachable!()
@@ -373,12 +380,15 @@ impl PlantUmlWriter {
                 Some(name) => name.to_string(),
             },
             if operation.has_input() {
-                self.type_string(operation.input().unwrap(), model)
+                self.type_string(&operation.input().as_ref().unwrap(), model)
             } else {
                 String::new()
             },
             if operation.has_output() {
-                format!(": {}", self.type_string(operation.output().unwrap(), model))
+                format!(
+                    ": {}",
+                    self.type_string(&operation.output().as_ref().unwrap(), model)
+                )
             } else {
                 String::new()
             },
@@ -398,21 +408,17 @@ impl PlantUmlWriter {
             if a_trait.id() == &ShapeID::from_str("error").unwrap() {
                 // ignore
             } else if a_trait.id() == &ShapeID::from_str("documentation").unwrap() {
-                if let Some(NodeValue::String(s)) = a_trait.value() {
+                if let Some(Value::String(s)) = a_trait.value() {
                     notes.push(s.clone())
                 }
             } else {
                 traits.push(match a_trait.value() {
-                    None | Some(NodeValue::None) => format!("    @{}", a_trait.id()),
-                    Some(NodeValue::String(v)) => format!("    @{} = \"{}\"", a_trait.id(), v),
-                    Some(NodeValue::TextBlock(v)) => {
-                        format!("    @{} = \"\"\"{}\"\"\"", a_trait.id(), v)
-                    }
-                    Some(NodeValue::Number(v)) => format!("    @{} = {}", a_trait.id(), v),
-                    Some(NodeValue::ShapeID(v)) => format!("    @{} = {}", a_trait.id(), v),
-                    Some(NodeValue::Boolean(v)) => format!("    @{} = {}", a_trait.id(), v),
-                    Some(NodeValue::Array(_)) => format!("    @{} = [ .. ]", a_trait.id()),
-                    Some(NodeValue::Object(_)) => format!("    @{} = {{ .. }}", a_trait.id()),
+                    None | Some(Value::None) => format!("    @{}", a_trait.id()),
+                    Some(Value::String(v)) => format!("    @{} = \"{}\"", a_trait.id(), v),
+                    Some(Value::Number(v)) => format!("    @{} = {}", a_trait.id(), v),
+                    Some(Value::Boolean(v)) => format!("    @{} = {}", a_trait.id(), v),
+                    Some(Value::Array(_)) => format!("    @{} = [ .. ]", a_trait.id()),
+                    Some(Value::Object(_)) => format!("    @{} = {{ .. }}", a_trait.id()),
                 });
             }
         }
@@ -445,10 +451,35 @@ impl PlantUmlWriter {
     fn type_string(&self, type_id: &ShapeID, model: &Model) -> String {
         if let Some(shape) = model.shape(type_id) {
             match shape.body() {
-                ShapeBody::SimpleType(st) => st.to_string(),
-                ShapeBody::List(list) => format!("List<{}>", list.member()),
-                ShapeBody::Set(set) => format!("Set<{}>", set.member()),
-                ShapeBody::Map(map) => format!("Map<{}, {}>", map.key(), map.value()),
+                ShapeKind::Simple(st) => st.to_string(),
+                ShapeKind::List(list) => format!(
+                    "List<{}>",
+                    list.member()
+                        .body()
+                        .as_member()
+                        .unwrap()
+                        .target()
+                        .shape_name()
+                ),
+                ShapeKind::Set(set) => format!(
+                    "Set<{}>",
+                    set.member()
+                        .body()
+                        .as_member()
+                        .unwrap()
+                        .target()
+                        .shape_name()
+                ),
+                ShapeKind::Map(map) => format!(
+                    "Map<{}, {}>",
+                    map.key().body().as_member().unwrap().target().shape_name(),
+                    map.value()
+                        .body()
+                        .as_member()
+                        .unwrap()
+                        .target()
+                        .shape_name()
+                ),
                 _ => type_id.to_string(),
             }
         } else {

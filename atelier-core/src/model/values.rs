@@ -4,28 +4,13 @@ within shapes, but only shape IDs, as well as the values provided to trait appli
 statements.
 */
 
-use crate::model::{Identifier, ShapeID};
+use crate::model::ShapeID;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
-
-///
-/// The key to a `NodeValue::Object` value, which may be either a quoted string or an identifier.
-///
-/// Corresponds to the `node_object_key` production in §2.5,
-///   [Node values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#node-values),
-///   of the Smithy 1.0 Specification.
-///
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Key {
-    /// A `quoted_text` string (see [String values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#string-values)).
-    String(String),
-    /// An identifier value (see [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf)).
-    Identifier(Identifier),
-}
 
 ///
 /// The Smithy specification deals with numbers that are representable in JSON, such a production
@@ -53,91 +38,26 @@ pub enum Number {
 ///   of the Smithy 1.0 Specification.
 ///
 #[derive(Clone, Debug, PartialEq)]
-pub enum NodeValue {
+pub enum Value {
     /// An array (Smithy list or set) of other node values.
-    Array(Vec<NodeValue>),
+    Array(Vec<Value>),
     /// An object (Smithy structure) mapping keys to other node values.
-    Object(HashMap<Key, NodeValue>),
+    Object(ValueMap),
     /// A numeric value, either integer or float.
     Number(Number),
     /// A boolean value. Corresponds to "true" and "false" in the `node_keywords` production.
     Boolean(bool),
-    /// A `ShapeID` which implies a reference to another shape.
-    ShapeID(ShapeID),
-    /// A block of text between three double quotes `"""`, corresponding to the `text_block` production.
-    TextBlock(String),
     /// A quoted string, between double quotes `"`, corresponding to the `quoted_text` production.
     String(String),
     /// An empty, non-existent, value.
     None,
 }
 
-// ------------------------------------------------------------------------------------------------
-// Macros
-// ------------------------------------------------------------------------------------------------
-
-#[doc(hidden)]
-macro_rules! is_as {
-    ($is_fn:ident, $as_fn:ident, $variant:ident, $ret_type:ty) => {
-        /// Returns `true` if `self` is the corresponding variant, else `false`.
-        pub fn $is_fn(&self) -> bool {
-            match self {
-                Self::$variant(_) => true,
-                _ => false,
-            }
-        }
-
-        /// Returns `Some(v)` if `self` is the corresponding variant, else `None`.
-        pub fn $as_fn(&self) -> Option<&$ret_type> {
-            match self {
-                Self::$variant(v) => Some(v),
-                _ => None,
-            }
-        }
-    };
-}
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
+/// The type of an Object value.
+pub type ValueMap = HashMap<String, Value>;
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
-// ------------------------------------------------------------------------------------------------
-
-impl From<String> for Key {
-    fn from(s: String) -> Self {
-        Self::String(s)
-    }
-}
-
-impl From<&str> for Key {
-    fn from(s: &str) -> Self {
-        Self::String(s.to_string())
-    }
-}
-
-impl From<Identifier> for Key {
-    fn from(id: Identifier) -> Self {
-        Self::Identifier(id)
-    }
-}
-
-impl Display for Key {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::String(s) => write!(f, "{:?}", s),
-            Self::Identifier(id) => write!(f, "{}", id),
-        }
-    }
-}
-
-impl Key {
-    is_as! { is_string, as_string, String, String }
-
-    is_as! { is_identifier, as_identifier, Identifier, Identifier }
-}
-
 // ------------------------------------------------------------------------------------------------
 
 impl From<i8> for Number {
@@ -187,94 +107,100 @@ impl Display for Number {
 
 // ------------------------------------------------------------------------------------------------
 
-impl From<Number> for NodeValue {
+impl From<Number> for Value {
     fn from(n: Number) -> Self {
         Self::Number(n)
     }
 }
 
-impl From<i8> for NodeValue {
+impl From<i8> for Value {
     fn from(n: i8) -> Self {
         Self::Number((n as i64).into())
     }
 }
 
-impl From<i16> for NodeValue {
+impl From<i16> for Value {
     fn from(n: i16) -> Self {
         Self::Number((n as i64).into())
     }
 }
 
-impl From<i32> for NodeValue {
+impl From<i32> for Value {
     fn from(n: i32) -> Self {
         Self::Number((n as i64).into())
     }
 }
 
-impl From<i64> for NodeValue {
+impl From<i64> for Value {
     fn from(n: i64) -> Self {
         Self::Number(n.into())
     }
 }
 
-impl From<f32> for NodeValue {
+impl From<f32> for Value {
     fn from(n: f32) -> Self {
         Self::Number((n as f64).into())
     }
 }
 
-impl From<f64> for NodeValue {
+impl From<f64> for Value {
     fn from(n: f64) -> Self {
         Self::Number(n.into())
     }
 }
 
-impl From<bool> for NodeValue {
+impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Self::Boolean(b)
     }
 }
 
-impl From<ShapeID> for NodeValue {
-    fn from(id: ShapeID) -> Self {
-        Self::ShapeID(id)
-    }
-}
-
-impl From<String> for NodeValue {
+impl From<String> for Value {
     fn from(v: String) -> Self {
         Self::String(v)
     }
 }
 
-impl From<&str> for NodeValue {
+impl From<&str> for Value {
     fn from(v: &str) -> Self {
         Self::String(v.to_string())
     }
 }
 
-impl From<Vec<NodeValue>> for NodeValue {
-    fn from(v: Vec<NodeValue>) -> Self {
+impl From<ShapeID> for Value {
+    fn from(v: ShapeID) -> Self {
+        Self::String(v.to_string())
+    }
+}
+
+impl From<&ShapeID> for Value {
+    fn from(v: &ShapeID) -> Self {
+        Self::String(v.to_string())
+    }
+}
+
+impl From<Vec<Value>> for Value {
+    fn from(v: Vec<Value>) -> Self {
         Self::Array(v)
     }
 }
 
-impl From<&[NodeValue]> for NodeValue {
-    fn from(v: &[NodeValue]) -> Self {
+impl From<&[Value]> for Value {
+    fn from(v: &[Value]) -> Self {
         Self::from(v.to_vec())
     }
 }
 
-impl From<HashMap<Key, NodeValue>> for NodeValue {
-    fn from(v: HashMap<Key, NodeValue>) -> Self {
+impl From<HashMap<String, Value>> for Value {
+    fn from(v: HashMap<String, Value>) -> Self {
         Self::Object(v)
     }
 }
 
-impl Display for NodeValue {
+impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            NodeValue::Array(vs) => write!(
+            Value::Array(vs) => write!(
                 f,
                 "[ {} ]",
                 vs.iter()
@@ -282,7 +208,7 @@ impl Display for NodeValue {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            NodeValue::Object(vs) => write!(
+            Value::Object(vs) => write!(
                 f,
                 "{{ {} }}",
                 vs.iter()
@@ -290,54 +216,24 @@ impl Display for NodeValue {
                     .collect::<Vec<String>>()
                     .join(", ")
             ),
-            NodeValue::Number(v) => write!(f, "{}", v),
-            NodeValue::Boolean(v) => write!(f, "{}", v),
-            NodeValue::ShapeID(v) => write!(f, "{}", v),
-            NodeValue::TextBlock(v) => write!(f, "\"\"\"{}\"\"\"", v),
-            NodeValue::String(v) => write!(f, "\"{}\"", v),
-            NodeValue::None => write!(f, "None"),
+            Value::Number(v) => write!(f, "{}", v),
+            Value::Boolean(v) => write!(f, "{}", v),
+            Value::String(v) => write!(f, "\"{}\"", v),
+            Value::None => write!(f, "None"),
         }
     }
 }
 
-impl NodeValue {
-    ///
-    /// Construct a new `NodeValue` as a reference to another shape. This is added as a convenience
-    /// where it makes clear the usage of the `NodeValue` as an explicit reference.
-    ///
-    pub fn reference(shape_id: ShapeID) -> Self {
-        Self::ShapeID(shape_id)
-    }
+impl Value {
+    is_as! { is_array, Array, as_array, Vec<Value> }
 
-    is_as! { is_array, as_array, Array, Vec<NodeValue> }
+    is_as! { is_object, Object, as_object, HashMap<String, Value> }
 
-    is_as! { is_object, as_object, Object, HashMap<Key, NodeValue> }
+    is_as! { is_number, Number, as_number, Number }
 
-    is_as! { is_number, as_number, Number, Number }
+    is_as! { is_boolean, Boolean, as_boolean, bool }
 
-    is_as! { is_boolean, as_boolean, Boolean, bool }
+    is_as! { is_string, String, as_string, String }
 
-    is_as! { is_shape_id, as_shape_id, ShapeID, ShapeID }
-
-    is_as! { is_reference, as_reference, ShapeID, ShapeID }
-
-    is_as! { is_text_block, as_text_block, TextBlock, String }
-
-    is_as! { is_string, as_string, String, String }
-
-    /// Returns `true` if `self` is the corresponding variant, else `false`.
-    pub fn is_none(&self) -> bool {
-        match self {
-            Self::None => true,
-            _ => false,
-        }
-    }
+    is_as! { is_none, None }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

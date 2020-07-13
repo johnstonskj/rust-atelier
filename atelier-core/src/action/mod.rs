@@ -18,11 +18,11 @@ use atelier_core::action::validate::{
     NoOrphanedReferences, run_validation_actions, CorrectTypeReferences
 };
 use atelier_core::action::Validator;
-use atelier_core::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
 use atelier_core::model::Model;
 use atelier_core::Version;
 
-let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
+let model: Model = ModelBuilder::with_namespace(Version::V10, "smithy.example")
     .uses("foo.baz#Bar")
     .shape(SimpleShapeBuilder::string("MyString").into())
     .shape(
@@ -97,7 +97,7 @@ shape or member identifier accordingly.
 
 */
 
-use crate::error::Result;
+use crate::error::Result as ModelResult;
 use crate::model::{Model, ShapeID};
 use std::fmt::{Display, Formatter};
 
@@ -138,6 +138,16 @@ pub trait Action {
     /// This is a display label to use to determine the validator that causes an error.
     ///
     fn label(&self) -> &'static str;
+
+    ///
+    /// Return all the issues reported by this action.
+    ///
+    fn issues(&self) -> &Vec<ActionIssue>;
+
+    ///
+    /// Return all the issues reported by this action in a mutable collection.
+    ///
+    fn issues_mut(&mut self) -> &mut Vec<ActionIssue>;
 }
 
 ///
@@ -147,7 +157,7 @@ pub trait Linter: Action {
     ///
     /// Validate the model returning any issue, or issues, it may contain.
     ///
-    fn check(&self, model: &Model) -> Option<Vec<ActionIssue>>;
+    fn check(&mut self, model: &Model) -> ModelResult<()>;
 }
 
 ///
@@ -157,7 +167,7 @@ pub trait Validator: Action {
     ///
     /// Validate the model returning any issue, or issues, it may contain.
     ///
-    fn validate(&self, model: &Model) -> Option<Vec<ActionIssue>>;
+    fn validate(&mut self, model: &Model) -> ModelResult<()>;
 }
 
 ///
@@ -168,7 +178,7 @@ pub trait Transformer: Action {
     /// Transform the input model into another. This _may_ consume the input and produce an entirely
     /// new model, or it _may_ simply mutate the model and return the modified input.
     ///
-    fn transform(&self, model: Model) -> Result<Model>;
+    fn transform(&mut self, model: Model) -> ModelResult<Model>;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -293,6 +303,7 @@ impl ActionIssue {
 
 pub mod lint;
 
+#[doc(hidden)]
 pub mod transform;
 
 pub mod validate;

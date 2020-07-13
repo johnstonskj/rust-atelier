@@ -90,10 +90,10 @@
 *
 * ```rust
 * use atelier_core::model::shapes::{
-*     Member, Operation, Resource, Service, Shape, ShapeBody, SimpleType, StructureOrUnion,
-*     Trait, Valued,
+*     Member, Operation, Resource, Service, Shape, ShapeKind, Simple, StructureOrUnion,
+*     AppliedTrait, Valued,
 * };
-* use atelier_core::model::values::NodeValue;
+* use atelier_core::model::values::Value;
 * use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
 * use atelier_core::Version;
 * use std::str::FromStr;
@@ -102,15 +102,14 @@
 * let mut error = StructureOrUnion::new();
 * error.add_member_value(
 *     Identifier::from_str("errorMessage").unwrap(),
-*     NodeValue::ShapeID(ShapeID::from_str("String").unwrap()),
+*     Value::ShapeID(ShapeID::from_str("String").unwrap()),
 * );
 * let mut error = Shape::local(
 *     Identifier::from_str("BadDateValue").unwrap(),
-*     ShapeBody::Structure(error),
+*     ShapeKind::Structure(error),
 * );
-* let mut error_trait = Trait::new(ShapeID::from_str("error").unwrap());
-* error_trait.set_value(NodeValue::String("client".to_string()));
-* error.add_trait(error_trait);
+* let mut error_trait = AppliedTrait::with_value(ShapeID::from_str("smithy.api#error").unwrap(), "client".to_string().into());
+* error.apply_trait(error_trait);
 *
 * // ----------------------------------------------------------------------------------------
 * let mut output = StructureOrUnion::new();
@@ -118,23 +117,23 @@
 *     Identifier::from_str("message").unwrap(),
 *     ShapeID::from_str("String").unwrap(),
 * );
-* let required = Trait::new(ShapeID::from_str("required").unwrap());
+* let required = AppliedTrait::new(ShapeID::from_str("smithy.api#required").unwrap());
 * message.add_trait(required);
 * output.add_member(message);
 * let output = Shape::local(
 *     Identifier::from_str("GetMessageOutput").unwrap(),
-*     ShapeBody::Structure(output),
+*     ShapeKind::Structure(output),
 * );
 *
 * // ----------------------------------------------------------------------------------------
 * let mut input = StructureOrUnion::new();
 * input.add_member_value(
 *     Identifier::from_str("date").unwrap(),
-*     NodeValue::ShapeID(ShapeID::from_str("Date").unwrap()),
+*     Value::ShapeID(ShapeID::from_str("Date").unwrap()),
 * );
 * let input = Shape::local(
 *     Identifier::from_str("GetMessageInput").unwrap(),
-*     ShapeBody::Structure(input),
+*     ShapeKind::Structure(input),
 * );
 *
 * // ----------------------------------------------------------------------------------------
@@ -144,19 +143,19 @@
 * get_message.add_error(ShapeID::from_str("BadDateValue").unwrap());
 * let mut get_message = Shape::local(
 *     Identifier::from_str("GetMessage").unwrap(),
-*     ShapeBody::Operation(get_message),
+*     ShapeKind::Operation(get_message),
 * );
-* let required = Trait::new(ShapeID::from_str("readonly").unwrap());
-* get_message.add_trait(required);
+* let required = AppliedTrait::new(ShapeID::from_str("smithy.api#readonly").unwrap());
+* get_message.apply_trait(required);
 *
 * // ----------------------------------------------------------------------------------------
 * let mut date = Shape::local(
 *     Identifier::from_str("Date").unwrap(),
-*     ShapeBody::SimpleType(SimpleType::String),
+*     ShapeKind::Simple(Simple::String),
 * );
-* let mut pattern_trait = Trait::new(ShapeID::from_str("pattern").unwrap());
-* pattern_trait.set_value(NodeValue::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
-* date.add_trait(pattern_trait);
+* let mut pattern_trait = AppliedTrait::new(ShapeID::from_str("smithy.api#pattern").unwrap());
+* pattern_trait.set_value(Value::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
+* date.apply_trait(pattern_trait);
 *
 * // ----------------------------------------------------------------------------------------
 * let mut message = Resource::default();
@@ -167,7 +166,7 @@
 * message.set_read(ShapeID::from_str("GetMessage").unwrap());
 * let message = Shape::local(
 *     Identifier::from_str("Message").unwrap(),
-*     ShapeBody::Resource(message),
+*     ShapeKind::Resource(message),
 * );
 *
 * // ----------------------------------------------------------------------------------------
@@ -176,16 +175,16 @@
 * service.add_resource(ShapeID::from_str("Message").unwrap());
 * let mut service = Shape::local(
 *     Identifier::from_str("MessageOfTheDay").unwrap(),
-*     ShapeBody::Service(service),
+*     ShapeKind::Service(service),
 * );
-* let documentation = Trait::with_value(
+* let documentation = AppliedTrait::with_value(
 *     ShapeID::from_str("documentation").unwrap(),
-*     NodeValue::String("Provides a Message of the day.".to_string()),
+*     Value::String("Provides a Message of the day.".to_string()),
 * );
-* service.add_trait(documentation);
+* service.apply_trait(documentation);
 *
 * // ----------------------------------------------------------------------------------------
-* let mut model = Model::new(Namespace::from_str("example.motd").unwrap(), Some(Version::V10));
+* let mut model = Model::new(Version::V10);
 * model.add_shape(message);
 * model.add_shape(date);
 * model.add_shape(get_message);
@@ -214,8 +213,8 @@
 *
 * ```rust
 * use atelier_core::error::ErrorSource;
-* use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
-* use atelier_core::model::builder::{
+* use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
+* use atelier_core::builder::{
 *     ShapeBuilder, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
 *     ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 * };
@@ -356,7 +355,13 @@ impl Version {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[doc(hidden)]
+#[macro_use]
+mod macros;
+
 pub mod action;
+
+pub mod builder;
 
 pub mod error;
 
@@ -365,7 +370,5 @@ pub mod io;
 pub mod model;
 
 pub mod prelude;
-
-pub mod select;
 
 pub mod syntax;

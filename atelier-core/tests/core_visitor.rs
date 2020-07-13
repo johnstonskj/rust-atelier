@@ -1,62 +1,62 @@
-use atelier_core::error::ErrorSource;
-use atelier_core::model::builder::{
-    MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder, ShapeBuilder,
+use atelier_core::builder::{
+    MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
     SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
+use atelier_core::error::ErrorSource;
 use atelier_core::model::shapes::{
-    Operation, Resource, Service, SimpleType, StructureOrUnion, Trait,
+    AppliedTrait, Operation, Resource, Service, Simple, StructureOrUnion,
 };
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
-use atelier_core::model::{Model, ShapeID};
+use atelier_core::model::{Model, Namespace, ShapeID};
 use atelier_core::Version;
 use std::cell::RefCell;
 use std::collections::HashSet;
 
 fn make_example_model() -> Model {
-    let model: Model = ModelBuilder::new("example.motd", Some(Version::V10))
-        .shape(
-            ServiceBuilder::new("MessageOfTheDay")
-                .documentation("Provides a Message of the day.")
-                .version("2020-06-21")
-                .resource("Message")
-                .into(),
-        )
-        .shape(
-            ResourceBuilder::new("Message")
-                .identifier("date", "Date")
-                .read("GetMessage")
-                .into(),
-        )
-        .shape(
-            SimpleShapeBuilder::string("Date")
-                .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
-                .into(),
-        )
-        .shape(
-            OperationBuilder::new("GetMessage")
-                .readonly()
-                .input("GetMessageInput")
-                .output("GetMessageOutput")
-                .error("BadDateValue")
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("GetMessageInput")
-                .add_member(MemberBuilder::new("date").refers_to("Date").into())
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("GetMessageOutput")
-                .add_member(MemberBuilder::string("message").required().into())
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("BadDateValue")
-                .error(ErrorSource::Client)
-                .add_member(MemberBuilder::string("errorMessage").required().into())
-                .into(),
-        )
-        .into();
+    let model: Model =
+        ModelBuilder::with_namespace(Version::V10, Namespace::new_unchecked("example.motd"))
+            .shape(
+                ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
+                    .documentation("Provides a Message of the day.")
+                    .resource("Message")
+                    .into(),
+            )
+            .shape(
+                ResourceBuilder::new("Message")
+                    .identifier("date", "Date")
+                    .read("GetMessage")
+                    .into(),
+            )
+            .shape(
+                SimpleShapeBuilder::string("Date")
+                    .apply_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
+                    .into(),
+            )
+            .shape(
+                OperationBuilder::new("GetMessage")
+                    .readonly()
+                    .input("GetMessageInput")
+                    .output("GetMessageOutput")
+                    .error("BadDateValue")
+                    .into(),
+            )
+            .shape(
+                StructureBuilder::new("GetMessageInput")
+                    .add(MemberBuilder::new("date").refers_to("Date").into())
+                    .into(),
+            )
+            .shape(
+                StructureBuilder::new("GetMessageOutput")
+                    .add_member(MemberBuilder::string("message").required().into())
+                    .into(),
+            )
+            .shape(
+                StructureBuilder::new("BadDateValue")
+                    .error(ErrorSource::Client)
+                    .add_member(MemberBuilder::string("errorMessage").required().into())
+                    .into(),
+            )
+            .into();
     model
 }
 
@@ -91,8 +91,8 @@ impl ModelVisitor for ExampleVisitor {
     fn simple_shape(
         &self,
         id: &ShapeID,
-        _: &[Trait],
-        simple: &SimpleType,
+        _: &[AppliedTrait],
+        simple: &Simple,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
         if expected.remove(&format!("simple@{}@{}", simple, id)) {
@@ -105,7 +105,7 @@ impl ModelVisitor for ExampleVisitor {
     fn structure(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &StructureOrUnion,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -119,7 +119,7 @@ impl ModelVisitor for ExampleVisitor {
     fn service(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &Service,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -133,7 +133,7 @@ impl ModelVisitor for ExampleVisitor {
     fn operation(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &Operation,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -147,7 +147,7 @@ impl ModelVisitor for ExampleVisitor {
     fn resource(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &Resource,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();

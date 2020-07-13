@@ -4,9 +4,8 @@ Builders to construct models in a more fluent style. See the example in the
 
 */
 
-use crate::model::{shapes::Shape, Model, Namespace, ShapeID};
+use crate::model::{shapes::Shape, Model, Namespace};
 use crate::Version;
-use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -17,13 +16,19 @@ use std::str::FromStr;
 ///
 #[derive(Debug)]
 pub struct ModelBuilder {
-    namespace: Option<Namespace>,
+    default_namespace: Option<Namespace>,
     model: Model,
 }
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+impl Default for ModelBuilder {
+    fn default() -> Self {
+        Self::new(Version::current())
+    }
+}
 
 impl From<&mut ModelBuilder> for Model {
     fn from(builder: &mut ModelBuilder) -> Self {
@@ -38,23 +43,25 @@ impl From<ModelBuilder> for Model {
 }
 
 impl ModelBuilder {
-    /// Construct a new model builder for the given namespace.
-    pub fn new(namespace: &str, version: Option<Version>) -> Self {
+    /// Construct a new model builder using the provided Smithy version.
+    pub fn new(version: Version) -> Self {
         Self {
-            namespace: Some(Namespace::from_str(namespace).unwrap()),
+            default_namespace: None,
             model: Model::new(version),
         }
     }
 
-    /// Add a "uses" statement to add an external reference.
-    pub fn uses(&mut self, shape: &str) -> &mut Self {
-        self.model.add_reference(ShapeID::from_str(shape).unwrap());
-        self
+    /// Construct a new model builder using the provided Smithy version and namespace.
+    pub fn with_namespace(version: Version, default_namespace: Namespace) -> Self {
+        Self {
+            default_namespace: Some(default_namespace),
+            model: Model::new(version),
+        }
     }
 
     /// Add the given shape to the model.
     pub fn shape(&mut self, shape: Shape) -> &mut Self {
-        self.model.add_shape(shape);
+        let _ = self.model.add_a_shape(shape);
         self
     }
 }
@@ -67,7 +74,7 @@ impl ModelBuilder {
 pub mod shapes;
 pub use shapes::{
     ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
-    SetBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, UnionBuilder,
+    SetBuilder, SimpleShapeBuilder, StructureBuilder, UnionBuilder,
 };
 
 #[doc(hidden)]

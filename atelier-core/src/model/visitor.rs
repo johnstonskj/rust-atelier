@@ -8,11 +8,41 @@ More detailed description, with
 */
 
 use crate::model::shapes::{
-    ListOrSet, Map, Operation, Resource, Service, ShapeBody, SimpleType, StructureOrUnion, Trait,
+    AppliedTrait, ListOrSet, Map, Member, Operation, Resource, Service, ShapeKind, Simple,
+    StructureOrUnion,
 };
-use crate::model::values::{Key, NodeValue};
-use crate::model::{Annotated, Model, Named, ShapeID};
+use crate::model::values::Value;
+use crate::model::{Model, ShapeID};
 
+// ------------------------------------------------------------------------------------------------
+// Macros
+// ------------------------------------------------------------------------------------------------
+
+macro_rules! visit_fn {
+    ($fn_name:ident, $shape_type:ty, $doc:expr) => {
+        #[doc = $doc]
+        #[allow(unused_variables)]
+        fn $fn_name(
+            &self,
+            id: &ShapeID,
+            traits: &[AppliedTrait],
+            shape: &$shape_type,
+        ) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    };
+    ($fn_name:ident, $doc:expr) => {
+        #[doc = $doc]
+        #[allow(unused_variables)]
+        fn $fn_name(
+            &self,
+            id: &ShapeID,
+            traits: &[AppliedTrait],
+        ) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    };
+}
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
@@ -30,84 +60,21 @@ pub trait ModelVisitor {
 
     /// Called once for each key in the model's metadata.
     #[allow(unused_variables)]
-    fn metadata(&self, key: &Key, value: &NodeValue) -> Result<(), Self::Error> {
+    fn metadata(&self, key: &String, value: &Value) -> Result<(), Self::Error> {
         Ok(())
     }
-    /// Called for each simple shape.
-    #[allow(unused_variables)]
-    fn simple_shape(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &SimpleType,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each list shape.
-    #[allow(unused_variables)]
-    fn list(&self, id: &ShapeID, traits: &[Trait], shape: &ListOrSet) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each set shape.
-    #[allow(unused_variables)]
-    fn set(&self, id: &ShapeID, traits: &[Trait], shape: &ListOrSet) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each map shape.
-    #[allow(unused_variables)]
-    fn map(&self, id: &ShapeID, traits: &[Trait], shape: &Map) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each structure shape.
-    #[allow(unused_variables)]
-    fn structure(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &StructureOrUnion,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each union shape.
-    #[allow(unused_variables)]
-    fn union(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &StructureOrUnion,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each service shape.
-    #[allow(unused_variables)]
-    fn service(&self, id: &ShapeID, traits: &[Trait], shape: &Service) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each operation shape.
-    #[allow(unused_variables)]
-    fn operation(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        operation: &Operation,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each resource shape.
-    #[allow(unused_variables)]
-    fn resource(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &Resource,
-    ) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each apply statement.
-    #[allow(unused_variables)]
-    fn apply(&self, id: &ShapeID, traits: &[Trait]) -> Result<(), Self::Error> {
-        Ok(())
-    }
+
+    visit_fn! { simple_shape, Simple, "Called for each simple shape" }
+    visit_fn! { list, ListOrSet, "Called for each list shape" }
+    visit_fn! { set, ListOrSet, "Called for each set shape" }
+    visit_fn! { map, Map, "Called for each map shape" }
+    visit_fn! { structure, StructureOrUnion, "Called for each structure shape" }
+    visit_fn! { union, StructureOrUnion, "Called for each union shape" }
+    visit_fn! { service, Service, "Called for each service shape" }
+    visit_fn! { operation, Operation, "Called for each operation shape" }
+    visit_fn! { resource, Resource, "Called for each resource shape" }
+    visit_fn! { member, Member, "Called for each member shape" }
+    visit_fn! { unresolved_id, "Called for each unresolved shape identifier" }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -126,21 +93,22 @@ where
     for (key, value) in model.metadata() {
         visitor.metadata(key, value)?;
     }
+
     for shape in model.shapes() {
         match &shape.body() {
-            ShapeBody::SimpleType(body) => {
-                visitor.simple_shape(shape.id(), &shape.traits(), body)?
-            }
-            ShapeBody::List(body) => visitor.list(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Set(body) => visitor.set(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Map(body) => visitor.map(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Structure(body) => visitor.structure(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Union(body) => visitor.union(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Service(body) => visitor.service(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Operation(body) => visitor.operation(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Resource(body) => visitor.resource(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Apply => visitor.apply(shape.id(), &shape.traits())?,
+            ShapeKind::Simple(body) => visitor.simple_shape(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::List(body) => visitor.list(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Set(body) => visitor.set(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Map(body) => visitor.map(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Structure(body) => visitor.structure(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Union(body) => visitor.union(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Service(body) => visitor.service(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Operation(body) => visitor.operation(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Resource(body) => visitor.resource(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Member(body) => visitor.member(shape.id(), &shape.traits(), &body)?,
+            ShapeKind::Unresolved => visitor.unresolved_id(shape.id(), &shape.traits())?,
         }
     }
+
     Ok(())
 }

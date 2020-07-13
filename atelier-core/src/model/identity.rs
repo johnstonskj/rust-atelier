@@ -113,6 +113,10 @@ impl PartialEq for Identifier {
 }
 
 impl Identifier {
+    pub fn new_unchecked(s: &str) -> Self {
+        Self(s.to_string())
+    }
+
     ///
     /// Returns `true` if the provided string is a valid identifier representation, else `false`.
     /// This is preferred to calling `from_str()` and determining success or failure.
@@ -175,6 +179,10 @@ impl PartialEq for Namespace {
 }
 
 impl Namespace {
+    pub fn new_unchecked(s: &str) -> Self {
+        Self(s.to_string())
+    }
+
     ///
     /// Returns `true` if the provided string is a valid namespace representation, else `false`.
     /// This is preferred to calling `from_str()` and determining success or failure.
@@ -296,6 +304,27 @@ impl ShapeID {
     }
 
     ///
+    /// Construct a new `ShapeID` from the complete set of given components.
+    ///
+    pub fn new_unchecked(
+        namespace: Option<&str>,
+        shape_name: &str,
+        member_name: Option<&str>,
+    ) -> Self {
+        Self {
+            namespace: match namespace {
+                None => None,
+                Some(namespace) => Some(Namespace::new_unchecked(namespace)),
+            },
+            shape_name: Identifier(shape_name.to_string()),
+            member_name: match member_name {
+                None => None,
+                Some(member_name) => Some(Identifier::new_unchecked(member_name)),
+            },
+        }
+    }
+
+    ///
     /// Constructs a new relative `ShapeID` with the given shape name.
     ///
     pub fn shape(shape_name: &str) -> Self {
@@ -379,6 +408,17 @@ impl ShapeID {
     ///
     pub fn is_member(&self) -> bool {
         self.member_name.is_some()
+    }
+
+    ///
+    /// Return a new shape ID with the current namespace shape name and any member_name unchanged
+    /// but with the shape name set to the new provided value.
+    ///
+    pub fn to_shape(&self, shape_name: Identifier) -> Self {
+        Self {
+            shape_name,
+            ..self.clone()
+        }
     }
 
     ///

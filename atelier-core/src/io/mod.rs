@@ -16,7 +16,7 @@ using the `Debug` implementation associated with those objects.
 ```rust
 # use atelier_core::io::ModelWriter;
 # use atelier_core::model::Model;
-# use atelier_core::error::Result;
+# use atelier_core::error::Result as ModelResult;
 # use std::io::Write;
 #[derive(Debug)]
 pub struct Debugger {}
@@ -28,7 +28,7 @@ impl Default for Debugger {
 }
 
 impl<'a> ModelWriter<'a> for Debugger {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> ModelResult<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
     }
@@ -37,7 +37,7 @@ impl<'a> ModelWriter<'a> for Debugger {
 
 */
 
-use crate::error::Result;
+use crate::error::Result as ModelResult;
 use crate::model::Model;
 
 // ------------------------------------------------------------------------------------------------
@@ -45,13 +45,15 @@ use crate::model::Model;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Trait implemented to write a model in a specific representation.
+/// Trait implemented to write a model in a specific representation. It is expected that
+/// implementations of this trait would ensure that the model is complete unless they can
+/// specifically serialize an incomplete model (the Smithy IDL can).
 ///
 pub trait ModelWriter<'a>: Default {
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
-    fn write(&mut self, w: &mut impl std::io::Write, model: &'a Model) -> Result<()>;
+    fn write(&mut self, w: &mut impl std::io::Write, model: &'a Model) -> ModelResult<()>;
 }
 
 ///
@@ -61,7 +63,7 @@ pub trait ModelReader: Default {
     ///
     ///  Read a model from the given implementation of `Read`.
     ///
-    fn read(&mut self, r: &mut impl std::io::Read) -> Result<Model>;
+    fn read(&mut self, r: &mut impl std::io::Read) -> ModelResult<Model>;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -72,7 +74,7 @@ pub trait ModelReader: Default {
 /// Read a model from the string-like value `s` using the given `ModelReader`. This is simply a
 /// short-cut that saves some repetitive boiler-plate.
 ///
-pub fn read_model_from_string<S>(r: &mut impl ModelReader, s: S) -> Result<Model>
+pub fn read_model_from_string<S>(r: &mut impl ModelReader, s: S) -> ModelResult<Model>
 where
     S: AsRef<[u8]>,
 {
@@ -85,7 +87,10 @@ where
 /// Write the `model` into a string `s` using the given `ModelWriter`. This is simply a
 /// short-cut that saves some repetitive boiler-plate.
 ///
-pub fn write_model_to_string<'a>(w: &mut impl ModelWriter<'a>, model: &'a Model) -> Result<String> {
+pub fn write_model_to_string<'a>(
+    w: &mut impl ModelWriter<'a>,
+    model: &'a Model,
+) -> ModelResult<String> {
     use std::io::Cursor;
     let mut buffer = Cursor::new(Vec::new());
     w.write(&mut Box::new(&mut buffer), model)?;

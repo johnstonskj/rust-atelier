@@ -1,5 +1,5 @@
 use atelier_core::action::lint::{run_linter_actions, NamingConventions, UnwelcomeTerms};
-use atelier_core::model::builder::{
+use atelier_core::builder::{
     ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::Model;
