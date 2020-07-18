@@ -5,6 +5,7 @@ Standard `Error`, `ErrorKind`, and `Result` types.
 #![allow(missing_docs)]
 
 use crate::action::ActionIssue;
+use crate::model::identity::ShapeID;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -25,9 +26,24 @@ error_chain! {
             display("Invalid shape ID format: '{}'", id)
         }
         #[doc("Expected an absolute shape ID")]
-        AbsoluteShapeIDExpected(id: String) {
+        AbsoluteShapeIDExpected(id: ShapeID) {
             description("Expected an absolute shape ID")
             display("Expected an absolute shape ID: '{}'", id)
+        }
+        #[doc("Expected a shape, not member, ID")]
+        ShapeIDExpected(id: ShapeID) {
+            description("Expected a shape, not member, ID")
+            display("Expected a shape, not member, ID: '{}'", id)
+        }
+        #[doc("Expected a member, not shape, ID")]
+        MemberIDExpected(id: ShapeID) {
+            description("Expected a member, not shape, ID")
+            display("Expected a member, not shape, ID: '{}'", id)
+        }
+        #[doc("Invalid shape kind variant")]
+        InvalidShapeVariant(expecting: String) {
+            description("Invalid shape kind variant")
+            display("Invalid shape kind variant, expecting a `ShapeKind::{}`", expecting)
         }
         #[doc("Invalid value variant")]
         InvalidValueVariant(expecting: String) {
@@ -88,23 +104,9 @@ pub enum ErrorSource {
     Server,
 }
 
-///
-/// Allows any value that implements `Display` to be the message in a panic.
-///
-pub trait AndPanic: Display {
-    ///
-    /// Call `panic!` using the string serialization of the current value.
-    ///
-    fn panic(&self) -> ! {
-        panic!(self.to_string())
-    }
-}
-
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
-
-impl AndPanic for ErrorKind {}
 
 impl Display for ErrorSource {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

@@ -74,22 +74,12 @@ pub struct AppliedTrait {
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Member {
-    name: Identifier,
     target: ShapeID,
 }
 
 // ------------------------------------------------------------------------------------------------
 // Macros
 // ------------------------------------------------------------------------------------------------
-
-macro_rules! proxy_is {
-    ($is_fn:ident) => {
-        /// Determines the kind of this shape.
-        pub fn $is_fn(&self) -> bool {
-            self.body.$is_fn()
-        }
-    };
-}
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -164,82 +154,6 @@ impl Shape {
         }
     }
 
-    // --------------------------------------------------------------------------------------------
-
-    ///
-    /// Construct a new shape with a `ShapeBody::List` body.
-    ///
-    pub fn new_simple(&self, shape_name: Identifier, a_type: Simple) -> Self {
-        Self::new(self.id.to_shape(shape_name), ShapeKind::Simple(a_type))
-    }
-
-    ///
-    /// Construct a new shape with a `ShapeBody::List` body.
-    ///
-    pub fn list(&self, shape_name: Identifier, member: ShapeID) -> Self {
-        Self::new(
-            self.id.to_shape(shape_name),
-            ShapeKind::List(ListOrSet::new_list(member)),
-        )
-    }
-
-    ///
-    /// Construct a new shape with a `ShapeBody::Set` body.
-    ///
-    pub fn set(&self, shape_name: Identifier, member: ShapeID) -> Self {
-        Self::new(
-            self.id.to_shape(shape_name),
-            ShapeKind::Set(ListOrSet::new_set(member)),
-        )
-    }
-
-    ///
-    /// Construct a new shape with a `ShapeBody::Set` body.
-    ///
-    pub fn map(&self, shape_name: Identifier, key: ShapeID, value: ShapeID) -> Self {
-        Self::new(
-            self.id.to_shape(shape_name),
-            ShapeKind::Map(Map::new(key, value)),
-        )
-    }
-
-    ///
-    /// Construct a new shape with a `ShapeBody::Structure` body.
-    ///
-    /// Note: that all members must have a body variant `ShapeBody::Member`, otherwise this method
-    /// will panic.
-    ///
-    pub fn structure(&self, shape_name: Identifier, members: &[Shape]) -> Self {
-        assert!(members.iter().all(|shape| shape.is_member()));
-        Self::new(
-            self.id.to_shape(shape_name),
-            ShapeKind::Structure(StructureOrUnion::with_members(members)),
-        )
-    }
-
-    ///
-    /// Construct a new shape with a `ShapeBody::Structure` body.
-    ///
-    pub fn union(&self, shape_name: Identifier, members: &[Shape]) -> Self {
-        assert!(members.iter().all(|shape| shape.is_member()));
-        Self::new(
-            self.id.to_shape(shape_name),
-            ShapeKind::Union(StructureOrUnion::with_members(members)),
-        )
-    }
-
-    ///
-    /// Construct a new shape with a `ShapeBody::Member` body.
-    ///
-    pub fn member(&self, member_name: Identifier, refers_to: ShapeID) -> Self {
-        Self::new(
-            self.id.to_member(member_name.clone()),
-            ShapeKind::Member(Member::new(member_name, refers_to)),
-        )
-    }
-
-    // --------------------------------------------------------------------------------------------
-
     /// The absolute ShapeID of this shape.
     pub fn id(&self) -> &ShapeID {
         &self.id
@@ -247,7 +161,6 @@ impl Shape {
 
     /// Set the absolute ShapeID of this shape.
     pub fn set_id(&mut self, id: ShapeID) {
-        assert!(id.is_absolute());
         self.id = id
     }
 
@@ -272,6 +185,13 @@ impl Shape {
     pub fn apply_trait(&mut self, a_trait: AppliedTrait) {
         // TODO: apply trait duplicate rules.
         self.traits.push(a_trait);
+    }
+
+    /// Add all these elements to this member's collection.
+    pub fn append_traits(&mut self, traits: &[AppliedTrait]) {
+        for a_trait in traits {
+            self.apply_trait(a_trait.clone());
+        }
     }
 
     /// Add all the traits to this model element.
@@ -304,17 +224,17 @@ impl Shape {
 
     // --------------------------------------------------------------------------------------------
 
-    proxy_is! { is_simple }
-    proxy_is! { is_list }
-    proxy_is! { is_set }
-    proxy_is! { is_map }
-    proxy_is! { is_structure }
-    proxy_is! { is_union }
-    proxy_is! { is_service }
-    proxy_is! { is_operation }
-    proxy_is! { is_resource }
-    proxy_is! { is_member }
-    proxy_is! { is_unresolved }
+    delegate! { is_simple, inner = body }
+    delegate! { is_list, inner = body }
+    delegate! { is_set, inner = body }
+    delegate! { is_map, inner = body }
+    delegate! { is_structure, inner = body }
+    delegate! { is_union, inner = body }
+    delegate! { is_service, inner = body }
+    delegate! { is_operation, inner = body }
+    delegate! { is_resource, inner = body }
+    delegate! { is_member, inner = body }
+    delegate! { is_unresolved, inner = body }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -367,17 +287,18 @@ impl AppliedTrait {
 // ------------------------------------------------------------------------------------------------
 
 impl Member {
-    /// Construct a new Member shape with the given name and target shape (type).
-    pub fn new(name: Identifier, target: ShapeID) -> Self {
-        Self { name, target }
+    /// Construct a new Member shape with the given target shape (type).
+    pub fn new(target: ShapeID) -> Self {
+        Self { target }
     }
 
-    /// The name of this member.
-    pub fn name(&self) -> &Identifier {
-        &self.name
+    pub fn target(&self) -> &ShapeID {
+        &self.target
     }
 
-    required_member! { target, ShapeID, set_target }
+    pub fn set_target(&mut self, target: ShapeID) {
+        self.target = target;
+    }
 }
 
 // ------------------------------------------------------------------------------------------------

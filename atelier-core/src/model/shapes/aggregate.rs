@@ -1,4 +1,5 @@
-use crate::model::shapes::{Member, Shape};
+use crate::error::{ErrorKind, Result as ModelResult};
+use crate::model::shapes::{Member, Shape, ShapeKind};
 use crate::model::{Identifier, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE, SHAPE_LIST, SHAPE_MAP, SHAPE_SET};
@@ -14,7 +15,7 @@ use std::collections::HashMap;
 ///
 #[derive(Clone, Debug)]
 pub struct ListOrSet {
-    member: Box<Shape>,
+    pub(crate) member: Box<Shape>,
 }
 
 ///
@@ -23,8 +24,8 @@ pub struct ListOrSet {
 ///
 #[derive(Clone, Debug)]
 pub struct Map {
-    key: Box<Shape>,
-    value: Box<Shape>,
+    pub(crate) key: Box<Shape>,
+    pub(crate) value: Box<Shape>,
 }
 
 ///
@@ -33,7 +34,7 @@ pub struct Map {
 ///
 #[derive(Clone, Debug)]
 pub struct StructureOrUnion {
-    members: HashMap<Identifier, Box<Shape>>,
+    pub(crate) members: HashMap<Identifier, Box<Shape>>,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -42,21 +43,21 @@ pub struct StructureOrUnion {
 
 impl ListOrSet {
     /// Construct a new list with the given `ShapeID` as the reference to the member type.
-    pub fn new_list(member_shape: ShapeID) -> Self {
+    pub fn new_list(target: ShapeID) -> Self {
         Self {
             member: Box::new(Shape::new(
-                ShapeID::new_unchecked(Some(PRELUDE_NAMESPACE), SHAPE_LIST, Some(MEMBER_MEMBER)),
-                Member::new(Identifier::new_unchecked(MEMBER_MEMBER), member_shape).into(),
+                ShapeID::new_unchecked(PRELUDE_NAMESPACE, SHAPE_LIST, Some(MEMBER_MEMBER)),
+                ShapeKind::Member(Member::new(target)),
             )),
         }
     }
 
     /// Construct a new set with the given `ShapeID` as the reference to the member type.
-    pub fn new_set(member_shape: ShapeID) -> Self {
+    pub fn new_set(target: ShapeID) -> Self {
         Self {
             member: Box::new(Shape::new(
-                ShapeID::new_unchecked(Some(PRELUDE_NAMESPACE), SHAPE_SET, Some(MEMBER_MEMBER)),
-                Member::new(Identifier::new_unchecked(MEMBER_MEMBER), member_shape).into(),
+                ShapeID::new_unchecked(PRELUDE_NAMESPACE, SHAPE_SET, Some(MEMBER_MEMBER)),
+                ShapeKind::Member(Member::new(target)),
             )),
         }
     }
@@ -81,12 +82,12 @@ impl Map {
     pub fn new(key_shape: ShapeID, value_shape: ShapeID) -> Self {
         Self {
             key: Box::new(Shape::new(
-                ShapeID::new_unchecked(Some(PRELUDE_NAMESPACE), SHAPE_MAP, Some(MEMBER_KEY)),
-                Member::new(Identifier::new_unchecked(MEMBER_KEY), key_shape).into(),
+                ShapeID::new_unchecked(PRELUDE_NAMESPACE, SHAPE_MAP, Some(MEMBER_KEY)),
+                ShapeKind::Member(Member::new(key_shape)),
             )),
             value: Box::new(Shape::new(
-                ShapeID::new_unchecked(Some(PRELUDE_NAMESPACE), SHAPE_MAP, Some(MEMBER_VALUE)),
-                Member::new(Identifier::new_unchecked(MEMBER_VALUE), value_shape).into(),
+                ShapeID::new_unchecked(PRELUDE_NAMESPACE, SHAPE_MAP, Some(MEMBER_VALUE)),
+                ShapeKind::Member(Member::new(value_shape)),
             )),
         }
     }
@@ -148,12 +149,48 @@ impl StructureOrUnion {
         new
     }
 
-    object_member! { members, member, Identifier, Box<Shape>, has_members, has_member, add_member = add_a_member, remove_member }
+    /// Returns `true` if this structure or union has _any_ members, else `false`.
+    pub fn has_members(&self) -> bool {
+        !self.members.is_empty()
+    }
 
-    pub fn add_a_member(&mut self, member: Box<Shape>) -> Option<Box<Shape>> {
-        assert!(member.is_member());
-        assert!(member.id().is_member());
-        self.members
-            .insert(member.id().member_name().clone().unwrap(), member)
+    /// Returns `true` if this structure or union has a member with the given name, else `false`.
+    pub fn has_member(&self, member_name: &Identifier) -> bool {
+        !self.members.contains_key(member_name)
+    }
+
+    /// Returns the member in the structure or union with the given name, else `None`.
+    pub fn member(&self, member_name: &Identifier) -> Option<&Box<Shape>> {
+        self.members.get(member_name)
+    }
+
+    /// Remove the member in the structure or union with the given name.
+    pub fn remove_member(&mut self, member_name: &Identifier) -> Option<Box<Shape>> {
+        self.members.remove(member_name)
+    }
+
+    /// Return an iterator over all members in this structure or union.
+    pub fn members(&self) -> impl Iterator<Item = &Box<Shape>> {
+        self.members.values()
+    }
+
+    pub fn add_member(&mut self, member_name: ShapeID, refers_to: ShapeID) {
+        let shape = Shape::new(
+            member_name.clone(),
+            ShapeKind::Member(Member::new(refers_to)),
+        );
+        let _ = self.add_a_member(Box::new(shape));
+    }
+
+    pub fn add_a_member(&mut self, member: Box<Shape>) -> ModelResult<Option<Box<Shape>>> {
+        if !member.is_member() {
+            Err(ErrorKind::InvalidShapeVariant("Member".to_string()).into())
+        } else if !member.id().is_member() {
+            Err(ErrorKind::MemberIDExpected(member.id().clone()).into())
+        } else {
+            Ok(self
+                .members
+                .insert(member.id().member_name().clone().unwrap(), member))
+        }
     }
 }

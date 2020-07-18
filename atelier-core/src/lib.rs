@@ -91,37 +91,43 @@
 * ```rust
 * use atelier_core::model::shapes::{
 *     Member, Operation, Resource, Service, Shape, ShapeKind, Simple, StructureOrUnion,
-*     AppliedTrait, Valued,
+*     AppliedTrait
 * };
 * use atelier_core::model::values::Value;
-* use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
+* use atelier_core::model::{Identifier, Model, NamespaceID, ShapeID};
 * use atelier_core::Version;
 * use std::str::FromStr;
 *
 * // ----------------------------------------------------------------------------------------
-* let mut error = StructureOrUnion::new();
-* error.add_member_value(
-*     Identifier::from_str("errorMessage").unwrap(),
-*     Value::ShapeID(ShapeID::from_str("String").unwrap()),
-* );
-* let mut error = Shape::local(
-*     Identifier::from_str("BadDateValue").unwrap(),
-*     ShapeKind::Structure(error),
-* );
-* let mut error_trait = AppliedTrait::with_value(ShapeID::from_str("smithy.api#error").unwrap(), "client".to_string().into());
-* error.apply_trait(error_trait);
+* let prelude = NamespaceID::from_str("smithy.api").unwrap();
+* let namespace = NamespaceID::from_str("example.motd").unwrap();
 *
 * // ----------------------------------------------------------------------------------------
-* let mut output = StructureOrUnion::new();
-* let mut message = Member::with_reference(
-*     Identifier::from_str("message").unwrap(),
-*     ShapeID::from_str("String").unwrap(),
+* let shape_name = namespace.to_shape(Identifier::from_str("BadDateValue").unwrap());
+* let mut body = StructureOrUnion::new();
+* body.add_member(
+*     shape_name.make_member(Identifier::from_str("errorMessage").unwrap()),
+*     prelude.to_shape(Identifier::from_str("String").unwrap()),
 * );
-* let required = AppliedTrait::new(ShapeID::from_str("smithy.api#required").unwrap());
+* let mut shape = Shape::new(
+*     shape_name,
+*     ShapeKind::Structure(body),
+* );
+* let mut error_trait = AppliedTrait::with_value(
+*     prelude.to_shape(
+*         Identifier::from_str("error").unwrap()),
+*     "client".to_string().into());
+* shape.apply_trait(error_trait);
+*
+* // ----------------------------------------------------------------------------------------
+* let shape_name = namespace.to_shape(Identifier::from_str("GetMessageOutput").unwrap());
+* let mut body = StructureOrUnion::new();
+* let mut message = Member::new(prelude.to_shape(Identifier::from_str("String").unwrap()));
+* let required = AppliedTrait::new(relude.to_shape(Identifier::from_str("required").unwrap()));
 * message.add_trait(required);
-* output.add_member(message);
-* let output = Shape::local(
-*     Identifier::from_str("GetMessageOutput").unwrap(),
+* output.add_a_member(Box::new(message));
+* let output = Shape::new(
+*     namespace.to_shape(Identifier::from_str("GetMessageOutput").unwrap()),
 *     ShapeKind::Structure(output),
 * );
 *
@@ -131,50 +137,49 @@
 *     Identifier::from_str("date").unwrap(),
 *     Value::ShapeID(ShapeID::from_str("Date").unwrap()),
 * );
-* let input = Shape::local(
-*     Identifier::from_str("GetMessageInput").unwrap(),
+* let input = Shape::new(
+*     namespace.make_shape(Identifier::from_str("GetMessageInput").unwrap()),
 *     ShapeKind::Structure(input),
 * );
 *
 * // ----------------------------------------------------------------------------------------
 * let mut get_message = Operation::default();
-* get_message.set_input(ShapeID::from_str("GetMessageInput").unwrap());
-* get_message.set_output(ShapeID::from_str("GetMessageOutput").unwrap());
-* get_message.add_error(ShapeID::from_str("BadDateValue").unwrap());
-* let mut get_message = Shape::local(
-*     Identifier::from_str("GetMessage").unwrap(),
+* get_message.set_input(namespace.make_shape(Identifier::from_str("GetMessageInput").unwrap()));
+* get_message.set_output(namespace.make_shape(Identifier::from_str("GetMessageOutput").unwrap()));
+* get_message.add_error(namespace.make_shape(Identifier::from_str("BadDateValue").unwrap()));
+* let mut get_message = Shape::new(
+*     namespace.make_shape(Identifier::from_str("GetMessage").unwrap()),
 *     ShapeKind::Operation(get_message),
 * );
-* let required = AppliedTrait::new(ShapeID::from_str("smithy.api#readonly").unwrap());
+* let required = AppliedTrait::new(prelude.make_shape(Identifier::from_str("readonly").unwrap()));
 * get_message.apply_trait(required);
 *
 * // ----------------------------------------------------------------------------------------
-* let mut date = Shape::local(
-*     Identifier::from_str("Date").unwrap(),
+* let mut date = Shape::new(
+*     namespace.make_shape(Identifier::from_str("Date").unwrap()),
 *     ShapeKind::Simple(Simple::String),
 * );
-* let mut pattern_trait = AppliedTrait::new(ShapeID::from_str("smithy.api#pattern").unwrap());
+* let mut pattern_trait = AppliedTrait::new(prelude.make_shape(Identifier::from_str("pattern").unwrap()));
 * pattern_trait.set_value(Value::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
 * date.apply_trait(pattern_trait);
 *
 * // ----------------------------------------------------------------------------------------
 * let mut message = Resource::default();
 * message.add_identifier(
-*     Identifier::from_str("date").unwrap(),
-*     ShapeID::from_str("Date").unwrap(),
+*     "date".to_string(),
+*     Value::String("Date".to_string()),
 * );
-* message.set_read(ShapeID::from_str("GetMessage").unwrap());
+* message.set_read(namespace.make_shape(Identifier::from_str("GetMessage").unwrap()));
 * let message = Shape::local(
-*     Identifier::from_str("Message").unwrap(),
+*     namespace.make_shape(Identifier::from_str("Message").unwrap()),
 *     ShapeKind::Resource(message),
 * );
 *
 * // ----------------------------------------------------------------------------------------
-* let mut service = Service::default();
-* service.set_version("2020-06-21");
+* let mut service = Service::new("2020-06-21");
 * service.add_resource(ShapeID::from_str("Message").unwrap());
-* let mut service = Shape::local(
-*     Identifier::from_str("MessageOfTheDay").unwrap(),
+* let mut service = Shape::new(
+*     namespace.make_shape(Identifier::from_str("MessageOfTheDay").unwrap()),
 *     ShapeKind::Service(service),
 * );
 * let documentation = AppliedTrait::with_value(
@@ -215,17 +220,16 @@
 * use atelier_core::error::ErrorSource;
 * use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 * use atelier_core::builder::{
-*     ShapeBuilder, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
+*     ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
 *     ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 * };
 * use atelier_core::model::{Identifier, Model, ShapeID};
 * use atelier_core::Version;
 *
-* let model: Model = ModelBuilder::new("example.motd", Some(Version::V10))
+* let model: Model = ModelBuilder::with_namespace(Version::V10, "example.motd")
 *     .shape(
-*         ServiceBuilder::new("MessageOfTheDay")
+*         ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
 *             .documentation("Provides a Message of the day.")
-*             .version("2020-06-21")
 *             .resource("Message")
 *             .into(),
 *     )
@@ -237,7 +241,7 @@
 *     )
 *     .shape(
 *         SimpleShapeBuilder::string("Date")
-*             .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
+*             .apply_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
 *             .into(),
 *     )
 *     .shape(
@@ -250,12 +254,8 @@
 *     )
 *     .shape(
 *         StructureBuilder::new("GetMessageInput")
-*             .add_member(
-*                 MemberBuilder::new("date")
-*                     .refers_to("Date")
-*                     .into(),
-*             )
-*             .into(),
+*             .member("date", "Date")
+*             .into()
 *     )
 *     .shape(
 *         StructureBuilder::new("GetMessageOutput")

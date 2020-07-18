@@ -31,6 +31,33 @@ macro_rules! is_as {
     };
 }
 
+macro_rules! delegate {
+    ($fn_name:ident ( $( $i:ident : $t:ty ),* ), inner = $inner_name:ident) => {
+        /// Delegate this call to the inner implementation.
+        pub fn $fn_name(&self) -> bool {
+            self.$inner_name.$fn_name($( $i: $t ),*)
+        }
+    };
+    ($fn_name:ident ( $( $i:ident : $t:ty ),* )) => {
+        /// Delegate this call to the inner implementation.
+        pub fn $fn_name(&self) -> bool {
+            self.inner.$fn_name($( $i: $t ),*)
+        }
+    };
+    ($fn_name:ident, inner = $inner_name:ident) => {
+        /// Delegate this call to the inner implementation.
+        pub fn $fn_name(&self) -> bool {
+            self.$inner_name.$fn_name()
+        }
+    };
+    ($fn_name:ident) => {
+        /// Delegate this call to the inner implementation.
+        pub fn $fn_name(&self) -> bool {
+            self.inner.$fn_name()
+        }
+    };
+}
+
 #[allow(unused_macros)]
 macro_rules! required_member {
     ($member_name:ident, $member_type:ty, $setter_fn:ident) => {
@@ -138,7 +165,7 @@ macro_rules! object_member {
 
         /// Add an element to this member's collection.
         pub fn $add_fn(&mut self, $member_name: $member_type) -> Option<$member_type> {
-            self.$real_add_fn($member_name)
+            self.$real_add_fn($member_name).unwrap()
         }
 
         /// Return an iterator over all elements in this member's collection.

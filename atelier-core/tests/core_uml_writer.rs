@@ -1,5 +1,5 @@
 use atelier_core::builder::{
-    MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder, ShapeBuilder,
+    MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
     SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::error::ErrorSource;
@@ -9,11 +9,11 @@ use atelier_core::model::Model;
 use atelier_core::Version;
 
 fn make_example_model() -> Model {
-    let model: Model = ModelBuilder::new("example.motd", Some(Version::V10))
+    let model: Model = ModelBuilder::new(Version::V10)
+        .default_namespace("example.motd")
         .shape(
-            ServiceBuilder::new("MessageOfTheDay")
+            ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
                 .documentation("Provides a Message of the day.")
-                .version("2020-06-21")
                 .resource("Message")
                 .into(),
         )
@@ -25,7 +25,7 @@ fn make_example_model() -> Model {
         )
         .shape(
             SimpleShapeBuilder::string("Date")
-                .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
+                .apply_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
                 .into(),
         )
         .shape(
@@ -38,7 +38,7 @@ fn make_example_model() -> Model {
         )
         .shape(
             StructureBuilder::new("GetMessageInput")
-                .add_member(MemberBuilder::new("date").refers_to("Date").into())
+                .add_member(MemberBuilder::new("date", "Date").into())
                 .into(),
         )
         .shape(

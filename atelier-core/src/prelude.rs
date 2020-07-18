@@ -3,7 +3,7 @@ Provides an implementation of the prelude model described in the Smithy specific
 
 */
 
-use crate::model::{Identifier, Namespace, ShapeID};
+use crate::model::{Identifier, NamespaceID, ShapeID};
 use crate::Version;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
@@ -612,7 +612,7 @@ pub fn prelude_model_shape_ids(version: &Version) -> &HashSet<ShapeID> {
 // ------------------------------------------------------------------------------------------------
 
 fn make_prelude_model_simple_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
-    let namespace = Namespace::from_str(PRELUDE_NAMESPACE).unwrap();
+    let namespace = NamespaceID::from_str(PRELUDE_NAMESPACE).unwrap();
     let names = [
         SHAPE_STRING,
         SHAPE_BLOB,
@@ -636,13 +636,7 @@ fn make_prelude_model_simple_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
         SHAPE_PRIMITIVEDOUBLE,
     ]
     .iter()
-    .map(|shape_name| {
-        ShapeID::new(
-            Some(namespace.clone()),
-            Identifier::from_str(shape_name).unwrap(),
-            None,
-        )
-    })
+    .map(|shape_name| namespace.make_shape(Identifier::from_str(shape_name).unwrap()))
     .collect::<HashSet<ShapeID>>();
     let mut hash: HashMap<Version, HashSet<ShapeID>> = Default::default();
     let _ = hash.insert(Version::V10, names);
@@ -650,7 +644,7 @@ fn make_prelude_model_simple_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
 }
 
 fn make_prelude_model_all_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
-    let namespace = Namespace::from_str(PRELUDE_NAMESPACE).unwrap();
+    let namespace = NamespaceID::from_str(PRELUDE_NAMESPACE).unwrap();
     let names = [
         SHAPE_STRING,
         SHAPE_BLOB,
@@ -745,13 +739,7 @@ fn make_prelude_model_all_shape_ids() -> HashMap<Version, HashSet<ShapeID>> {
         TRAIT_LENGTH,
     ]
     .iter()
-    .map(|shape_name| {
-        ShapeID::new(
-            Some(namespace.clone()),
-            Identifier::from_str(shape_name).unwrap(),
-            None,
-        )
-    })
+    .map(|shape_name| namespace.make_shape(Identifier::from_str(shape_name).unwrap()))
     .collect::<HashSet<ShapeID>>();
     let mut hash: HashMap<Version, HashSet<ShapeID>> = Default::default();
     let _ = hash.insert(Version::V10, names);

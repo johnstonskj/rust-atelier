@@ -23,9 +23,9 @@ use std::fmt::Debug;
 ///
 #[derive(Clone, Debug)]
 pub struct Model {
-    smithy_version: Version,
-    metadata: ValueMap,
-    shapes: HashMap<ShapeID, Shape>,
+    pub(crate) smithy_version: Version,
+    pub(crate) metadata: ValueMap,
+    pub(crate) shapes: HashMap<ShapeID, Shape>,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -88,7 +88,6 @@ impl Model {
     }
 
     // --------------------------------------------------------------------------------------------
-
     object_member! { metadata, metadata_value, String => Value, has_metadata, has_metadata_value, add_metadata, remove_metadata }
 
     object_member! { shapes, shape, ShapeID, Shape, has_shapes, has_shape, add_shape = add_a_shape, remove_shape }
@@ -99,9 +98,13 @@ impl Model {
     }
 
     /// Add an instance of `Shape`.
-    pub fn add_a_shape(&mut self, shape: Shape) -> Option<Shape> {
-        // TODO: check for any existing unresolved shape
-        self.shapes.insert(shape.id().clone(), shape)
+    pub fn add_a_shape(&mut self, shape: Shape) -> ModelResult<Option<Shape>> {
+        if shape.id().is_member() {
+            Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into())
+        } else {
+            // TODO: check for any existing unresolved shape
+            Ok(self.shapes.insert(shape.id().clone(), shape))
+        }
     }
 
     // --------------------------------------------------------------------------------------------
@@ -114,116 +117,6 @@ impl Model {
     pub fn is_complete(&self) -> bool {
         !self.shapes.values().any(|shape| shape.is_unresolved())
     }
-
-    // --------------------------------------------------------------------------------------------
-
-    ///
-    /// This performs the resolution of a shape ID in the model, it handles both absolute IDs as
-    /// well as relative ones according to the following section from the Smithy specification,
-    /// section 3.1.2.1.
-    /// [Relative shape ID resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution)
-    ///
-    /// > In the Smithy IDL, relative shape IDs are resolved using the following process:
-    /// >
-    /// > 1. If a `use_statement` has imported a shape with the same name, the shape ID resolves to the imported shape ID.
-    /// > 1. If a shape is defined in the same namespace as the shape with the same name, the namespace of the shape resolves to the current namespace.
-    /// > 1. If a shape is defined in the prelude with the same name, the namespace resolves to smithy.api.
-    /// > 1. If a relative shape ID does not satisfy one of the above cases, the shape ID is invalid, and the namespace is inherited from the current namespace.
-    ///
-    /// If `and_absolute` is true however this implementation will attempt to resolve even absolute
-    /// shape identifiers against the model, any references and the prelude. Also, this implementation
-    /// also resolves members, so that if the shape can be resolved the member within it will also
-    /// be checked.
-    ///
-    #[cfg(feature = "resolver")]
-    pub fn resolve_id(&self, id: &ShapeID, and_absolute: bool) -> Option<ShapeID> {
-        // Cache the member name, if present, for later.
-        let (id, member) = if id.is_member() {
-            (
-                ShapeID::new(id.namespace().clone(), id.shape_name().clone(), None),
-                id.member_name().clone(),
-            )
-        } else {
-            (id.clone(), None)
-        };
-
-        if id.is_absolute() && and_absolute {
-            if self.references.contains(&id) {
-                return Some(id);
-            } else if id.namespace().as_ref().unwrap() == &self.default_namespace {
-                return if let Some(shape) = self.shape(&id.to_relative()) {
-                    if let Some(member_name) = member {
-                        if match shape.body() {
-                            ShapeKind::List(body) => body.has_member_named(&member_name),
-                            ShapeKind::Set(body) => body.has_member_named(&member_name),
-                            ShapeKind::Map(body) => body.has_member_named(&member_name),
-                            ShapeKind::Structure(body) => body.has_member_named(&member_name),
-                            ShapeKind::Union(body) => body.has_member_named(&member_name),
-                            ShapeKind::Service(body) => body.has_member_named(&member_name),
-                            ShapeKind::Operation(body) => body.has_member_named(&member_name),
-                            ShapeKind::Resource(body) => body.has_member_named(&member_name),
-                            _ => false,
-                        } {
-                            Some(id.to_member(member_name))
-                        } else {
-                            None
-                        }
-                    } else {
-                        Some(id)
-                    }
-                } else {
-                    None
-                };
-            } else if id.namespace().as_ref().unwrap()
-                == &Namespace::from_str(PRELUDE_NAMESPACE).unwrap()
-                && prelude_model_shape_ids(&self.smithy_version).contains(&id)
-            {
-                return Some(id);
-            }
-        } else if id.is_absolute() && !and_absolute {
-            return match member {
-                None => Some(id),
-                Some(member) => Some(id.to_member(member)),
-            };
-        } else if let Some(id) = self
-            .references
-            .iter()
-            .find(|shape_ref| shape_ref.to_relative() == id)
-        {
-            return Some(id.clone());
-        } else if self.has_shape(&id) {
-            let absolute_id = id.to_absolute(self.default_namespace.clone());
-            return if let Some(shape) = self.shape(&id.to_relative()) {
-                if let Some(member_name) = member {
-                    if match shape.body() {
-                        ShapeKind::List(body) => body.has_member_named(&member_name),
-                        ShapeKind::Set(body) => body.has_member_named(&member_name),
-                        ShapeKind::Map(body) => body.has_member_named(&member_name),
-                        ShapeKind::Structure(body) => body.has_member_named(&member_name),
-                        ShapeKind::Union(body) => body.has_member_named(&member_name),
-                        ShapeKind::Service(body) => body.has_member_named(&member_name),
-                        ShapeKind::Operation(body) => body.has_member_named(&member_name),
-                        ShapeKind::Resource(body) => body.has_member_named(&member_name),
-                        _ => false,
-                    } {
-                        Some(absolute_id.to_member(member_name))
-                    } else {
-                        None
-                    }
-                } else {
-                    Some(absolute_id)
-                }
-            } else {
-                None
-            };
-        } else if let Some(id) = prelude_model_shape_ids(&self.smithy_version)
-            .iter()
-            .find(|shape_ref| shape_ref.to_relative() == id)
-        {
-            return Some(id.clone());
-        }
-        None
-    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -232,7 +125,7 @@ impl Model {
 
 #[doc(hidden)]
 pub mod identity;
-pub use identity::{Identifier, Namespace, ShapeID};
+pub use identity::{Identifier, NamespaceID, ShapeID};
 
 pub mod shapes;
 

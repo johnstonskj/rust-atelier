@@ -1,5 +1,7 @@
 use crate::model::values::{Number, Value};
+use crate::model::ShapeID;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -147,6 +149,12 @@ impl ObjectBuilder {
     /// Insert the key and string-valued pair into this object.
     pub fn string(&mut self, k: &str, v: &str) -> &mut Self {
         let _ = self.insert(k, Value::String(v.to_string()));
+        self
+    }
+
+    /// Insert the key and string-valued pair into this object.
+    pub fn reference(&mut self, k: &str, v: &str) -> &mut Self {
+        let _ = self.insert(k, Value::String(ShapeID::from_str(v).unwrap().to_string()));
         self
     }
 }

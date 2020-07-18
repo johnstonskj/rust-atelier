@@ -107,7 +107,7 @@ Which would produce an image like the following.
 use crate::io::ModelWriter;
 use crate::model::shapes::{Shape, ShapeKind};
 use crate::model::values::Value;
-use crate::model::{Model, Namespace, ShapeID};
+use crate::model::{Model, NamespaceID, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
 use crate::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_OPERATIONS, MEMBER_VERSION, SHAPE_BIG_DECIMAL,
@@ -158,10 +158,8 @@ impl<'a> ModelWriter<'a> for PlantUmlWriter {
         if self.expand_smithy_api {
             self.write_smithy_model(w)?;
         }
-        let namespaces: HashSet<&Namespace> = model
-            .shape_names()
-            .map(|id| id.namespace().as_ref().unwrap())
-            .collect();
+        let namespaces: HashSet<&NamespaceID> =
+            model.shape_names().map(ShapeID::namespace).collect();
         for namespace in namespaces {
             writeln!(w, "package {} {{", namespace)?;
             writeln!(w)?;

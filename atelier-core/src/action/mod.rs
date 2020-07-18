@@ -1,100 +1,100 @@
 /*!
-This module describes actions that can operate on models. These take three major forms:
-
-1. **Linters**; these inspect the model for stylistic issues, they are a subset of validators.
-1. **Validators**; these inspect models for errors and warnings that may produce errors when the
-   model is used.
-1. **Transformers**; these take in a model and transform it into another model.
-
-# Example
-
-The following example is taken from the Smithy specification discussing
-[relative name resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution).
-The `run_validation_actions` function is commonly used to take a list of actions to be performed
-on the model in sequence.
-
-```rust
-use atelier_core::action::validate::{
-    NoOrphanedReferences, run_validation_actions, CorrectTypeReferences
-};
-use atelier_core::action::Validator;
-use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
-use atelier_core::model::Model;
-use atelier_core::Version;
-
-let model: Model = ModelBuilder::with_namespace(Version::V10, "smithy.example")
-    .uses("foo.baz#Bar")
-    .shape(SimpleShapeBuilder::string("MyString").into())
-    .shape(
-        StructureBuilder::new("MyStructure")
-            .member("a", "MyString")
-            .member("b", "smithy.example#MyString")
-            .member("c", "Bar")
-            .member("d", "foo.baz#Bar")
-            .member("e", "foo.baz#MyString")
-            .member("f", "String")
-            .member("g", "MyBoolean")
-            .member("h", "InvalidShape")
-            .into(),
-    )
-    .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
-    .into();
-let result = run_validation_actions(&[
-        Box::new(NoOrphanedReferences::default()),
-        Box::new(CorrectTypeReferences::default()),
-    ], &model, false);
-```
-
-This will result in the following list of validation errors. Note that the error is denoted against
-shape or member identifier accordingly.
-
-```text
-[
-    ActionIssue {
-        reporter: "NoOrphanedReferences",
-        level: Error,
-        message: "Shape, or member, has a trait that refers to an unknown identifier: notKnown",
-        locus: Some(
-            ShapeID {
-                namespace: None,
-                shape_name: Identifier(
-                    "MyStructure",
-                ),
-                member_name: None,
-            },
-        ),
-    },
-    ActionIssue {
-        reporter: "NoOrphanedReferences",
-        level: Error,
-        message: "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
-        locus: Some(
-            ShapeID {
-                namespace: None,
-                shape_name: Identifier(
-                    "MyStructure",
-                ),
-                member_name: None,
-            },
-        ),
-    },
-    ActionIssue {
-        reporter: "NoOrphanedReferences",
-        level: Error,
-        message: "Shape, or member, refers to an unknown identifier: InvalidShape",
-        locus: Some(
-            ShapeID {
-                namespace: None,
-                shape_name: Identifier(
-                    "MyStructure",
-                ),
-                member_name: None,
-            },
-        ),
-    },
-]
-```
-
+* This module describes actions that can operate on models. These take three major forms:
+*
+* 1. **Linters**; these inspect the model for stylistic issues, they are a subset of validators.
+* 1. **Validators**; these inspect models for errors and warnings that may produce errors when the
+*    model is used.
+* 1. **Transformers**; these take in a model and transform it into another model.
+*
+* # Example
+*
+* The following example is taken from the Smithy specification discussing
+* [relative name resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution).
+* The `run_validation_actions` function is commonly used to take a list of actions to be performed
+* on the model in sequence.
+*
+* ```rust
+* use atelier_core::action::validate::{
+*     NoOrphanedReferences, run_validation_actions, CorrectTypeReferences
+* };
+* use atelier_core::action::Validator;
+* use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+* use atelier_core::model::Model;
+* use atelier_core::Version;
+*
+* let model: Model = ModelBuilder::with_namespace(Version::V10, "smithy.example")
+*     .uses("foo.baz#Bar")
+*     .shape(SimpleShapeBuilder::string("MyString").into())
+*     .shape(
+*         StructureBuilder::new("MyStructure")
+*             .member("a", "MyString")
+*             .member("b", "smithy.example#MyString")
+*             .member("c", "Bar")
+*             .member("d", "foo.baz#Bar")
+*             .member("e", "foo.baz#MyString")
+*             .member("f", "String")
+*             .member("g", "MyBoolean")
+*             .member("h", "InvalidShape")
+*             .into(),
+*     )
+*     .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
+*     .into();
+* let result = run_validation_actions(&mut [
+*         Box::new(NoOrphanedReferences::default()),
+*         Box::new(CorrectTypeReferences::default()),
+*     ], &model, false);
+* ```
+*
+* This will result in the following list of validation errors. Note that the error is denoted against
+* shape or member identifier accordingly.
+*
+* ```text
+* [
+*     ActionIssue {
+*         reporter: "NoOrphanedReferences",
+*         level: Error,
+*         message: "Shape, or member, has a trait that refers to an unknown identifier: notKnown",
+*         locus: Some(
+*             ShapeID {
+*                 namespace: None,
+*                 shape_name: Identifier(
+*                     "MyStructure",
+*                 ),
+*                 member_name: None,
+*             },
+*         ),
+*     },
+*     ActionIssue {
+*         reporter: "NoOrphanedReferences",
+*         level: Error,
+*         message: "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
+*         locus: Some(
+*             ShapeID {
+*                 namespace: None,
+*                 shape_name: Identifier(
+*                     "MyStructure",
+*                 ),
+*                 member_name: None,
+*             },
+*         ),
+*     },
+*     ActionIssue {
+*         reporter: "NoOrphanedReferences",
+*         level: Error,
+*         message: "Shape, or member, refers to an unknown identifier: InvalidShape",
+*         locus: Some(
+*             ShapeID {
+*                 namespace: None,
+*                 shape_name: Identifier(
+*                     "MyStructure",
+*                 ),
+*                 member_name: None,
+*             },
+*         ),
+*     },
+* ]
+* ```
+*
 */
 
 use crate::error::Result as ModelResult;

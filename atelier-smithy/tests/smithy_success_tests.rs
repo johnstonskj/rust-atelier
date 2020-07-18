@@ -1,5 +1,5 @@
 use atelier_core::io::read_model_from_string;
-use atelier_core::model::shapes::ShapeBody;
+use atelier_core::model::shapes::ShapeKind;
 use atelier_core::model::{Annotated, Named, ShapeID};
 use atelier_core::syntax::{
     SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET,
@@ -56,16 +56,16 @@ fn test_file_parses(file_name: &str) {
                             ""
                         },
                         match shape.body() {
-                            ShapeBody::SimpleType(v) => v.to_string(),
-                            ShapeBody::List(_) => SHAPE_LIST.to_string(),
-                            ShapeBody::Set(_) => SHAPE_SET.to_string(),
-                            ShapeBody::Map(_) => SHAPE_MAP.to_string(),
-                            ShapeBody::Structure(_) => SHAPE_STRUCTURE.to_string(),
-                            ShapeBody::Union(_) => SHAPE_UNION.to_string(),
-                            ShapeBody::Service(_) => SHAPE_SERVICE.to_string(),
-                            ShapeBody::Operation(_) => SHAPE_OPERATION.to_string(),
-                            ShapeBody::Resource(_) => SHAPE_RESOURCE.to_string(),
-                            ShapeBody::Apply => SHAPE_APPLY.to_string(),
+                            ShapeKind::SimpleType(v) => v.to_string(),
+                            ShapeKind::List(_) => SHAPE_LIST.to_string(),
+                            ShapeKind::Set(_) => SHAPE_SET.to_string(),
+                            ShapeKind::Map(_) => SHAPE_MAP.to_string(),
+                            ShapeKind::Structure(_) => SHAPE_STRUCTURE.to_string(),
+                            ShapeKind::Union(_) => SHAPE_UNION.to_string(),
+                            ShapeKind::Service(_) => SHAPE_SERVICE.to_string(),
+                            ShapeKind::Operation(_) => SHAPE_OPERATION.to_string(),
+                            ShapeKind::Resource(_) => SHAPE_RESOURCE.to_string(),
+                            ShapeKind::Apply => SHAPE_APPLY.to_string(),
                         }
                     )
                 })

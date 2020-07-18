@@ -1,45 +1,45 @@
 /*!
-This module contains core `Linter` implementations. It also provides a function,
-`run_linter_actions`, that takes a list of linters to run against a model. This is the
-preferred way to run the linter actions as it allows for _fast fail_ on detecting errors
-in an action.
-
-# Example
-
-The example model below will result in a number of errors:
-
-1. The shape named "shouldBeUpper" should be "**S**houldBeUpper",
-1. The member "BadName" in structure "MyStructure", should be "**b**adName".
-1. The trait "BadTraitName" on structure "MyStructure", should be "**b**adTraitName".
-1. The shape "ThingAsJSON", reference by "MyStructure#thing", includes a known acronym "JSON".
-
-```rust
-use atelier_core::action::lint::{run_linter_actions, NamingConventions};
-use atelier_core::action::Linter;
-use atelier_core::builder::{
-    ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder
-};
-use atelier_core::model::{Namespace, Model};
-use atelier_core::Version;
-
-let model: Model = ModelBuilder::with_namespace(
-        Version::V10,
-        Namespace::new_unchecked("smithy.example"))
-    .shape(SimpleShapeBuilder::string("shouldBeUpper").into())
-    .shape(
-        StructureBuilder::new("MyStructure")
-            .member("okName", "String")
-            .member("BadName", "MyString")
-            .member("thing", "ThingAsJSON")
-            .add_trait(TraitBuilder::new("BadTraitName").into())
-            .into(),
-    )
-    .into();
-let result = run_linter_actions(&[
-        Box::new(NamingConventions::default()),
-    ], &model, false);
-```
-
+* This module contains core `Linter` implementations. It also provides a function,
+* `run_linter_actions`, that takes a list of linters to run against a model. This is the
+* preferred way to run the linter actions as it allows for _fast fail_ on detecting errors
+* in an action.
+*
+* # Example
+*
+* The example model below will result in a number of errors:
+*
+* 1. The shape named "shouldBeUpper" should be "**S**houldBeUpper",
+* 1. The member "BadName" in structure "MyStructure", should be "**b**adName".
+* 1. The trait "BadTraitName" on structure "MyStructure", should be "**b**adTraitName".
+* 1. The shape "ThingAsJSON", reference by "MyStructure#thing", includes a known acronym "JSON".
+*
+* ```rust
+* use atelier_core::action::lint::{run_linter_actions, NamingConventions};
+* use atelier_core::action::Linter;
+* use atelier_core::builder::{
+*     ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+* };
+* use atelier_core::model::{NamespaceID, Model};
+* use atelier_core::Version;
+*
+* let model: Model = ModelBuilder::with_namespace(
+*         Version::V10,
+*         "smithy.example")
+*     .shape(SimpleShapeBuilder::string("smithy.example#shouldBeUpper").into())
+*     .shape(
+*         StructureBuilder::new("smithy.example#MyStructure")
+*             .member("okName", "String")
+*             .member("BadName", "MyString")
+*             .member("thing", "ThingAsJSON")
+*             .apply_trait(TraitBuilder::new("BadTraitName").into())
+*             .into(),
+*     )
+*     .into();
+* let result = run_linter_actions(&mut [
+*         Box::new(NamingConventions::default()),
+*     ], &model, false);
+* ```
+*
 */
 
 use crate::action::{Action, ActionIssue, IssueLevel, Linter};
@@ -228,10 +228,8 @@ impl Linter for UnwelcomeTerms {
 
 impl UnwelcomeTerms {
     fn check_shape_id(&mut self, shape_id: &ShapeID) {
-        if let Some(namespace) = shape_id.namespace() {
-            for id in namespace.split() {
-                self.check_identifier(&id, Some(shape_id));
-            }
+        for id in shape_id.namespace().split() {
+            self.check_identifier(&id, Some(shape_id));
         }
         self.check_identifier(&shape_id.shape_name(), Some(shape_id));
         if let Some(member_name) = shape_id.member_name() {

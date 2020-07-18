@@ -1,15 +1,14 @@
 use crate::io::syntax::*;
 use crate::io::FILE_EXTENSION;
-use atelier_core::error::{ErrorKind, Result, ResultExt};
+use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelReader;
 use atelier_core::model::shapes::{
-    ListOrSet, Map as MapShape, Member, Shape, ShapeBody, SimpleType, StructureOrUnion, Trait,
+    AppliedTrait, ListOrSet, Map as MapShape, Member, Shape, ShapeKind, Simple, StructureOrUnion,
 };
-use atelier_core::model::values::{Key, NodeValue};
-use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
+use atelier_core::model::values::{Value as NodeValue, ValueMap};
+use atelier_core::model::{Identifier, Model, NamespaceID, ShapeID};
 use atelier_core::Version;
 use serde_json::{from_reader, Map, Value};
-use std::collections::HashMap;
 use std::io::Read;
 use std::str::FromStr;
 
@@ -34,7 +33,7 @@ impl<'a> Default for JsonReader {
 }
 
 impl ModelReader for JsonReader {
-    fn read(&mut self, r: &mut impl Read) -> Result<Model> {
+    fn read(&mut self, r: &mut impl Read) -> ModelResult<Model> {
         let json: Value = from_reader(r).chain_err(|| {
             ErrorKind::Deserialization(
                 FILE_EXTENSION.to_string(),
@@ -48,7 +47,7 @@ impl ModelReader for JsonReader {
 }
 
 impl JsonReader {
-    fn model(&self, json: Value) -> Result<Model> {
+    fn model(&self, json: Value) -> ModelResult<Model> {
         if let Value::Object(vs) = json {
             let version = self.version(vs.get(K_SMITHY))?;
 
@@ -56,24 +55,16 @@ impl JsonReader {
 
             let shapes = self.shapes(vs.get(K_SHAPES))?;
             if !shapes.is_empty() {
-                let namespaces: Vec<&Namespace> = shapes.iter().map(|(ns, _)| ns).collect();
-                let all_unique = namespaces
-                    .get(0)
-                    .map(|first| namespaces.iter().all(|x| x == first))
-                    .unwrap_or(true);
-                if all_unique {
-                    let namespace = (*namespaces.first().unwrap()).clone();
-                    let mut model = Model::new(namespace, Some(version));
+                let mut model = Model::new(version);
 
-                    for shape in shapes.into_iter().map(|(_, s)| s) {
-                        model.add_shape(shape);
-                    }
-
-                    for (key, value) in metadata {
-                        model.add_metadata(key, value);
-                    }
-                    return Ok(model);
+                for shape in shapes.into_iter().map(|(_, s)| s) {
+                    model.add_shape(shape);
                 }
+
+                for (key, value) in metadata {
+                    model.add_metadata(key, value);
+                }
+                return Ok(model);
             }
         }
         Err(ErrorKind::Deserialization(
@@ -84,7 +75,7 @@ impl JsonReader {
         .into())
     }
 
-    fn version(&self, json: Option<&Value>) -> Result<Version> {
+    fn version(&self, json: Option<&Value>) -> ModelResult<Version> {
         if let Some(Value::String(version)) = json {
             Ok(Version::from_str(version)?)
         } else {
@@ -97,18 +88,18 @@ impl JsonReader {
         }
     }
 
-    fn metadata(&self, json: Option<&Value>) -> Result<HashMap<Key, NodeValue>> {
-        let mut metadata: HashMap<Key, NodeValue> = Default::default();
+    fn metadata(&self, json: Option<&Value>) -> ModelResult<ValueMap> {
+        let mut metadata: ValueMap = Default::default();
         if let Some(Value::Object(vs)) = json {
             for (k, v) in vs {
-                let _ = metadata.insert(Key::String(k.clone()), self.value(v)?);
+                let _ = metadata.insert(k.clone(), self.value(v)?);
             }
         }
         Ok(metadata)
     }
 
-    fn shapes(&self, json: Option<&Value>) -> Result<Vec<(Namespace, Shape)>> {
-        let mut shapes: Vec<(Namespace, Shape)> = Default::default();
+    fn shapes(&self, json: Option<&Value>) -> ModelResult<Vec<(NamespaceID, Shape)>> {
+        let mut shapes: Vec<(NamespaceID, Shape)> = Default::default();
         if let Some(Value::Object(vs)) = json {
             for (k, v) in vs {
                 let id = ShapeID::from_str(k)?;
@@ -125,23 +116,23 @@ impl JsonReader {
         Ok(shapes)
     }
 
-    fn shape(&self, outer: &Value) -> Result<ShapeBody> {
+    fn shape(&self, outer: &Value) -> ModelResult<ShapeKind> {
         if let Some(Value::String(s)) = outer.get(K_TYPE) {
             let s = s.as_str();
-            return if let Ok(st) = SimpleType::from_str(s) {
-                Ok(ShapeBody::SimpleType(st))
+            return if let Ok(st) = Simple::from_str(s) {
+                Ok(ShapeKind::Simple(st))
             } else if s == V_APPLY {
-                Ok(ShapeBody::Apply)
+                Ok(ShapeKind::Unresolved)
             } else if s == V_LIST {
-                Ok(ShapeBody::List(ListOrSet::new(
+                Ok(ShapeKind::List(ListOrSet::new_list(
                     self.target(outer.get(K_MEMBER))?,
                 )))
             } else if s == V_SET {
-                Ok(ShapeBody::Set(ListOrSet::new(
+                Ok(ShapeKind::Set(ListOrSet::new_set(
                     self.target(outer.get(K_MEMBER))?,
                 )))
             } else if s == V_MAP {
-                Ok(ShapeBody::Map(MapShape::new(
+                Ok(ShapeKind::Map(MapShape::new(
                     self.target(outer.get(K_KEY))?,
                     self.target(outer.get(K_VALUE))?,
                 )))
@@ -151,7 +142,7 @@ impl JsonReader {
                 } else {
                     Default::default()
                 };
-                Ok(ShapeBody::Structure(StructureOrUnion::with_members(
+                Ok(ShapeKind::Structure(StructureOrUnion::with_members(
                     members.as_slice(),
                 )))
             } else if s == V_UNION {
@@ -160,7 +151,7 @@ impl JsonReader {
                 } else {
                     Default::default()
                 };
-                Ok(ShapeBody::Union(StructureOrUnion::with_members(
+                Ok(ShapeKind::Union(StructureOrUnion::with_members(
                     members.as_slice(),
                 )))
             } else {
@@ -180,17 +171,17 @@ impl JsonReader {
         .into())
     }
 
-    fn traits(&self, json: &Map<String, Value>) -> Result<Vec<Trait>> {
-        let mut traits: Vec<Trait> = Default::default();
+    fn traits(&self, json: &Map<String, Value>) -> ModelResult<Vec<AppliedTrait>> {
+        let mut traits: Vec<AppliedTrait> = Default::default();
         for (k, v) in json {
             let id = ShapeID::from_str(k)?;
             let inner = self.value(v)?;
-            traits.push(Trait::with_value(id, inner))
+            traits.push(AppliedTrait::with_value(id, inner))
         }
         Ok(traits)
     }
 
-    fn members(&self, json: &Map<String, Value>) -> Result<Vec<Member>> {
+    fn members(&self, json: &Map<String, Value>) -> ModelResult<Vec<Member>> {
         let mut members: Vec<Member> = Default::default();
         for (k, v) in json {
             if let Value::Object(obj) = v {
@@ -222,7 +213,7 @@ impl JsonReader {
         Ok(members)
     }
 
-    fn target(&self, member: Option<&Value>) -> Result<ShapeID> {
+    fn target(&self, member: Option<&Value>) -> ModelResult<ShapeID> {
         if let Some(Value::Object(ms)) = member {
             if let Some(Value::String(member_id)) = ms.get(K_TARGET) {
                 return Ok(ShapeID::from_str(member_id)?);
@@ -236,7 +227,7 @@ impl JsonReader {
         .into())
     }
 
-    fn value(&self, json: &Value) -> Result<NodeValue> {
+    fn value(&self, json: &Value) -> ModelResult<NodeValue> {
         match json {
             Value::Null => Ok(NodeValue::None),
             Value::Bool(v) => Ok(NodeValue::from(*v)),
@@ -258,16 +249,17 @@ impl JsonReader {
             }
             Value::String(v) => Ok(NodeValue::from(v.to_string())),
             Value::Array(vs) => {
-                let result: Result<Vec<NodeValue>> = vs.iter().map(|v| self.value(v)).collect();
+                let result: ModelResult<Vec<NodeValue>> =
+                    vs.iter().map(|v| self.value(v)).collect();
                 match result {
                     Err(e) => Err(e),
                     Ok(vs) => Ok(NodeValue::from(vs)),
                 }
             }
             Value::Object(vs) => {
-                let mut object: HashMap<Key, NodeValue> = Default::default();
+                let mut object: ValueMap = Default::default();
                 for (k, v) in vs {
-                    let _ = object.insert(Key::from(k.to_string()), self.value(v)?);
+                    let _ = object.insert(k.clone(), self.value(v)?);
                 }
                 Ok(NodeValue::from(object))
             }

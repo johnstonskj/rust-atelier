@@ -1,75 +1,17 @@
-use crate::builder::TraitBuilder;
+use crate::builder::{PartialShapeID, TraitBuilder};
 use crate::error::ErrorSource;
 use crate::model::shapes::{
     AppliedTrait, ListOrSet, Map, Member, Service, Shape, ShapeKind, Simple,
 };
-use crate::model::values::Value;
-use crate::model::{Identifier, ShapeID};
+use crate::model::values::{Value, ValueMap};
+use crate::model::ShapeID;
 use crate::prelude::PRELUDE_NAMESPACE;
+use crate::syntax::MEMBER_MEMBER;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Macros
 // ------------------------------------------------------------------------------------------------
-
-#[doc(hidden)]
-macro_rules! simple_shape_constructor {
-    ($fn_name:ident, $var_name:ident) => {
-        ///Construct a new shape builder.
-        pub fn $fn_name(id: &str) -> Self {
-            Self {
-                inner: Shape::new(
-                    ShapeID::from_str(id).unwrap(),
-                    ShapeKind::Simple(Simple::$var_name),
-                ),
-            }
-        }
-    };
-}
-
-#[doc(hidden)]
-macro_rules! shape_builder {
-    ($struct_name:ident, $doc:expr) => {
-        #[doc = $doc]
-        #[derive(Debug)]
-        pub struct $struct_name {
-            inner: Shape,
-        }
-
-        impl From<&mut $struct_name> for Shape {
-            fn from(builder: &mut $struct_name) -> Self {
-                builder.inner.clone()
-            }
-        }
-
-        impl From<$struct_name> for Shape {
-            fn from(builder: $struct_name) -> Self {
-                builder.inner.clone()
-            }
-        }
-
-        impl $struct_name {
-            pub fn documentation(&mut self, documentation: &str) -> &mut Self {
-                self.apply_trait(TraitBuilder::documentation(documentation).into())
-            }
-
-            pub fn apply_trait(&mut self, a_trait: AppliedTrait) -> &mut Self {
-                self.inner.apply_trait(a_trait);
-                self
-            }
-
-            add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-            add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-            add_trait!(pub since(date: &str));
-
-            add_trait!(pub tagged(tags: &[&str]));
-
-            add_trait!(pub unstable);
-        }
-    };
-}
 
 #[doc(hidden)]
 macro_rules! shape_constructor {
@@ -116,16 +58,15 @@ macro_rules! structured_members {
         /// Add a member named `id`, as a reference to the shape `id_ref` to this shape.
         pub fn member(&mut self, id: &str, id_ref: &str) -> &mut Self {
             if let ShapeKind::$shape_variant(inner) = self.inner.body_mut() {
-                let _ = inner.add_member(Box::new(MemberBuilder::new(id, id_ref).into()));
+                let _ = inner.add_a_member(Box::new(MemberBuilder::new(id, id_ref).into()));
             }
             self
         }
 
         /// Add `member` to this shape.
-        pub fn add_member(&mut self, member: Member) -> &mut Self {
-            let id = self.inner.id().to_member(member.name().clone());
+        pub fn add_member(&mut self, member: Shape) -> &mut Self {
             if let ShapeKind::$shape_variant(inner) = self.inner.body_mut() {
-                let _ = inner.add_a_member(Box::new(Shape::new(id, ShapeKind::Member(member))));
+                let _ = inner.add_a_member(Box::new(member));
             }
             self
         }
@@ -212,79 +153,208 @@ macro_rules! add_trait {
     };
 }
 
-#[doc(hidden)]
-macro_rules! member_constructor {
-    ($fn_name:ident, $id_ref:expr) => {
-        /// Constructs a new member with a reference to the type given by `id`.
-        pub fn $fn_name(id: &str) -> Self {
-            Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, $id_ref))
-        }
-    };
-}
-
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-shape_builder!(
-    SimpleShapeBuilder,
-    "Builder for `ShapeBody::Simple` shapes."
-);
+/// Builder for `ShapeKind::Simple` shapes.
+#[derive(Debug)]
+pub struct SimpleShapeBuilder {
+    pub(crate) id: PartialShapeID,
+    pub(crate) applied_traits: Vec<AppliedTrait>,
+    pub(crate) simple_shape: Simple,
+}
 
-shape_builder!(ListBuilder, "Builder for `ShapeBody::List` shapes.");
+/// Builder for `ShapeKind::List` shapes.
+#[derive(Debug)]
+pub struct ListBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    member: MemberBuilder,
+}
 
-shape_builder!(SetBuilder, "Builder for `ShapeBody::Set` shapes.");
+/// Builder for `ShapeKind::Set` shapes.
+#[derive(Debug)]
+pub struct SetBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    member: MemberBuilder,
+}
 
-shape_builder!(MapBuilder, "Builder for `ShapeBody::Map` shapes.");
+/// Builder for `ShapeKind::Map` shapes.
+#[derive(Debug)]
+pub struct MapBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    key: MemberBuilder,
+    value: MemberBuilder,
+}
 
-shape_builder!(
-    StructureBuilder,
-    "Builder for `ShapeBody::Structure` shapes."
-);
+/// Builder for `ShapeKind::Structure` shapes.
+#[derive(Debug)]
+pub struct StructureBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    members: Vec<MemberBuilder>,
+}
 
-shape_builder!(UnionBuilder, "Builder for `ShapeBody::Union` shapes.");
+/// Builder for `ShapeKind::Union` shapes.
+#[derive(Debug)]
+pub struct UnionBuilder {
+    id: ShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    members: Vec<MemberBuilder>,
+}
 
-shape_builder!(ServiceBuilder, "Builder for `ShapeBody::Service` shapes.");
+/// Builder for `ShapeKind::Service` shapes.
+#[derive(Debug)]
+pub struct ServiceBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    version: String,
+    operations: Vec<PartialShapeID>,
+    resources: Vec<PartialShapeID>,
+}
 
-shape_builder!(
-    OperationBuilder,
-    "Builder for `ShapeBody::Operation` shapes."
-);
+/// Builder for `ShapeKind::Operation` shapes.
+#[derive(Debug)]
+pub struct OperationBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    input: Option<PartialShapeID>,
+    output: Option<PartialShapeID>,
+    errors: Vec<PartialShapeID>,
+}
 
-shape_builder!(ResourceBuilder, "Builder for `ShapeBody::Resource` shapes.");
+/// Builder for `ShapeKind::Resource` shapes.
+#[derive(Debug)]
+pub struct ResourceBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    identifiers: ValueMap,
+    create: Option<PartialShapeID>,
+    put: Option<PartialShapeID>,
+    read: Option<PartialShapeID>,
+    update: Option<PartialShapeID>,
+    delete: Option<PartialShapeID>,
+    list: Option<PartialShapeID>,
+    operations: Vec<PartialShapeID>,
+    collection_operations: Vec<PartialShapeID>,
+    resources: Vec<PartialShapeID>,
+}
 
-shape_builder!(MemberBuilder, "Builder for `Member` objects within shapes.");
+/// Builder for `ShapeKind::Member` shapes.
+#[derive(Debug)]
+pub struct MemberBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+    target: ShapeID,
+}
+
+/// Builder for `ShapeKind::Unresolved` shapes.
+#[derive(Debug)]
+pub struct ReferenceBuilder {
+    id: PartialShapeID,
+    applied_traits: Vec<AppliedTrait>,
+}
 
 // ------------------------------------------------------------------------------------------------
-// Additional Implementations
+// Implementations
 // ------------------------------------------------------------------------------------------------
 
 impl SimpleShapeBuilder {
-    simple_shape_constructor!(blob, Blob);
+    ///Construct a new simple shape builder.
+    pub fn new(id: &str, simple_shape: Simple) -> Self {
+        Self {
+            id: PartialShapeID::from_str(id).unwrap(),
+            applied_traits: Default::default(),
+            simple_shape,
+        }
+    }
 
-    simple_shape_constructor!(boolean, Boolean);
+    ///Construct a new simple shape builder for Simple::Blob.
+    pub fn blob(id: &str) -> Self {
+        Self::new(id, Simple::Blob)
+    }
 
-    simple_shape_constructor!(document, Document);
+    ///Construct a new simple shape builder for Simple::Boolean.
+    pub fn boolean(id: &str) -> Self {
+        Self::new(id, Simple::Boolean)
+    }
 
-    simple_shape_constructor!(string, String);
+    ///Construct a new simple shape builder for Simple::Document.
+    pub fn document(id: &str) -> Self {
+        Self::new(id, Simple::Document)
+    }
 
-    simple_shape_constructor!(byte, Byte);
+    ///Construct a new simple shape builder for Simple::String.
+    pub fn string(id: &str) -> Self {
+        Self::new(id, Simple::String)
+    }
 
-    simple_shape_constructor!(short, Short);
+    ///Construct a new simple shape builder for Simple::Blob.
+    pub fn byte(id: &str) -> Self {
+        Self::new(id, Simple::Byte)
+    }
 
-    simple_shape_constructor!(integer, Integer);
+    ///Construct a new simple shape builder for Simple::Short.
+    pub fn short(id: &str) -> Self {
+        Self::new(id, Simple::Short)
+    }
 
-    simple_shape_constructor!(long, Long);
+    ///Construct a new simple shape builder for Simple::Integer.
+    pub fn integer(id: &str) -> Self {
+        Self::new(id, Simple::Integer)
+    }
 
-    simple_shape_constructor!(float, Float);
+    ///Construct a new simple shape builder for Simple::Long.
+    pub fn long(id: &str) -> Self {
+        Self::new(id, Simple::Long)
+    }
 
-    simple_shape_constructor!(double, Double);
+    ///Construct a new simple shape builder for Simple::Float.
+    pub fn float(id: &str) -> Self {
+        Self::new(id, Simple::Float)
+    }
 
-    simple_shape_constructor!(big_integer, BigInteger);
+    ///Construct a new simple shape builder for Simple::Double.
+    pub fn double(id: &str) -> Self {
+        Self::new(id, Simple::Double)
+    }
 
-    simple_shape_constructor!(big_decimal, BigDecimal);
+    ///Construct a new simple shape builder for Simple::Blob.
+    pub fn big_integer(id: &str) -> Self {
+        Self::new(id, Simple::BigInteger)
+    }
 
-    simple_shape_constructor!(timestamp, Timestamp);
+    ///Construct a new simple shape builder for Simple::BigDecimal.
+    pub fn big_decimal(id: &str) -> Self {
+        Self::new(id, Simple::BigDecimal)
+    }
+
+    ///Construct a new simple shape builder for Simple::Timestamp.
+    pub fn timestamp(id: &str) -> Self {
+        Self::new(id, Simple::Timestamp)
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    pub fn apply_trait(&mut self, a_trait: AppliedTrait) -> &mut Self {
+        self.applied_traits.push(a_trait);
+        self
+    }
+
+    add_trait!(pub documentation(text: &str));
+
+    add_trait!(pub external_documentation(map: &[(&str, &str)]));
+
+    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
+
+    add_trait!(pub since(date: &str));
+
+    add_trait!(pub tagged(tags: &[&str]));
+
+    add_trait!(pub unstable);
 
     add_trait!(pub boxed);
 
@@ -296,10 +366,41 @@ impl SimpleShapeBuilder {
 // ------------------------------------------------------------------------------------------------
 
 impl ListBuilder {
-    shape_constructor! {
-        List(member_id: &str),
-        ListOrSet::new_list(ShapeID::from_str(member_id).unwrap())
+    ///Construct a new list shape builder.
+    pub fn new(id: &str, member_target: &str) -> Self {
+        let shape_id = ShapeID::from_str(id).unwrap();
+        Self {
+            id: shape_id.clone(),
+            applied_traits: Default::default(),
+            member: Shape::new(
+                shape_id.make_member(MEMBER_MEMBER.parse().unwrap()),
+                ShapeKind::List(ListOrSet::new_list(member_target.parse().unwrap())),
+            ),
+        }
     }
+
+    pub fn target(&mut self, member: Shape) {
+        self.member = member;
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    pub fn apply_trait(&mut self, a_trait: AppliedTrait) -> &mut Self {
+        self.applied_traits.push(a_trait);
+        self
+    }
+
+    add_trait!(pub documentation(text: &str));
+
+    add_trait!(pub external_documentation(map: &[(&str, &str)]));
+
+    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
+
+    add_trait!(pub since(date: &str));
+
+    add_trait!(pub tagged(tags: &[&str]));
+
+    add_trait!(pub unstable);
 
     add_trait!(pub sensitive);
 
@@ -309,12 +410,45 @@ impl ListBuilder {
 // ------------------------------------------------------------------------------------------------
 
 impl SetBuilder {
-    shape_constructor! {
-        Set(member_id: &str),
-        ListOrSet::new_set(ShapeID::from_str(member_id).unwrap())
+    ///Construct a new set shape builder.
+    pub fn new(id: &str, member_target: &str) -> Self {
+        let shape_id = ShapeID::from_str(id).unwrap();
+        Self {
+            id: shape_id.clone(),
+            applied_traits: Default::default(),
+            member: Shape::new(
+                shape_id.make_member(MEMBER_MEMBER.parse().unwrap()),
+                ShapeKind::List(ListOrSet::new_list(member_target.parse().unwrap())),
+            ),
+        }
     }
 
+    pub fn target(&mut self, member: Shape) {
+        self.member = member;
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    pub fn apply_trait(&mut self, a_trait: AppliedTrait) -> &mut Self {
+        self.applied_traits.push(a_trait);
+        self
+    }
+
+    add_trait!(pub documentation(text: &str));
+
+    add_trait!(pub external_documentation(map: &[(&str, &str)]));
+
+    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
+
+    add_trait!(pub since(date: &str));
+
+    add_trait!(pub tagged(tags: &[&str]));
+
+    add_trait!(pub unstable);
+
     add_trait!(pub sensitive);
+
+    add_trait!(pub unique_items);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -438,52 +572,151 @@ impl ResourceBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
+impl From<&mut MemberBuilder> for Shape {
+    fn from(builder: &mut MemberBuilder) -> Self {
+        let member = Member::new(builder.target.clone());
+        let mut shape = Shape::new(builder.id.clone(), ShapeKind::Member(member));
+        for a_trait in builder.applied_traits.into_iter() {
+            shape.apply_trait(a_trait)
+        }
+        shape
+    }
+}
+
 impl MemberBuilder {
     /// Construct a new member shape builder, with id target
     pub fn new(id: &str, target: &str) -> Self {
         Self {
-            inner: Shape::new(
-                ShapeID::from_str(id).unwrap(),
-                ShapeKind::Member(Member::new(
-                    Identifier::from_str(id).unwrap(),
-                    ShapeID::from_str(target).unwrap(),
-                )),
-            ),
+            id: id.parse().unwrap(),
+            applied_traits: Default::default(),
+            target: target.parse().unwrap(),
         }
     }
 
-    pub fn refers_to(&mut self, target: &str) -> &mut Self {
-        if let ShapeKind::Member(member) = self.inner.body_mut() {
-            member.set_target(ShapeID::from_str(target).unwrap());
-        }
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Blob`.
+    pub fn blob(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Blob"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Boolean`.
+    pub fn boolean(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Boolean"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Document`.
+    pub fn document(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Document"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::String`.
+    pub fn string(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "String"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Byte`.
+    pub fn byte(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Byte"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Short`.
+    pub fn short(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Short"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Integer`.
+    pub fn integer(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Integer"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Long`.
+    pub fn long(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Long"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Float`.
+    pub fn float(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Float"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Double`.
+    pub fn double(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Double"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::BigInteger`.
+    pub fn big_integer(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "BigInteger"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::BigDecimal`.
+    pub fn big_decimal(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "BigDecimal"))
+    }
+
+    /// Constructs a new member with a target `PRELUDE_NAMESPACE::Timestamp`.
+    pub fn timestamp(id: &str) -> Self {
+        Self::new(id, &format!("{}#{}", PRELUDE_NAMESPACE, "Timestamp"))
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    pub fn apply_trait(&mut self, a_trait: AppliedTrait) -> &mut Self {
+        self.applied_traits.push(a_trait);
         self
     }
 
-    member_constructor! { blob, "Blob" }
+    add_trait!(pub documentation(text: &str));
 
-    member_constructor! { boolean, "Boolean" }
+    add_trait!(pub external_documentation(map: &[(&str, &str)]));
 
-    member_constructor! { document, "Document" }
+    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
 
-    member_constructor! { string, "String" }
+    add_trait!(pub since(date: &str));
 
-    member_constructor! { byte, "Byte" }
+    add_trait!(pub tagged(tags: &[&str]));
 
-    member_constructor! { short, "Short" }
-
-    member_constructor! { integer, "Integer" }
-
-    member_constructor! { long, "Long" }
-
-    member_constructor! { float, "Float" }
-
-    member_constructor! { double, "Double" }
-
-    member_constructor! { big_integer, "BigInteger" }
-
-    member_constructor! { big_decimal, "BigDecimal" }
-
-    member_constructor! { timestamp, "Timestamp" }
+    add_trait!(pub unstable);
 
     add_trait!(pub required);
+}
+
+// ------------------------------------------------------------------------------------------------
+
+impl From<&mut ReferenceBuilder> for Shape {
+    fn from(builder: &mut ReferenceBuilder) -> Self {
+        let mut shape = Shape::new(builder.id.clone(), ShapeKind::Unresolved);
+        for a_trait in builder.applied_traits.into_iter() {
+            shape.apply_trait(a_trait)
+        }
+        shape
+    }
+}
+
+impl ReferenceBuilder {
+    /// Construct a new `ShapeKind::Unresolved` builder, with id.
+    pub fn new(id: &str) -> Self {
+        Self {
+            id: id.parse().unwrap(),
+            applied_traits: Default::default(),
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    pub fn apply_trait(&mut self, a_trait: AppliedTrait) -> &mut Self {
+        self.applied_traits.push(a_trait);
+        self
+    }
+
+    add_trait!(pub documentation(text: &str));
+
+    add_trait!(pub external_documentation(map: &[(&str, &str)]));
+
+    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
+
+    add_trait!(pub since(date: &str));
+
+    add_trait!(pub tagged(tags: &[&str]));
+
+    add_trait!(pub unstable);
 }

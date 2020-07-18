@@ -1,10 +1,10 @@
 use crate::io::syntax::*;
 use crate::io::FILE_EXTENSION;
-use atelier_core::error::{AndPanic, ErrorKind, Result, ResultExt};
+use atelier_core::error::{AndPanic, ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{Member, Shape, ShapeBody, Trait, Valued};
-use atelier_core::model::values::{Key, NodeValue, Number};
-use atelier_core::model::{Annotated, Model, Named, ShapeID};
+use atelier_core::model::shapes::{AppliedTrait, Member, Shape, ShapeKind};
+use atelier_core::model::values::{Number, Value as NodeValue};
+use atelier_core::model::{Model, ShapeID};
 use serde_json::{to_writer, to_writer_pretty, Map, Number as JsonNumber, Value};
 use std::io::Write;
 
@@ -33,7 +33,7 @@ impl<'a> Default for JsonWriter {
 }
 
 impl<'a> ModelWriter<'a> for JsonWriter {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> ModelResult<()> {
         let mut top: Map<String, Value> = Default::default();
 
         let _ = top.insert(
@@ -83,36 +83,36 @@ impl<'a> JsonWriter {
             let _ = shape_map.insert(K_TRAITS.to_string(), self.traits(shape.traits()));
         }
         match shape.body() {
-            ShapeBody::SimpleType(v) => {
+            ShapeKind::SimpleType(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(v.to_string()));
             }
-            ShapeBody::List(v) => {
+            ShapeKind::List(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_LIST.to_string()));
                 let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member()));
             }
-            ShapeBody::Set(v) => {
+            ShapeKind::Set(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SET.to_string()));
                 let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member()));
             }
-            ShapeBody::Map(v) => {
+            ShapeKind::Map(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_MAP.to_string()));
                 let _ = shape_map.insert(K_KEY.to_string(), self.reference(v.key()));
                 let _ = shape_map.insert(K_VALUE.to_string(), self.reference(v.value()));
             }
-            ShapeBody::Structure(v) => {
+            ShapeKind::Structure(v) => {
                 let _ =
                     shape_map.insert(K_TYPE.to_string(), Value::String(V_STRUCTURE.to_string()));
                 if v.has_members() {
                     let _ = shape_map.insert(K_MEMBERS.to_string(), self.members(v.members()));
                 }
             }
-            ShapeBody::Union(v) => {
+            ShapeKind::Union(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_UNION.to_string()));
                 if v.has_members() {
                     let _ = shape_map.insert(K_MEMBERS.to_string(), self.members(v.members()));
                 }
             }
-            ShapeBody::Service(v) => {
+            ShapeKind::Service(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SERVICE.to_string()));
                 let _ = shape_map.insert(
                     K_VERSION.to_string(),
@@ -131,7 +131,7 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeBody::Operation(v) => {
+            ShapeKind::Operation(v) => {
                 let _ =
                     shape_map.insert(K_TYPE.to_string(), Value::String(V_OPERATION.to_string()));
                 if let Some(v) = v.input() {
@@ -147,7 +147,7 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeBody::Resource(v) => {
+            ShapeKind::Resource(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_RESOURCE.to_string()));
                 if v.has_identifiers() {
                     let mut id_map: Map<String, Value> = Default::default();
@@ -197,14 +197,14 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeBody::Apply => {
+            ShapeKind::Apply => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_APPLY.to_string()));
             }
         }
         Value::Object(shape_map)
     }
 
-    fn traits(&self, traits: &[Trait]) -> Value {
+    fn traits(&self, traits: &[AppliedTrait]) -> Value {
         let mut trait_map: Map<String, Value> = Default::default();
         for a_trait in traits {
             let _ = trait_map.insert(
@@ -242,13 +242,7 @@ impl<'a> JsonWriter {
             NodeValue::Object(v) => {
                 let mut object: Map<String, Value> = Default::default();
                 for (k, v) in v {
-                    let _ = object.insert(
-                        match k {
-                            Key::String(v) => v.clone(),
-                            Key::Identifier(v) => v.to_string(),
-                        },
-                        self.value(v),
-                    );
+                    let _ = object.insert(v.clone(), self.value(v));
                 }
                 Value::Object(object)
             }

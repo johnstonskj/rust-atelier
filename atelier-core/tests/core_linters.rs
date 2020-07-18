@@ -1,21 +1,20 @@
 use atelier_core::action::lint::{run_linter_actions, NamingConventions, UnwelcomeTerms};
-use atelier_core::builder::{
-    ModelBuilder, ShapeBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
-};
+use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder};
 use atelier_core::model::Model;
 use atelier_core::Version;
 
 fn make_model() -> Model {
-    ModelBuilder::new("smithy.example", Some(Version::V10))
-        .shape(SimpleShapeBuilder::string("shouldBeUpper").into())
+    ModelBuilder::new(Version::V10)
+        .default_namespace("smithy.example")
+        .shape(SimpleShapeBuilder::string("smithy.example#shouldBeUpper").into())
         .shape(
-            StructureBuilder::new("MyStructure")
+            StructureBuilder::new("smithy.example#MyStructure")
                 .member("okName", "String")
                 .member("BadName", "MyString")
                 .member("thing", "ThingAsJSON")
                 .member("checkAgainst", "TheBlacklist")
                 .member("killMasterNode", "Boolean")
-                .add_trait(TraitBuilder::new("BadTraitName").into())
+                .apply_trait(TraitBuilder::new("BadTraitName").into())
                 .into(),
         )
         .into()
@@ -30,8 +29,8 @@ fn test_naming_conventions() {
         "Shape names should conform to UpperCamelCase, i.e. ThingAsJson",
     ];
     let model: Model = make_model();
-    let result = run_linter_actions(&[Box::new(NamingConventions::default())], &model, false);
-    assert!(result.is_some());
+    let result = run_linter_actions(&mut [Box::new(NamingConventions::default())], &model, false);
+    assert!(result.is_ok());
     let actual = result.unwrap();
     assert_eq!(actual.len(), expected.len());
     let actual: Vec<String> = actual.iter().map(|i| i.message()).cloned().collect();
@@ -48,8 +47,8 @@ fn test_unwelcome_terms() {
         "The term \'blacklist\' is considered either insensitive, divisive, or otherwise unwelcome",
     ];
     let model: Model = make_model();
-    let result = run_linter_actions(&[Box::new(UnwelcomeTerms::default())], &model, false);
-    assert!(result.is_some());
+    let result = run_linter_actions(&mut [Box::new(UnwelcomeTerms::default())], &model, false);
+    assert!(result.is_ok());
     let actual = result.unwrap();
     assert_eq!(actual.len(), expected.len());
     let actual: Vec<String> = actual.iter().map(|i| i.message()).cloned().collect();

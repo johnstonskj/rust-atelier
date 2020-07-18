@@ -1,6 +1,6 @@
 use crate::builder::values::ObjectBuilder;
 use crate::error::ErrorKind;
-use crate::error::{AndPanic, ErrorSource};
+use crate::error::ErrorSource;
 use crate::model::shapes::AppliedTrait;
 use crate::model::values::{Number, Value, ValueMap};
 use crate::model::ShapeID;
@@ -65,7 +65,7 @@ impl TraitBuilder {
     pub fn external_documentation(map: &[(&str, &str)]) -> Self {
         let value: ValueMap = map
             .iter()
-            .map(|(k, v)| (k.to_string().into(), v.to_string().into()))
+            .map(|(k, v)| (k.to_string(), v.to_string().into()))
             .collect();
         Self::with_value_unchecked("externalDocumentation", value.into())
     }
@@ -136,7 +136,7 @@ impl TraitBuilder {
     pub fn references(reference_list: Value) -> Self {
         match reference_list {
             Value::Array(_) => Self::with_value_unchecked("references", reference_list),
-            _ => ErrorKind::InvalidValueVariant("Array".to_string()).panic(),
+            _ => panic!("{}", ErrorKind::InvalidValueVariant("Array".to_string())),
         }
     }
 
@@ -212,21 +212,19 @@ impl TraitBuilder {
 
     fn new_unchecked(shape_name: &str) -> Self {
         Self {
-            a_trait: AppliedTrait::new(ShapeID::new_unchecked(
-                Some(PRELUDE_NAMESPACE),
-                shape_name,
-                None,
-            )),
+            a_trait: AppliedTrait::new(ShapeID::new_unchecked(PRELUDE_NAMESPACE, shape_name, None)),
         }
     }
     fn with_value_unchecked(shape_name: &str, value: Value) -> Self {
         Self {
             a_trait: AppliedTrait::with_value(
-                ShapeID::new_unchecked(Some(PRELUDE_NAMESPACE), shape_name, None),
+                ShapeID::new_unchecked(PRELUDE_NAMESPACE, shape_name, None),
                 value,
             ),
         }
     }
+
+    // --------------------------------------------------------------------------------------------
 
     /// Sets the value for this trait to be an array.
     pub fn array(&mut self, value: Vec<Value>) -> &mut Self {

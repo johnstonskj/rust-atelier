@@ -6,7 +6,8 @@ use atelier_core::model::Model;
 use atelier_core::Version;
 
 fn make_model() -> Model {
-    ModelBuilder::new("smithy.example", Some(Version::V10))
+    ModelBuilder::new(Version::V10)
+        .default_namespace("smithy.example")
         .uses("foo.baz#Bar")
         .shape(SimpleShapeBuilder::string("MyString").into())
         .shape(
@@ -19,8 +20,8 @@ fn make_model() -> Model {
                 .member("f", "String")
                 .member("g", "MyBoolean")
                 .member("h", "InvalidShape")
-                .add_trait(TraitBuilder::new("documentation").into())
-                .add_trait(TraitBuilder::new("notKnown").into())
+                .apply_trait(TraitBuilder::new("documentation").into())
+                .apply_trait(TraitBuilder::new("notKnown").into())
                 .into(),
         )
         .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
@@ -35,9 +36,12 @@ fn test_no_orphaned_references() {
         "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
     ];
     let model: Model = make_model();
-    let result =
-        run_validation_actions(&[Box::new(NoOrphanedReferences::default())], &model, false);
-    assert!(result.is_some());
+    let result = run_validation_actions(
+        &mut [Box::new(NoOrphanedReferences::default())],
+        &model,
+        false,
+    );
+    assert!(result.is_ok());
     let actual = result.unwrap();
     assert_eq!(actual.len(), expected.len());
     let actual: Vec<String> = actual
@@ -61,9 +65,12 @@ fn test_correct_type_references() {
         "Structure member\'s type (InvalidShape) cannot be resolved to a shape in this model."
     ];
     let model: Model = make_model();
-    let result =
-        run_validation_actions(&[Box::new(CorrectTypeReferences::default())], &model, false);
-    assert!(result.is_some());
+    let result = run_validation_actions(
+        &mut [Box::new(CorrectTypeReferences::default())],
+        &model,
+        false,
+    );
+    assert!(result.is_ok());
     let actual = result.unwrap();
     assert_eq!(actual.len(), expected.len());
     let actual: Vec<String> = actual
