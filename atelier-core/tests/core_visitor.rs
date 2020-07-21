@@ -1,63 +1,12 @@
-use atelier_core::builder::{
-    MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
-    SimpleShapeBuilder, StructureBuilder, TraitBuilder,
-};
-use atelier_core::error::ErrorSource;
 use atelier_core::model::shapes::{
     AppliedTrait, Operation, Resource, Service, Simple, StructureOrUnion,
 };
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
-use atelier_core::model::{Model, ShapeID};
-use atelier_core::Version;
+use atelier_core::model::ShapeID;
 use std::cell::RefCell;
 use std::collections::HashSet;
 
-fn make_example_model() -> Model {
-    let model: Model = ModelBuilder::with_namespace(Version::V10, "example.motd")
-        .shape(
-            ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
-                .documentation("Provides a Message of the day.")
-                .resource("Message")
-                .into(),
-        )
-        .shape(
-            ResourceBuilder::new("Message")
-                .identifier("date", "Date")
-                .read("GetMessage")
-                .into(),
-        )
-        .shape(
-            SimpleShapeBuilder::string("Date")
-                .apply_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
-                .into(),
-        )
-        .shape(
-            OperationBuilder::new("GetMessage")
-                .readonly()
-                .input("GetMessageInput")
-                .output("GetMessageOutput")
-                .error("BadDateValue")
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("GetMessageInput")
-                .member("date", "Date")
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("GetMessageOutput")
-                .add_member(MemberBuilder::string("message").required().into())
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("BadDateValue")
-                .error(ErrorSource::Client)
-                .add_member(MemberBuilder::string("errorMessage").required().into())
-                .into(),
-        )
-        .into();
-    model
-}
+pub mod common;
 
 struct ExampleVisitor {
     expected: RefCell<HashSet<String>>,
@@ -160,7 +109,7 @@ impl ModelVisitor for ExampleVisitor {
 
 #[test]
 fn test_model_visitor() {
-    let model = make_example_model();
+    let model = common::make_message_of_the_day_model();
     let visitor = ExampleVisitor::default();
     let result = walk_model(&model, &visitor);
     println!("{:#?}", result);

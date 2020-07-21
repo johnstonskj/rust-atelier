@@ -8,18 +8,51 @@ enumeration, `ShapeBody`, to represent each of the productions referenced by `sh
 
 */
 
-use crate::model::{values::Value, Identifier, ShapeID};
+use crate::model::{values::Value, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// This structure represents a shape within the model. The shape-specific data is within the
-/// `ShapeBody` enumeration.
+/// A common trait shared by `TopLevelShape` and `MemberShape`.
+///
+pub trait Shape {
+    /// The absolute ShapeID of this shape.
+    fn id(&self) -> &ShapeID;
+
+    /// Set the absolute ShapeID of this shape.
+    fn set_id(&mut self, id: ShapeID);
+
+    /// Returns `true` if the model element has any applied traits, else `false`.
+    fn has_traits(&self) -> bool;
+
+    /// Returns `true` if the model element has any applied traits with the associated id, else `false`.
+    fn has_trait(&self, id: &ShapeID) -> bool;
+
+    /// Return an iterator over all traits applied to this model element
+    fn traits(&self) -> &Vec<AppliedTrait>;
+
+    /// Apply a trait to this model element.
+    fn apply_trait(&mut self, a_trait: AppliedTrait);
+
+    /// Add all these elements to this member's collection.
+    fn append_traits(&mut self, traits: &[AppliedTrait]);
+
+    /// Add all the traits to this model element.
+    fn remove_trait(&mut self, id: &ShapeID);
+
+    /// Is this instance a member (or top-level) shape?
+    fn is_member(&self) -> bool;
+}
+
+///
+/// This structure represents a top-level shape within a model. The shape-specific data is within the
+/// `ShapeKind` enumeration. Aggregate shapes may have members of type `MemberShape`, but a model only
+/// directly contains top-level shapes.
 ///
 #[derive(Clone, Debug)]
-pub struct Shape {
+pub struct TopLevelShape {
     id: ShapeID,
     traits: Vec<AppliedTrait>,
     body: ShapeKind,
@@ -50,9 +83,6 @@ pub enum ShapeKind {
     Operation(Operation),
     /// A shape representing an operation on a software service or resource.
     Resource(Resource),
-    /// Represents a member shape, part of an aggregate or service shape. The `ShapeID` is the target
-    /// type for this member.
-    Member(Member),
     /// This represents a forward reference that has not yet been resolved to a defined shape. Any
     /// model that contains unresolved reference is considered to be `incomplete` and will result in
     /// validation errors.
@@ -68,18 +98,6 @@ pub struct AppliedTrait {
     id: ShapeID,
     value: Option<Value>,
 }
-
-///
-/// Members are the values within aggregate types.
-///
-#[derive(Clone, Debug, PartialEq)]
-pub struct Member {
-    target: ShapeID,
-}
-
-// ------------------------------------------------------------------------------------------------
-// Macros
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -109,12 +127,6 @@ impl From<Resource> for ShapeKind {
     }
 }
 
-impl From<Member> for ShapeKind {
-    fn from(body: Member) -> Self {
-        Self::Member(body)
-    }
-}
-
 impl ShapeKind {
     is_as! { is_simple, Simple, as_simple, Simple }
     is_as! { is_list, List, as_list, ListOrSet }
@@ -125,13 +137,53 @@ impl ShapeKind {
     is_as! { is_service, Service, as_service, Service }
     is_as! { is_operation, Operation, as_operation, Operation }
     is_as! { is_resource, Resource, as_resource, Resource }
-    is_as! { is_member, Member, as_member, Member }
     is_as! { is_unresolved, Unresolved }
 }
 
 // ------------------------------------------------------------------------------------------------
 
-impl Shape {
+impl Shape for TopLevelShape {
+    fn id(&self) -> &ShapeID {
+        &self.id
+    }
+
+    fn set_id(&mut self, id: ShapeID) {
+        self.id = id
+    }
+
+    fn has_traits(&self) -> bool {
+        !self.traits.is_empty()
+    }
+
+    fn has_trait(&self, id: &ShapeID) -> bool {
+        self.traits.iter().any(|t| t.id() == id)
+    }
+
+    fn traits(&self) -> &Vec<AppliedTrait> {
+        &self.traits
+    }
+
+    fn apply_trait(&mut self, a_trait: AppliedTrait) {
+        // TODO: apply trait duplicate rules.
+        self.traits.push(a_trait);
+    }
+
+    fn append_traits(&mut self, traits: &[AppliedTrait]) {
+        for a_trait in traits {
+            self.apply_trait(a_trait.clone());
+        }
+    }
+
+    fn remove_trait(&mut self, id: &ShapeID) {
+        self.traits.retain(|t| t.id() != id);
+    }
+
+    fn is_member(&self) -> bool {
+        false
+    }
+}
+
+impl TopLevelShape {
     ///
     /// Construct a new shape with the given identifier (shape name) and shape-specific data.
     ///
@@ -153,53 +205,6 @@ impl Shape {
             body,
         }
     }
-
-    /// The absolute ShapeID of this shape.
-    pub fn id(&self) -> &ShapeID {
-        &self.id
-    }
-
-    /// Set the absolute ShapeID of this shape.
-    pub fn set_id(&mut self, id: ShapeID) {
-        self.id = id
-    }
-
-    // --------------------------------------------------------------------------------------------
-
-    /// Returns `true` if the model element has any applied traits, else `false`.
-    pub fn has_traits(&self) -> bool {
-        !self.traits.is_empty()
-    }
-
-    /// Returns `true` if the model element has any applied traits with the associated id, else `false`.
-    pub fn has_trait(&self, id: &ShapeID) -> bool {
-        self.traits.iter().any(|t| t.id() == id)
-    }
-
-    /// Return an iterator over all traits applied to this model element
-    pub fn traits(&self) -> &Vec<AppliedTrait> {
-        &self.traits
-    }
-
-    /// Apply a trait to this model element.
-    pub fn apply_trait(&mut self, a_trait: AppliedTrait) {
-        // TODO: apply trait duplicate rules.
-        self.traits.push(a_trait);
-    }
-
-    /// Add all these elements to this member's collection.
-    pub fn append_traits(&mut self, traits: &[AppliedTrait]) {
-        for a_trait in traits {
-            self.apply_trait(a_trait.clone());
-        }
-    }
-
-    /// Add all the traits to this model element.
-    pub fn remove_trait(&mut self, id: &ShapeID) {
-        self.traits.retain(|t| t.id() != id);
-    }
-
-    // --------------------------------------------------------------------------------------------
 
     ///
     /// Return a reference to the shape-specific data within the shape.
@@ -233,7 +238,6 @@ impl Shape {
     delegate! { is_service, inner = body }
     delegate! { is_operation, inner = body }
     delegate! { is_resource, inner = body }
-    delegate! { is_member, inner = body }
     delegate! { is_unresolved, inner = body }
 }
 
@@ -285,23 +289,6 @@ impl AppliedTrait {
 }
 
 // ------------------------------------------------------------------------------------------------
-
-impl Member {
-    /// Construct a new Member shape with the given target shape (type).
-    pub fn new(target: ShapeID) -> Self {
-        Self { target }
-    }
-
-    pub fn target(&self) -> &ShapeID {
-        &self.target
-    }
-
-    pub fn set_target(&mut self, target: ShapeID) {
-        self.target = target;
-    }
-}
-
-// ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
 
@@ -311,7 +298,7 @@ pub use simple::Simple;
 
 #[doc(hidden)]
 pub mod aggregate;
-pub use aggregate::{ListOrSet, Map, StructureOrUnion};
+pub use aggregate::{ListOrSet, Map, MemberShape, StructureOrUnion};
 
 #[doc(hidden)]
 pub mod service;

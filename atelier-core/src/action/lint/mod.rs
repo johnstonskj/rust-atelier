@@ -44,7 +44,7 @@
 
 use crate::action::{Action, ActionIssue, IssueLevel, Linter};
 use crate::error::Result as ModelResult;
-use crate::model::shapes::{AppliedTrait, ShapeKind};
+use crate::model::shapes::{AppliedTrait, Shape, ShapeKind};
 use crate::model::{Identifier, Model, ShapeID};
 use heck::{CamelCase, MixedCase};
 use std::cell::RefCell;
@@ -136,7 +136,7 @@ impl Linter for NamingConventions {
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
                     for member in body.members() {
                         self.check_member_name(member.id());
-                        self.check_member_name(member.body().as_member().unwrap().target());
+                        self.check_member_name(member.target());
                         self.check_applied_trait_names(member.traits());
                     }
                 }
@@ -213,7 +213,7 @@ impl Linter for UnwelcomeTerms {
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
                     for member in body.members() {
                         self.check_shape_id(member.id());
-                        self.check_shape_id(member.body().as_member().unwrap().target());
+                        self.check_shape_id(member.target());
                         for a_trait in member.traits() {
                             self.check_shape_id(a_trait.id());
                         }

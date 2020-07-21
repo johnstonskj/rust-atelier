@@ -7,7 +7,7 @@ in an action.
 
 use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::error::Result as ModelResult;
-use crate::model::shapes::{AppliedTrait, ShapeKind};
+use crate::model::shapes::{AppliedTrait, Shape, ShapeKind};
 use crate::model::{Identifier, Model, ShapeID};
 use std::str::FromStr;
 
@@ -85,11 +85,7 @@ impl Validator for NoOrphanedReferences {
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
                     for member in body.members() {
                         self.resolve_traits(&member.id(), member.traits(), model);
-                        self.resolve(
-                            &member.id(),
-                            member.body().as_member().unwrap().target(),
-                            model,
-                        );
+                        self.resolve(&member.id(), member.target(), model);
                     }
                 }
                 ShapeKind::Service(body) => {
@@ -146,9 +142,6 @@ impl Validator for NoOrphanedReferences {
                     for resource in body.resources() {
                         self.resolve(&this_shape_id, resource, model);
                     }
-                }
-                ShapeKind::Member(_body) => {
-                    // TODO: validate member targets
                 }
                 _ => {}
             }
@@ -223,7 +216,7 @@ impl Validator for CorrectTypeReferences {
                     for member in structured.members() {
                         self.check_type_only(
                             member.id(),
-                            &member.body().as_member().unwrap().target(),
+                            &member.target(),
                             model,
                             "Structure member",
                         );
@@ -331,11 +324,7 @@ impl CorrectTypeReferences {
     fn check_type_only(&mut self, shape: &ShapeID, target: &ShapeID, model: &Model, member: &str) {
         if let Some(target) = model.shape(target) {
             let target = target.body();
-            if target.is_service()
-                || target.is_operation()
-                || target.is_resource()
-                || target.is_member()
-            {
+            if target.is_service() || target.is_operation() || target.is_resource() {
                 self.issues.push(ActionIssue::error_at(
                     self.label(),
                     &format!(

@@ -1,3 +1,4 @@
+use crate::model::shapes::{Shape, TopLevelShape};
 use crate::model::values::{Value, ValueMap};
 use crate::model::ShapeID;
 
@@ -48,6 +49,7 @@ pub struct Resource {
 
 impl Service {
     pub fn new(version: &str) -> Self {
+        assert!(!version.is_empty());
         Self {
             version: version.to_string(),
             operations: Default::default(),
@@ -68,7 +70,19 @@ impl Service {
 
     array_member! { operations, operation, ShapeID, has_operations, add_operation, append_operations, remove_operations }
 
+    pub fn add_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.add_operation(shape.id().clone())
+        }
+    }
+
     array_member! { resources, resource, ShapeID, has_resources, add_resource, append_resources, remove_resources }
+
+    pub fn add_resource_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_resource() {
+            self.add_resource(shape.id().clone())
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -86,9 +100,39 @@ impl Default for Operation {
 impl Operation {
     optional_member! { input, ShapeID, has_input, set_input, unset_input }
 
+    pub fn set_input_shape(&mut self, shape: &TopLevelShape) {
+        if !(shape.is_operation()
+            || shape.is_resource()
+            || shape.is_service()
+            || shape.is_unresolved())
+        {
+            self.set_input(shape.id().clone())
+        }
+    }
+
     optional_member! { output, ShapeID, has_output, set_output, unset_output }
 
+    pub fn set_output_shape(&mut self, shape: &TopLevelShape) {
+        if !(shape.is_operation()
+            || shape.is_resource()
+            || shape.is_service()
+            || shape.is_unresolved())
+        {
+            self.set_output(shape.id().clone())
+        }
+    }
+
     array_member! { errors, error, ShapeID, has_errors, add_error, append_errors, remove_errors }
+
+    pub fn add_error_shape(&mut self, shape: &TopLevelShape) {
+        if !(shape.is_operation()
+            || shape.is_resource()
+            || shape.is_service()
+            || shape.is_unresolved())
+        {
+            self.add_error(shape.id().clone())
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -115,19 +159,73 @@ impl Resource {
 
     optional_member! { create, ShapeID, has_create, set_create, unset_create }
 
+    pub fn set_create_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.set_create(shape.id().clone())
+        }
+    }
+
     optional_member! { put, ShapeID, has_put, set_put, unset_put }
+
+    pub fn set_put_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.set_put(shape.id().clone())
+        }
+    }
 
     optional_member! { read, ShapeID, has_read, set_read, unset_read }
 
+    pub fn set_read_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.set_read(shape.id().clone())
+        }
+    }
+
     optional_member! { update, ShapeID, has_update, set_update, unset_update }
+
+    pub fn set_update_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.set_update(shape.id().clone())
+        }
+    }
 
     optional_member! { delete, ShapeID, has_delete, set_delete, unset_delete }
 
+    pub fn set_delete_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.set_delete(shape.id().clone())
+        }
+    }
+
     optional_member! { list, ShapeID, has_list, set_list, unset_list }
+
+    pub fn set_list_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.set_list(shape.id().clone())
+        }
+    }
 
     array_member! { operations, operation, ShapeID, has_operations, add_operation, append_operations, remove_operations }
 
+    pub fn add_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.add_operation(shape.id().clone())
+        }
+    }
+
     array_member! { collection_operations, collection_operation, ShapeID, has_collection_operations, add_collection_operation, append_collection_operations, remove_collection_operations }
 
+    pub fn add_collection_operation_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_operation() {
+            self.add_collection_operation(shape.id().clone())
+        }
+    }
+
     array_member! { resources, resource, ShapeID, has_resources, add_resource, append_resources, remove_resources }
+
+    pub fn add_resource_shape(&mut self, shape: &TopLevelShape) {
+        if shape.is_resource() {
+            self.add_resource(shape.id().clone())
+        }
+    }
 }

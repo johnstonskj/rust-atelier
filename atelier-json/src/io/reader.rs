@@ -3,7 +3,7 @@ use crate::io::FILE_EXTENSION;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelReader;
 use atelier_core::model::shapes::{
-    AppliedTrait, ListOrSet, Map as MapShape, Member, Shape, ShapeKind, Simple, StructureOrUnion,
+    AppliedTrait, ListOrSet, Map as MapShape, Member, TopLevelShape, ShapeKind, Simple, StructureOrUnion,
 };
 use atelier_core::model::values::{Value as NodeValue, ValueMap};
 use atelier_core::model::{Identifier, Model, NamespaceID, ShapeID};
@@ -98,13 +98,13 @@ impl JsonReader {
         Ok(metadata)
     }
 
-    fn shapes(&self, json: Option<&Value>) -> ModelResult<Vec<(NamespaceID, Shape)>> {
-        let mut shapes: Vec<(NamespaceID, Shape)> = Default::default();
+    fn shapes(&self, json: Option<&Value>) -> ModelResult<Vec<(NamespaceID, TopLevelShape)>> {
+        let mut shapes: Vec<(NamespaceID, TopLevelShape)> = Default::default();
         if let Some(Value::Object(vs)) = json {
             for (k, v) in vs {
                 let id = ShapeID::from_str(k)?;
                 let inner = self.shape(v)?;
-                let mut shape = Shape::new(id.clone(), inner);
+                let mut shape = TopLevelShape::new(id.clone(), inner);
 
                 if let Some(Value::Object(vs)) = v.get(K_TRAITS) {
                     shape.append_traits(self.traits(vs)?.as_ref())

@@ -105,7 +105,7 @@ Which would produce an image like the following.
 */
 
 use crate::io::ModelWriter;
-use crate::model::shapes::{Shape, ShapeKind};
+use crate::model::shapes::{Shape, ShapeKind, TopLevelShape};
 use crate::model::values::Value;
 use crate::model::{Model, NamespaceID, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
@@ -221,7 +221,7 @@ impl PlantUmlWriter {
     fn write_service(
         &self,
         w: &mut impl Write,
-        service: &Shape,
+        service: &TopLevelShape,
         model: &Model,
     ) -> crate::error::Result<()> {
         writeln!(w, "    class {} <<{}>> {{", service.id(), SHAPE_SERVICE)?;
@@ -249,7 +249,7 @@ impl PlantUmlWriter {
     fn write_resource(
         &self,
         w: &mut impl Write,
-        resource: &Shape,
+        resource: &TopLevelShape,
         model: &Model,
     ) -> crate::error::Result<()> {
         writeln!(w, "    class {} <<{}>> {{", resource.id(), SHAPE_RESOURCE)?;
@@ -300,7 +300,7 @@ impl PlantUmlWriter {
     fn write_class(
         &self,
         w: &mut impl Write,
-        structure: &Shape,
+        structure: &TopLevelShape,
         model: &Model,
     ) -> crate::error::Result<()> {
         let (is_union, body) = match structure.body() {
@@ -320,12 +320,7 @@ impl PlantUmlWriter {
         let notes = self.write_class_traits(w, structure, model)?;
         for member in body.members() {
             if member.is_member() {
-                writeln!(
-                    w,
-                    "        {}: {}",
-                    member.id(),
-                    member.body().as_member().unwrap().target()
-                )?;
+                writeln!(w, "        {}: {}", member.id(), member.target())?;
             } else {
                 unreachable!()
             }
@@ -339,7 +334,7 @@ impl PlantUmlWriter {
     fn write_data_type(
         &self,
         w: &mut impl Write,
-        data_type: &Shape,
+        data_type: &TopLevelShape,
         model: &Model,
     ) -> crate::error::Result<()> {
         writeln!(w, "    class {} <<dataType>> {{", data_type.id())?;
@@ -397,7 +392,7 @@ impl PlantUmlWriter {
     fn write_class_traits(
         &self,
         w: &mut impl Write,
-        shape: &Shape,
+        shape: &TopLevelShape,
         _model: &Model,
     ) -> crate::error::Result<Vec<String>> {
         let mut traits: Vec<String> = Default::default();
@@ -450,33 +445,12 @@ impl PlantUmlWriter {
         if let Some(shape) = model.shape(type_id) {
             match shape.body() {
                 ShapeKind::Simple(st) => st.to_string(),
-                ShapeKind::List(list) => format!(
-                    "List<{}>",
-                    list.member()
-                        .body()
-                        .as_member()
-                        .unwrap()
-                        .target()
-                        .shape_name()
-                ),
-                ShapeKind::Set(set) => format!(
-                    "Set<{}>",
-                    set.member()
-                        .body()
-                        .as_member()
-                        .unwrap()
-                        .target()
-                        .shape_name()
-                ),
+                ShapeKind::List(list) => format!("List<{}>", list.member().target().shape_name()),
+                ShapeKind::Set(set) => format!("Set<{}>", set.member().target().shape_name()),
                 ShapeKind::Map(map) => format!(
                     "Map<{}, {}>",
-                    map.key().body().as_member().unwrap().target().shape_name(),
-                    map.value()
-                        .body()
-                        .as_member()
-                        .unwrap()
-                        .target()
-                        .shape_name()
+                    map.key().target().shape_name(),
+                    map.value().target().shape_name()
                 ),
                 _ => type_id.to_string(),
             }

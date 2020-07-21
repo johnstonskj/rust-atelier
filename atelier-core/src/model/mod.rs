@@ -3,7 +3,7 @@ The Smithy semantic model itself, consisting of shapes, members, values, and mod
 */
 
 use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::shapes::Shape;
+use crate::model::shapes::{Shape, TopLevelShape};
 use crate::model::values::{Value, ValueMap};
 use crate::Version;
 use std::collections::HashMap;
@@ -25,7 +25,7 @@ use std::fmt::Debug;
 pub struct Model {
     pub(crate) smithy_version: Version,
     pub(crate) metadata: ValueMap,
-    pub(crate) shapes: HashMap<ShapeID, Shape>,
+    pub(crate) shapes: HashMap<ShapeID, TopLevelShape>,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ impl Model {
     // --------------------------------------------------------------------------------------------
     object_member! { metadata, metadata_value, String => Value, has_metadata, has_metadata_value, add_metadata, remove_metadata }
 
-    object_member! { shapes, shape, ShapeID, Shape, has_shapes, has_shape, add_shape = add_a_shape, remove_shape }
+    object_member! { shapes, shape, ShapeID, TopLevelShape, has_shapes, has_shape, add_shape = add_a_shape, remove_shape }
 
     /// Return a list of all the shape IDs representing shapes defined in the model.
     pub fn shape_names(&self) -> impl Iterator<Item = &ShapeID> {
@@ -98,7 +98,7 @@ impl Model {
     }
 
     /// Add an instance of `Shape`.
-    pub fn add_a_shape(&mut self, shape: Shape) -> ModelResult<Option<Shape>> {
+    pub fn add_a_shape(&mut self, shape: TopLevelShape) -> ModelResult<Option<TopLevelShape>> {
         if shape.id().is_member() {
             Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into())
         } else {

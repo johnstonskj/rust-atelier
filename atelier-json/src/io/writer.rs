@@ -2,7 +2,7 @@ use crate::io::syntax::*;
 use crate::io::FILE_EXTENSION;
 use atelier_core::error::{AndPanic, ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, Member, Shape, ShapeKind};
+use atelier_core::model::shapes::{AppliedTrait, Member, TopLevelShape, ShapeKind};
 use atelier_core::model::values::{Number, Value as NodeValue};
 use atelier_core::model::{Model, ShapeID};
 use serde_json::{to_writer, to_writer_pretty, Map, Number as JsonNumber, Value};
@@ -77,7 +77,7 @@ impl<'a> JsonWriter {
         Value::Object(shape_map)
     }
 
-    fn shape(&self, shape: &'a Shape) -> Value {
+    fn shape(&self, shape: &'a TopLevelShape) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
         if shape.has_traits() {
             let _ = shape_map.insert(K_TRAITS.to_string(), self.traits(shape.traits()));

@@ -6,11 +6,10 @@ use atelier_core::model::Model;
 use atelier_core::Version;
 
 fn make_model() -> Model {
-    ModelBuilder::new(Version::V10)
-        .default_namespace("smithy.example")
+    ModelBuilder::new(Version::V10, "smithy.example")
         .uses("foo.baz#Bar")
-        .shape(SimpleShapeBuilder::string("MyString").into())
-        .shape(
+        .simple_shape(&mut SimpleShapeBuilder::string("MyString"))
+        .structure(
             StructureBuilder::new("MyStructure")
                 .member("a", "MyString")
                 .member("b", "smithy.example#MyString")
@@ -21,10 +20,9 @@ fn make_model() -> Model {
                 .member("g", "MyBoolean")
                 .member("h", "InvalidShape")
                 .apply_trait(TraitBuilder::new("documentation").into())
-                .apply_trait(TraitBuilder::new("notKnown").into())
-                .into(),
+                .apply_trait(TraitBuilder::new("notKnown").into()),
         )
-        .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
+        .simple_shape(&mut SimpleShapeBuilder::boolean("MyBoolean"))
         .into()
 }
 

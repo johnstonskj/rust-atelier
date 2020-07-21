@@ -1,7 +1,7 @@
 use crate::io::parser::error::ParserError;
 use atelier_core::error::{Error, ErrorKind, Result as CoreResult, ResultExt};
 use atelier_core::model::shapes::{
-    AppliedTrait, ListOrSet, Map, Member, Operation, Resource, Service, Shape, ShapeKind, Simple,
+    AppliedTrait, ListOrSet, Map, Member, Operation, Resource, Service, TopLevelShape, ShapeKind, Simple,
     StructureOrUnion,
 };
 use atelier_core::model::values::{Number, Value as NodeValue, ValueMap};
@@ -64,7 +64,7 @@ fn parse_idl(input_pair: Pair<'_, Rule>) -> CoreResult<Model> {
         Rule::idl => {
             let mut control_data: ValueMap = Default::default();
             let mut meta_data: ValueMap = Default::default();
-            let mut shape_section: Option<(NamespaceID, Vec<ShapeID>, Vec<Shape>)> = None;
+            let mut shape_section: Option<(NamespaceID, Vec<ShapeID>, Vec<TopLevelShape>)> = None;
             for inner in input_pair.into_inner() {
                 match inner.as_rule() {
                     Rule::control_section => {
@@ -131,10 +131,10 @@ fn parse_metadata_section(input_pair: Pair<'_, Rule>) -> CoreResult<ValueMap> {
 
 fn parse_shape_section(
     input_pair: Pair<'_, Rule>,
-) -> CoreResult<(NamespaceID, Vec<ShapeID>, Vec<Shape>)> {
+) -> CoreResult<(NamespaceID, Vec<ShapeID>, Vec<TopLevelShape>)> {
     let mut namespace: Option<NamespaceID> = None;
     let mut uses: Vec<ShapeID> = Default::default();
-    let mut shapes: Vec<Shape> = Default::default();
+    let mut shapes: Vec<TopLevelShape> = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::namespace_statement => {
@@ -183,8 +183,8 @@ fn parse_use_section(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<ShapeID>> {
     Ok(uses)
 }
 
-fn parse_shape_statements(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<Shape>> {
-    let mut shapes: Vec<Shape> = Default::default();
+fn parse_shape_statements(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<TopLevelShape>> {
+    let mut shapes: Vec<TopLevelShape> = Default::default();
     for shape_statement in input_pair.into_inner() {
         match shape_statement.as_rule() {
             Rule::shape_statement => {
@@ -197,7 +197,7 @@ fn parse_shape_statements(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<Shape>> 
     Ok(shapes)
 }
 
-fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<Shape> {
+fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<TopLevelShape> {
     let mut documentation: Vec<String> = Default::default();
     let mut traits: Vec<AppliedTrait> = Default::default();
     let mut inner: Option<(Identifier, ShapeKind)> = None;
@@ -244,7 +244,7 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<Shape> {
         }
     }
     if let Some((id, inner)) = inner {
-        let mut shape = Shape::local(id, inner);
+        let mut shape = TopLevelShape::local(id, inner);
         if !documentation.is_empty() {
             shape.documentation(&documentation.join("\n"));
         }
@@ -254,7 +254,7 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<Shape> {
         Ok(shape)
     } else if let Some((id, a_trait)) = applies {
         let inner = ShapeKind::Apply;
-        let mut shape = Shape::new(id, inner);
+        let mut shape = TopLevelShape::new(id, inner);
         shape.add_trait(a_trait);
         Ok(shape)
     } else {

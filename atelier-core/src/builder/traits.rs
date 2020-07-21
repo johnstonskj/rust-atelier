@@ -57,7 +57,7 @@ impl TraitBuilder {
     }
 
     /// Create a new `TraitBuilder` for the corresponding prelude trait.
-    pub fn error(src: ErrorSource) -> Self {
+    pub fn error_source(src: ErrorSource) -> Self {
         Self::with_value_unchecked("error", src.to_string().into())
     }
 

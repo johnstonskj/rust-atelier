@@ -8,7 +8,7 @@ More detailed description, with
 */
 
 use crate::model::shapes::{
-    AppliedTrait, ListOrSet, Map, Member, Operation, Resource, Service, ShapeKind, Simple,
+    AppliedTrait, ListOrSet, Map, Operation, Resource, Service, Shape, ShapeKind, Simple,
     StructureOrUnion,
 };
 use crate::model::values::Value;
@@ -73,7 +73,6 @@ pub trait ModelVisitor {
     visit_fn! { service, Service, "Called for each service shape" }
     visit_fn! { operation, Operation, "Called for each operation shape" }
     visit_fn! { resource, Resource, "Called for each resource shape" }
-    visit_fn! { member, Member, "Called for each member shape" }
     visit_fn! { unresolved_id, "Called for each unresolved shape identifier" }
 }
 
@@ -105,7 +104,6 @@ where
             ShapeKind::Service(body) => visitor.service(shape.id(), &shape.traits(), &body)?,
             ShapeKind::Operation(body) => visitor.operation(shape.id(), &shape.traits(), &body)?,
             ShapeKind::Resource(body) => visitor.resource(shape.id(), &shape.traits(), &body)?,
-            ShapeKind::Member(body) => visitor.member(shape.id(), &shape.traits(), &body)?,
             ShapeKind::Unresolved => visitor.unresolved_id(shape.id(), &shape.traits())?,
         }
     }

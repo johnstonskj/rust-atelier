@@ -62,6 +62,8 @@ pub struct ShapeID {
     member_name: Option<Identifier>,
 }
 
+// TODO: Investigate making all ShapeID components `RC<>` to reduce memory size due to duplication.
+
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
@@ -326,7 +328,7 @@ impl ShapeID {
     }
 
     ///
-    /// Returns `true` if the shape `other` is a valid member identifier if `self` is a valid shape.
+    /// Returns `true` if the shape `other` is a valid member identifier, if `self` is a valid shape.
     /// This implies, 1) that self is not a member name, 2) other and self have the same namespace
     /// and shape name, 3) `other` has a member name.
     ///

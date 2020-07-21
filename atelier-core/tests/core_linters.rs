@@ -4,18 +4,18 @@ use atelier_core::model::Model;
 use atelier_core::Version;
 
 fn make_model() -> Model {
-    ModelBuilder::new(Version::V10)
-        .default_namespace("smithy.example")
-        .shape(SimpleShapeBuilder::string("smithy.example#shouldBeUpper").into())
-        .shape(
-            StructureBuilder::new("smithy.example#MyStructure")
+    ModelBuilder::new(Version::V10, "smithy.example")
+        .simple_shape(&mut SimpleShapeBuilder::string(
+            "smithy.example#shouldBeUpper",
+        ))
+        .structure(
+            StructureBuilder::new("MyStructure")
                 .member("okName", "String")
                 .member("BadName", "MyString")
                 .member("thing", "ThingAsJSON")
                 .member("checkAgainst", "TheBlacklist")
                 .member("killMasterNode", "Boolean")
-                .apply_trait(TraitBuilder::new("BadTraitName").into())
-                .into(),
+                .apply_trait(TraitBuilder::new("BadTraitName").into()),
         )
         .into()
 }

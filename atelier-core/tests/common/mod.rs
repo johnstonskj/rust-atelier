@@ -3,13 +3,11 @@ use atelier_core::builder::{
     SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::error::ErrorSource;
-use atelier_core::io::plant_uml::PlantUmlWriter;
-use atelier_core::io::write_model_to_string;
 use atelier_core::model::Model;
 use atelier_core::Version;
 
-fn make_example_model() -> Model {
-    let model: Model = ModelBuilder::new(Version::V10, "example.motd")
+pub fn make_message_of_the_day_model() -> Model {
+    ModelBuilder::new(Version::V10, "example.motd")
         .service(
             ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
                 .documentation("Provides a Message of the day.")
@@ -31,9 +29,7 @@ fn make_example_model() -> Model {
                 .output("GetMessageOutput")
                 .error("BadDateValue"),
         )
-        .structure(
-            StructureBuilder::new("GetMessageInput").add_member(MemberBuilder::new("date", "Date")),
-        )
+        .structure(StructureBuilder::new("GetMessageInput").member("date", "Date"))
         .structure(
             StructureBuilder::new("GetMessageOutput")
                 .add_member(MemberBuilder::string("message").required().into()),
@@ -43,15 +39,5 @@ fn make_example_model() -> Model {
                 .error_source(ErrorSource::Client)
                 .add_member(MemberBuilder::string("errorMessage").required().into()),
         )
-        .into();
-    model
-}
-
-#[test]
-fn test_uml_writer() {
-    let model = make_example_model();
-    let mut writer = PlantUmlWriter::new(true);
-    let output = write_model_to_string(&mut writer, &model);
-    assert!(output.is_ok());
-    println!("{}", output.unwrap())
+        .into()
 }

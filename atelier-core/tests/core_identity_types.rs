@@ -24,7 +24,7 @@ fn test_identifier_is_valid() {
 }
 
 #[test]
-fn test_namepace_is_valid() {
+fn test_namespace_is_valid() {
     for id in NAMESPACE_GOOD {
         assert!(NamespaceID::is_valid(id));
     }
