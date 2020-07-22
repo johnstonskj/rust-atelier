@@ -6,8 +6,8 @@ document.
 
 use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::builder::{
-    ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
-    SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+    traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
+    ServiceBuilder, SimpleShapeBuilder, StructureBuilder,
 };
 use atelier_core::error::ErrorSource;
 use atelier_core::io::debug::DebugWriter;
@@ -30,34 +30,40 @@ fn make_weather_model() -> Model {
                 .documentation("Provides weather forecasts.")
                 .paginated(Some("nextToken"), Some("nextToken"), None, Some("pageSize"))
                 .resource("City")
-                .operation("GetCurrentTime"),
+                .operation("GetCurrentTime")
+                .into(),
         )
         .resource(
             ResourceBuilder::new("City")
                 .identifier("cityID", "CityID")
                 .read("GetCity")
                 .list("ListCities")
-                .resource("Forecast"),
+                .resource("Forecast")
+                .into(),
         )
         .resource(
             ResourceBuilder::new("Forecast")
                 .identifier("cityId", "CityId")
-                .read("GetForecast"),
+                .read("GetForecast")
+                .into(),
         )
         .simple_shape(
             SimpleShapeBuilder::string("CityId")
-                .apply_trait(TraitBuilder::pattern("^[A-Za-z0-9 ]+$").into()),
+                .apply_trait(traits::pattern("^[A-Za-z0-9 ]+$"))
+                .into(),
         )
         .operation(
             OperationBuilder::new("GetCity")
                 .readonly()
                 .input("GetCityInput")
                 .output("GetCityOutput")
-                .error("NoSuchResource"),
+                .error("NoSuchResource")
+                .into(),
         )
         .structure(
             StructureBuilder::new("GetCityInput")
-                .add_member(MemberBuilder::new("cityID", "CityId").required().into()),
+                .add_member(MemberBuilder::new("cityID", "CityId").required().into())
+                .into(),
         )
         .structure(
             StructureBuilder::new("GetCityOutput")
@@ -66,29 +72,34 @@ fn make_weather_model() -> Model {
                     MemberBuilder::new("coordinates", "CityCoordinates")
                         .required()
                         .into(),
-                ),
+                )
+                .into(),
         )
         .structure(
             StructureBuilder::new("CityCoordinates")
                 .add_member(MemberBuilder::float("latitude").required().into())
-                .add_member(MemberBuilder::float("longitude").required().into()),
+                .add_member(MemberBuilder::float("longitude").required().into())
+                .into(),
         )
         .structure(
             StructureBuilder::new("NoSuchResource")
                 .error_source(ErrorSource::Client)
-                .add_member(MemberBuilder::string("resourceType").required().into()),
+                .add_member(MemberBuilder::string("resourceType").required().into())
+                .into(),
         )
         .operation(
             OperationBuilder::new("ListCities")
                 .paginated(None, None, Some("items"), None)
                 .readonly()
                 .input("ListCitiesInput")
-                .output("ListCitiesOutput"),
+                .output("ListCitiesOutput")
+                .into(),
         )
         .structure(
             StructureBuilder::new("ListCitiesInput")
                 .string("nextToken")
-                .integer("pageSize"),
+                .integer("pageSize")
+                .into(),
         )
         .structure(
             StructureBuilder::new("ListCitiesOutput")
@@ -97,45 +108,52 @@ fn make_weather_model() -> Model {
                     MemberBuilder::new("items", "CitySummaries")
                         .required()
                         .into(),
-                ),
+                )
+                .into(),
         )
-        .list(&mut ListBuilder::new("CitySummaries", "CitySummary"))
+        .list(ListBuilder::new("CitySummaries", "CitySummary"))
         .structure(
             StructureBuilder::new("CitySummary")
-                .apply_trait(
-                    TraitBuilder::references(
-                        ArrayBuilder::default()
-                            .push(
-                                ObjectBuilder::default()
-                                    .reference("resource", "City")
-                                    .into(),
-                            )
-                            .into(),
-                    )
-                    .into(),
-                )
+                .apply_trait(traits::references(
+                    ArrayBuilder::default()
+                        .push(
+                            ObjectBuilder::default()
+                                .reference("resource", "City")
+                                .into(),
+                        )
+                        .into(),
+                ))
                 .add_member(MemberBuilder::new("cityId", "CityId").required().into())
-                .add_member(MemberBuilder::string("name").required().into()),
+                .add_member(MemberBuilder::string("name").required().into())
+                .into(),
         )
         .operation(
             OperationBuilder::new("GetCurrentTime")
                 .readonly()
-                .output("GetCurrentTimeOutput"),
+                .output("GetCurrentTimeOutput")
+                .into(),
         )
         .structure(
             StructureBuilder::new("GetCurrentTimeOutput")
-                .add_member(MemberBuilder::timestamp("time").required().into()),
+                .add_member(MemberBuilder::timestamp("time").required().into())
+                .into(),
         )
         .operation(
             OperationBuilder::new("GetForecast")
                 .readonly()
                 .input("GetForecastInput")
-                .output("GetForecastOutput"),
+                .output("GetForecastOutput")
+                .into(),
         )
         .structure(
             StructureBuilder::new("GetForecastInput")
-                .add_member(MemberBuilder::new("cityId", "CityId").required().into()),
+                .add_member(MemberBuilder::new("cityId", "CityId").required().into())
+                .into(),
         )
-        .structure(StructureBuilder::new("GetForecastOutput").float("chanceOfRain"))
+        .structure(
+            StructureBuilder::new("GetForecastOutput")
+                .float("chanceOfRain")
+                .into(),
+        )
         .into()
 }
