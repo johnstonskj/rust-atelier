@@ -219,7 +219,7 @@ makes it easier to use. For example, you want to add the documentation trait to 
 use atelier_core::error::ErrorSource;
 use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::builder::{
-    ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
+    traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
     ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
@@ -230,35 +230,42 @@ let model: Model = ModelBuilder::new(Version::V10, "example.motd")
         ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
             .documentation("Provides a Message of the day.")
             .resource("Message")
+            .into(),
     )
     .resource(
         ResourceBuilder::new("Message")
             .identifier("date", "Date")
             .read("GetMessage")
+            .into(),
     )
     .simple_shape(
         SimpleShapeBuilder::string("Date")
-            .apply_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
+            .apply_trait(traits::pattern(r"^\d\d\d\d\-\d\d-\d\d$"))
+            .into(),
     )
     .operation(
         OperationBuilder::new("GetMessage")
             .readonly()
             .input("GetMessageInput")
             .output("GetMessageOutput")
-            .error_source("BadDateValue")
+            .error("BadDateValue")
+            .into(),
     )
     .structure(
         StructureBuilder::new("GetMessageInput")
             .member("date", "Date")
+            .into(),
     )
     .structure(
         StructureBuilder::new("GetMessageOutput")
             .add_member(MemberBuilder::string("message").required().into())
+            .into(),
     )
     .structure(
         StructureBuilder::new("BadDateValue")
-            .error(ErrorSource::Client)
+            .error_source(ErrorSource::Client)
             .add_member(MemberBuilder::string("errorMessage").required().into())
+            .into(),
     )
     .into();
 ```

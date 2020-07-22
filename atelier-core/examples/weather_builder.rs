@@ -35,7 +35,7 @@ fn make_weather_model() -> Model {
         )
         .resource(
             ResourceBuilder::new("City")
-                .identifier("cityID", "CityID")
+                .identifier("cityId", "CityId")
                 .read("GetCity")
                 .list("ListCities")
                 .resource("Forecast")

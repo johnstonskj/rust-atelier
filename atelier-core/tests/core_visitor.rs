@@ -17,13 +17,13 @@ impl Default for ExampleVisitor {
         Self {
             expected: RefCell::new(
                 [
-                    "service@MessageOfTheDay",
-                    "resource@Message",
-                    "simple@string@Date",
-                    "operation@GetMessage",
-                    "structure@GetMessageInput",
-                    "structure@GetMessageOutput",
-                    "structure@BadDateValue",
+                    "service@example.motd#MessageOfTheDay",
+                    "resource@example.motd#Message",
+                    "simple@string@example.motd#Date",
+                    "operation@example.motd#GetMessage",
+                    "structure@example.motd#GetMessageInput",
+                    "structure@example.motd#GetMessageOutput",
+                    "structure@example.motd#BadDateValue",
                 ]
                 .iter()
                 .map(|s| s.to_string())

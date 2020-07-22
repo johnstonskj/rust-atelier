@@ -17,21 +17,25 @@
 * use atelier_core::action::lint::{run_linter_actions, NamingConventions};
 * use atelier_core::action::Linter;
 * use atelier_core::builder::{
-*     ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+*     ListBuilder, ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder
 * };
 * use atelier_core::model::{NamespaceID, Model};
 * use atelier_core::Version;
 *
-* let model: Model = ModelBuilder::with_namespace(
-*         Version::V10,
-*         "smithy.example")
-*     .shape(SimpleShapeBuilder::string("smithy.example#shouldBeUpper").into())
-*     .shape(
-*         StructureBuilder::new("smithy.example#MyStructure")
+* let model: Model = ModelBuilder::new(Version::V10, "smithy.example")
+*     .uses("amazon.fashion#BadTraitName")
+*     .simple_shape(SimpleShapeBuilder::string("smithy.example#shouldBeUpper"))
+*     .simple_shape(SimpleShapeBuilder::string("MyString"))
+*     .simple_shape(SimpleShapeBuilder::string("ThingAsJSON"))
+*     .list(ListBuilder::new("TheBlacklist", "String"))
+*     .structure(
+*         StructureBuilder::new("MyStructure")
 *             .member("okName", "String")
 *             .member("BadName", "MyString")
 *             .member("thing", "ThingAsJSON")
-*             .apply_trait(TraitBuilder::new("BadTraitName").into())
+*             .member("checkAgainst", "TheBlacklist")
+*             .member("killMasterNode", "Boolean")
+*             .apply_trait(TraitBuilder::new("amazon.fashion#BadTraitName"))
 *             .into(),
 *     )
 *     .into();
@@ -115,15 +119,10 @@ linter_or_validator_action_impl! { NamingConventions, "NamingConventions" }
 impl Linter for NamingConventions {
     fn check(&mut self, model: &Model) -> ModelResult<()> {
         for shape in model.shapes() {
-            let shape_id = shape.id();
-            if let Some(shape) = model.shape(shape_id) {
-                if shape.has_trait(&ShapeID::from_str("trait").unwrap()) {
-                    self.check_trait_name(shape.id());
-                } else {
-                    self.check_shape_name(shape.id());
-                }
+            if shape.has_trait(&ShapeID::from_str("smithy.api#trait").unwrap()) {
+                self.check_trait_name(shape.id());
             } else {
-                self.check_shape_name(shape_id);
+                self.check_shape_name(shape.id(), false);
             }
             self.check_applied_trait_names(shape.traits());
 
@@ -136,7 +135,7 @@ impl Linter for NamingConventions {
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
                     for member in body.members() {
                         self.check_member_name(member.id());
-                        self.check_member_name(member.target());
+                        self.check_shape_name(member.target(), true);
                         self.check_applied_trait_names(member.traits());
                     }
                 }
@@ -148,13 +147,18 @@ impl Linter for NamingConventions {
 }
 
 impl NamingConventions {
-    fn check_shape_name(&mut self, id: &ShapeID) {
+    fn check_shape_name(&mut self, id: &ShapeID, reference: bool) {
         let shape_name = id.shape_name().to_string();
         if shape_name.to_camel_case() != shape_name {
             self.issues.push(ActionIssue::info_at(
                 &self.label(),
                 &format!(
-                    "Shape names should conform to UpperCamelCase, i.e. {}",
+                    "{} shape names should conform to UpperCamelCase, i.e. {}",
+                    if reference {
+                        "References to"
+                    } else {
+                        "Defined"
+                    },
                     shape_name.to_camel_case()
                 ),
                 id.clone(),
@@ -174,16 +178,17 @@ impl NamingConventions {
             ));
         }
     }
-    fn check_member_name(&mut self, member_id: &ShapeID) {
-        let member_name = member_id.to_string();
-        if member_name.to_mixed_case() != member_name {
+    fn check_member_name(&mut self, id: &ShapeID) {
+        let shape_name = id.member_name().as_ref().unwrap();
+        let shape_name = shape_name.to_string();
+        if shape_name.to_mixed_case() != shape_name {
             self.issues.push(ActionIssue::info_at(
                 &self.label(),
                 &format!(
                     "Member names should conform to lowerCamelCase, i.e. {}",
-                    member_name.to_mixed_case()
+                    shape_name.to_mixed_case()
                 ),
-                member_id.clone(),
+                id.clone(),
             ));
         }
     }

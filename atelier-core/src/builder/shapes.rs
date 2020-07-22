@@ -1,10 +1,10 @@
 use crate::builder::{traits, TraitBuilder};
 use crate::error::ErrorSource;
 use crate::model::shapes::Simple;
-use crate::model::values::{Value, ValueMap};
 use crate::model::ShapeID;
 use crate::prelude::PRELUDE_NAMESPACE;
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
+use std::collections::HashMap;
 use std::ops::Deref;
 
 // ------------------------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ pub struct OperationBuilder {
 pub struct ResourceBuilder {
     pub(super) shape_name: String,
     pub(super) applied_traits: Vec<TraitBuilder>,
-    pub(super) identifiers: ValueMap,
+    pub(super) identifiers: HashMap<String, String>,
     pub(super) create: Option<String>,
     pub(super) put: Option<String>,
     pub(super) read: Option<String>,
@@ -592,7 +592,7 @@ impl ResourceBuilder {
     pub fn identifier(&mut self, id: &str, shape_id: &str) -> &mut Self {
         let _ = self
             .identifiers
-            .insert(id.to_string(), Value::String(shape_id.to_string()));
+            .insert(id.to_string(), shape_id.to_string());
         self
     }
 

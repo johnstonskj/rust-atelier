@@ -15,32 +15,30 @@
 *
 * ```rust
 * use atelier_core::action::validate::{
-*     NoOrphanedReferences, run_validation_actions, CorrectTypeReferences
+*     run_validation_actions, CorrectTypeReferences
 * };
 * use atelier_core::action::Validator;
-* use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
+* use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder};
 * use atelier_core::model::Model;
 * use atelier_core::Version;
 *
-* let model: Model = ModelBuilder::with_namespace(Version::V10, "smithy.example")
+* let model: Model = ModelBuilder::new(Version::V10, "smithy.example")
 *     .uses("foo.baz#Bar")
-*     .shape(SimpleShapeBuilder::string("MyString").into())
-*     .shape(
+*     .structure(
 *         StructureBuilder::new("MyStructure")
 *             .member("a", "MyString")
 *             .member("b", "smithy.example#MyString")
-*             .member("c", "Bar")
 *             .member("d", "foo.baz#Bar")
 *             .member("e", "foo.baz#MyString")
 *             .member("f", "String")
 *             .member("g", "MyBoolean")
-*             .member("h", "InvalidShape")
+*             .apply_trait(TraitBuilder::new("documentation"))
 *             .into(),
 *     )
-*     .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
+*     .simple_shape(SimpleShapeBuilder::string("MyString"))
+*     .simple_shape(SimpleShapeBuilder::boolean("MyBoolean"))
 *     .into();
 * let result = run_validation_actions(&mut [
-*         Box::new(NoOrphanedReferences::default()),
 *         Box::new(CorrectTypeReferences::default()),
 *     ], &model, false);
 * ```
@@ -51,44 +49,54 @@
 * ```text
 * [
 *     ActionIssue {
-*         reporter: "NoOrphanedReferences",
-*         level: Error,
-*         message: "Shape, or member, has a trait that refers to an unknown identifier: notKnown",
+*         reporter: "CorrectTypeReferences",
+*         level: Info,
+*         message: "The simple shape (smithy.example#MyBoolean) is simply a synonym, did you mean to add any constraint traits?",
 *         locus: Some(
 *             ShapeID {
-*                 namespace: None,
+*                 namespace: NamespaceID(
+*                     "smithy.example",
+*                 ),
 *                 shape_name: Identifier(
-*                     "MyStructure",
+*                     "MyBoolean",
 *                 ),
 *                 member_name: None,
 *             },
 *         ),
 *     },
 *     ActionIssue {
-*         reporter: "NoOrphanedReferences",
-*         level: Error,
-*         message: "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
+*         reporter: "CorrectTypeReferences",
+*         level: Info,
+*         message: "The simple shape (smithy.example#MyString) is simply a synonym, did you mean to add any constraint traits?",
 *         locus: Some(
 *             ShapeID {
-*                 namespace: None,
+*                 namespace: NamespaceID(
+*                     "smithy.example",
+*                 ),
 *                 shape_name: Identifier(
-*                     "MyStructure",
+*                     "MyString",
 *                 ),
 *                 member_name: None,
 *             },
 *         ),
 *     },
 *     ActionIssue {
-*         reporter: "NoOrphanedReferences",
-*         level: Error,
-*         message: "Shape, or member, refers to an unknown identifier: InvalidShape",
+*         reporter: "CorrectTypeReferences",
+*         level: Warning,
+*         message: "Structure member's type (foo.baz#MyString) cannot be resolved to a shape in this model.",
 *         locus: Some(
 *             ShapeID {
-*                 namespace: None,
+*                 namespace: NamespaceID(
+*                     "smithy.example",
+*                 ),
 *                 shape_name: Identifier(
 *                     "MyStructure",
 *                 ),
-*                 member_name: None,
+*                 member_name: Some(
+*                     Identifier(
+*                         "e",
+*                     ),
+*                 ),
 *             },
 *         ),
 *     },

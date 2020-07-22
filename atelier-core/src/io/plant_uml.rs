@@ -308,9 +308,9 @@ impl PlantUmlWriter {
             ShapeKind::Union(s) => (true, s),
             _ => unreachable!(),
         };
-        if structure.has_trait(&ShapeID::from_str("trait").unwrap()) {
+        if structure.has_trait(&ShapeID::from_str("smithy.api#trait").unwrap()) {
             writeln!(w, "    annotation {} {{", structure.id())?;
-        } else if structure.has_trait(&ShapeID::from_str("error").unwrap()) {
+        } else if structure.has_trait(&ShapeID::from_str("smithy.api#error").unwrap()) {
             writeln!(w, "    class {} <<error>> {{", structure.id())?;
         } else if is_union {
             writeln!(w, "    class {} <<{}>> {{", structure.id(), SHAPE_UNION)?;
@@ -398,9 +398,9 @@ impl PlantUmlWriter {
         let mut traits: Vec<String> = Default::default();
         let mut notes: Vec<String> = Default::default();
         for a_trait in shape.traits() {
-            if a_trait.id() == &ShapeID::from_str("error").unwrap() {
+            if a_trait.id() == &ShapeID::from_str("smithy.api#error").unwrap() {
                 // ignore
-            } else if a_trait.id() == &ShapeID::from_str("documentation").unwrap() {
+            } else if a_trait.id() == &ShapeID::from_str("smithy.api#documentation").unwrap() {
                 if let Some(Value::String(s)) = a_trait.value() {
                     notes.push(s.clone())
                 }

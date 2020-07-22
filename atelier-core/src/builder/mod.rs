@@ -24,6 +24,7 @@ use std::collections::HashSet;
 ///
 #[derive(Debug)]
 pub struct ModelBuilder {
+    make_references: bool,
     default_namespace: NamespaceID,
     prelude_namespace: NamespaceID,
     smithy_version: Version,
@@ -67,6 +68,7 @@ impl ModelBuilder {
     /// Construct a new model builder using the provided Smithy version and a default namespace.
     pub fn new(smithy_version: Version, default_namespace: &str) -> Self {
         Self {
+            make_references: false,
             default_namespace: default_namespace.parse().unwrap(),
             prelude_namespace: PRELUDE_NAMESPACE.parse().unwrap(),
             smithy_version,
@@ -202,24 +204,10 @@ impl ModelBuilder {
             {
                 self.prelude_namespace.make_shape(shape_name)
             } else {
-                panic!(ErrorKind::UnknownMember(name.to_string()))
+                eprintln!("name: {} -> {}", name, shape_name);
+                eprintln!("{:?}", self.shape_names);
+                panic!(ErrorKind::UnknownShape(name.to_string()))
             }
-        } else {
-            panic!(ErrorKind::InvalidShapeID(name.to_string()))
-        }
-    }
-
-    fn resolve_member_name(&self, name: &str, parent: &str) -> ShapeID {
-        if ShapeID::is_valid(name) {
-            let name: ShapeID = name.parse().unwrap();
-            if name.is_member() {
-                name
-            } else {
-                panic!(ErrorKind::MemberIDExpected(name))
-            }
-        } else if Identifier::is_valid(name) {
-            let parent = self.resolve_shape_name(parent);
-            parent.make_member(name.parse().unwrap())
         } else {
             panic!(ErrorKind::InvalidShapeID(name.to_string()))
         }
@@ -255,7 +243,7 @@ impl ModelBuilder {
             shape_name.clone(),
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
                 shape_name.make_member(builder.member.member_name.parse().unwrap()),
-                builder.member.target.parse().unwrap(),
+                self.resolve_shape_name(&builder.member.target),
                 &self.make_traits(&builder.member.applied_traits),
             ))),
             &self.make_traits(&builder.applied_traits),
@@ -268,7 +256,7 @@ impl ModelBuilder {
             shape_name.clone(),
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
                 shape_name.make_member(builder.member.member_name.parse().unwrap()),
-                builder.member.target.parse().unwrap(),
+                self.resolve_shape_name(&builder.member.target),
                 &self.make_traits(&builder.member.applied_traits),
             ))),
             &self.make_traits(&builder.applied_traits),
@@ -375,6 +363,10 @@ impl ModelBuilder {
     fn make_resource(&self, builder: &ResourceBuilder) -> TopLevelShape {
         let shape_name = self.resolve_shape_name(&builder.shape_name);
         let mut resource = Resource::default();
+        for (name, shape_ref) in &builder.identifiers {
+            let shape = self.resolve_shape_name(&shape_ref);
+            let _ = resource.add_identifier(name.clone(), Value::String(shape.to_string()));
+        }
         if let Some(shape_id) = &builder.create {
             resource.set_create(self.resolve_shape_name(shape_id));
         }

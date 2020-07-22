@@ -7,19 +7,14 @@ in an action.
 
 use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::error::Result as ModelResult;
-use crate::model::shapes::{AppliedTrait, Shape, ShapeKind};
+use crate::model::shapes::{Shape, ShapeKind};
 use crate::model::{Identifier, Model, ShapeID};
+use crate::prelude::PRELUDE_NAMESPACE;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
-
-linter_or_validator_defn! { NoOrphanedReferences, r#"This validator will ensure that all references to
-shape identifiers are valid.
-
-For every shape it will ensure all members refer to shapes that can be resolved. It also
-ensures that all traits on shapes and members have names that can be resolved."# }
 
 linter_or_validator_defn! { CorrectTypeReferences, r#"This validator ensures that all shape members
 refer to shapes of the correct type.
@@ -63,124 +58,6 @@ pub fn run_validation_actions(
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
-// ------------------------------------------------------------------------------------------------
-
-linter_or_validator_default_impl! { NoOrphanedReferences }
-
-linter_or_validator_action_impl! { NoOrphanedReferences, "NoOrphanedReferences" }
-
-impl Validator for NoOrphanedReferences {
-    fn validate(&mut self, model: &Model) -> ModelResult<()> {
-        for shape in model.shapes() {
-            let this_shape_id = shape.id();
-            self.resolve_traits(&this_shape_id, shape.traits(), model);
-            match shape.body() {
-                ShapeKind::List(body) | ShapeKind::Set(body) => {
-                    self.resolve(&this_shape_id, body.member().id(), model);
-                }
-                ShapeKind::Map(body) => {
-                    self.resolve(&this_shape_id, body.key().id(), model);
-                    self.resolve(&this_shape_id, body.value().id(), model);
-                }
-                ShapeKind::Structure(body) | ShapeKind::Union(body) => {
-                    for member in body.members() {
-                        self.resolve_traits(&member.id(), member.traits(), model);
-                        self.resolve(&member.id(), member.target(), model);
-                    }
-                }
-                ShapeKind::Service(body) => {
-                    for operation in body.operations() {
-                        self.resolve(&this_shape_id, operation, model);
-                    }
-                    for resource in body.resources() {
-                        self.resolve(&this_shape_id, resource, model);
-                    }
-                }
-                ShapeKind::Operation(body) => {
-                    if let Some(input) = body.input() {
-                        self.resolve(&this_shape_id, input, model);
-                    }
-                    if let Some(output) = body.output() {
-                        self.resolve(&this_shape_id, output, model);
-                    }
-                    for error in body.errors() {
-                        self.resolve(&this_shape_id, error, model);
-                    }
-                }
-                ShapeKind::Resource(body) => {
-                    for (id, target) in body.identifiers() {
-                        self.resolve(
-                            &shape.id().make_member(Identifier::from_str(id).unwrap()),
-                            &ShapeID::from_str(&target.as_string().unwrap()).unwrap(),
-                            model,
-                        );
-                    }
-                    if let Some(create) = body.create() {
-                        self.resolve(&this_shape_id, create, model);
-                    }
-                    if let Some(put) = body.put() {
-                        self.resolve(&this_shape_id, put, model);
-                    }
-                    if let Some(read) = body.read() {
-                        self.resolve(&this_shape_id, read, model);
-                    }
-                    if let Some(update) = body.update() {
-                        self.resolve(&this_shape_id, update, model);
-                    }
-                    if let Some(delete) = body.delete() {
-                        self.resolve(&this_shape_id, delete, model);
-                    }
-                    if let Some(list) = body.list() {
-                        self.resolve(&this_shape_id, list, model);
-                    }
-                    for operation in body.operations() {
-                        self.resolve(&this_shape_id, operation, model);
-                    }
-                    for operation in body.collection_operations() {
-                        self.resolve(&this_shape_id, operation, model);
-                    }
-                    for resource in body.resources() {
-                        self.resolve(&this_shape_id, resource, model);
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        Ok(())
-    }
-}
-
-impl NoOrphanedReferences {
-    fn resolve(&mut self, referrer: &ShapeID, shape_id: &ShapeID, model: &Model) {
-        if model.shape(shape_id).is_none() {
-            self.issues.push(ActionIssue::error_at(
-                self.label(),
-                &format!(
-                    "Shape, or member, refers to an unknown identifier: {}",
-                    shape_id
-                ),
-                referrer.clone(),
-            ));
-        }
-    }
-
-    fn resolve_traits(&mut self, referrer: &ShapeID, traits: &[AppliedTrait], model: &Model) {
-        for a_trait in traits {
-            if model.shape(a_trait.id()).is_none() {
-                self.issues.push(ActionIssue::error_at(
-                    self.label(),
-                    &format!(
-                        "Shape, or member, has a trait that refers to an unknown identifier: {}",
-                        a_trait.id()
-                    ),
-                    referrer.clone(),
-                ));
-            }
-        }
-    }
-}
-
 // ------------------------------------------------------------------------------------------------
 
 linter_or_validator_default_impl! { CorrectTypeReferences }
@@ -334,7 +211,7 @@ impl CorrectTypeReferences {
                     shape.clone(),
                 ));
             }
-        } else {
+        } else if target.namespace().to_string() != PRELUDE_NAMESPACE {
             self.issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(
@@ -362,7 +239,7 @@ impl CorrectTypeReferences {
                     shape.clone(),
                 ));
             }
-        } else {
+        } else if target.namespace().to_string() != PRELUDE_NAMESPACE {
             self.issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(
@@ -390,7 +267,7 @@ impl CorrectTypeReferences {
                     shape.clone(),
                 ));
             }
-        } else {
+        } else if target.namespace().to_string() != PRELUDE_NAMESPACE {
             self.issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(

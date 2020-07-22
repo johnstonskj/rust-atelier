@@ -1,7 +1,5 @@
 use crate::model::values::{Number, Value};
-use crate::model::ShapeID;
 use std::collections::HashMap;
-use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -29,6 +27,15 @@ pub struct ObjectBuilder {
 #[derive(Debug)]
 pub struct ValueBuilder {
     inner: Value,
+}
+
+// TODO: wire this in so that we can reference check strings in the model builder.
+
+#[allow(dead_code)]
+#[derive(Debug)]
+enum ValueOrReference {
+    Value(Value),
+    Reference(String),
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -154,7 +161,8 @@ impl ObjectBuilder {
 
     /// Insert the key and string-valued pair into this object.
     pub fn reference(&mut self, k: &str, v: &str) -> &mut Self {
-        let _ = self.insert(k, Value::String(ShapeID::from_str(v).unwrap().to_string()));
+        // TODO: This should use the new value or ref enum!
+        let _ = self.insert(k, Value::String(v.to_string()));
         self
     }
 }
