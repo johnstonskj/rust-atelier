@@ -70,10 +70,10 @@ error_chain! {
             description("An error occurred de-serializing a model")
             display("An error occurred de-serializing a model from {} at location '{}' (context '{:?}')", representation, location, context)
         }
-        #[doc("An unknown shape ID was encountered")]
+        #[doc("A reference to an unknown shape ID was encountered")]
         UnknownShape(s: String) {
-            description("An unknown shape ID was encountered")
-            display("An unknown shape ID was encountered: {}", s)
+            description("A reference to an unknown shape ID was encountered")
+            display("A reference to an unknown shape ID was encountered: {}", s)
         }
         #[doc("An unknown member ID was encountered")]
         UnknownMember(s: String) {

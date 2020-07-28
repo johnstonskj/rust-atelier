@@ -31,7 +31,24 @@ TBD
 extern crate pest_derive;
 
 // ------------------------------------------------------------------------------------------------
+// Public Values
+// ------------------------------------------------------------------------------------------------
+
+///
+/// The file extension used by Smithy IDL files.
+///
+pub const FILE_EXTENSION: &str = "smithy";
+
+// ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-pub mod io;
+#[doc(hidden)]
+pub mod reader;
+pub use reader::SmithyReader;
+
+#[doc(hidden)]
+pub mod writer;
+pub use writer::SmithyWriter;
+
+mod parser;

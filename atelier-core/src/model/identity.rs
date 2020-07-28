@@ -14,7 +14,7 @@ use std::str::FromStr;
 /// A component of `ShapeID`, it represents an internal unqualified identifier.
 ///
 /// Corresponds to the `identifier` production in §2.4.1,
-///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
+///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/model.html#shape-id),
 ///   of the Smithy 1.0 Specification.
 ///
 #[allow(clippy::derive_hash_xor_eq)]
@@ -26,7 +26,7 @@ pub struct Identifier(String);
 /// qualified identifier. The separator character is `CHAR_NAMESPACE_SEPARATOR`.
 ///
 /// Corresponds to the `namespace` production in §2.4.1,
-///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
+///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/model.html#shape-id),
 ///   of the Smithy 1.0 Specification.
 ///
 #[allow(clippy::derive_hash_xor_eq)]
@@ -38,7 +38,7 @@ pub struct NamespaceID(String);
 /// and may also include an inner member identifier.
 ///
 /// Corresponds to the `shape_id` production in §2.4.1,
-///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#shape-id-abnf),
+///   [Shape ID ABNF](https://awslabs.github.io/smithy/1.0/spec/core/model.html#shape-id),
 ///   of the Smithy 1.0 Specification.
 ///
 /// ```abnf

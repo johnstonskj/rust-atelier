@@ -1,9 +1,10 @@
-use crate::io::syntax::*;
-use crate::io::FILE_EXTENSION;
+use crate::syntax::*;
+use crate::FILE_EXTENSION;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelReader;
 use atelier_core::model::shapes::{
-    AppliedTrait, ListOrSet, Map as MapShape, Member, TopLevelShape, ShapeKind, Simple, StructureOrUnion,
+    AppliedTrait, ListOrSet, Map as MapShape, MemberShape, Shape, ShapeKind, Simple,
+    StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::{Value as NodeValue, ValueMap};
 use atelier_core::model::{Identifier, Model, NamespaceID, ShapeID};
@@ -58,11 +59,11 @@ impl JsonReader {
                 let mut model = Model::new(version);
 
                 for shape in shapes.into_iter().map(|(_, s)| s) {
-                    model.add_shape(shape);
+                    let _ = model.add_shape(shape);
                 }
 
                 for (key, value) in metadata {
-                    model.add_metadata(key, value);
+                    let _ = model.add_metadata(key, value);
                 }
                 return Ok(model);
             }
@@ -103,20 +104,20 @@ impl JsonReader {
         if let Some(Value::Object(vs)) = json {
             for (k, v) in vs {
                 let id = ShapeID::from_str(k)?;
-                let inner = self.shape(v)?;
+                let inner = self.shape(&id, v)?;
                 let mut shape = TopLevelShape::new(id.clone(), inner);
 
                 if let Some(Value::Object(vs)) = v.get(K_TRAITS) {
                     shape.append_traits(self.traits(vs)?.as_ref())
                 };
 
-                shapes.push((id.namespace().as_ref().unwrap().clone(), shape))
+                shapes.push((id.namespace().clone(), shape))
             }
         }
         Ok(shapes)
     }
 
-    fn shape(&self, outer: &Value) -> ModelResult<ShapeKind> {
+    fn shape(&self, id: &ShapeID, outer: &Value) -> ModelResult<ShapeKind> {
         if let Some(Value::String(s)) = outer.get(K_TYPE) {
             let s = s.as_str();
             return if let Ok(st) = Simple::from_str(s) {
@@ -124,21 +125,24 @@ impl JsonReader {
             } else if s == V_APPLY {
                 Ok(ShapeKind::Unresolved)
             } else if s == V_LIST {
-                Ok(ShapeKind::List(ListOrSet::new_list(
+                Ok(ShapeKind::List(ListOrSet::new(
+                    &id,
                     self.target(outer.get(K_MEMBER))?,
                 )))
             } else if s == V_SET {
-                Ok(ShapeKind::Set(ListOrSet::new_set(
+                Ok(ShapeKind::Set(ListOrSet::new(
+                    &id,
                     self.target(outer.get(K_MEMBER))?,
                 )))
             } else if s == V_MAP {
                 Ok(ShapeKind::Map(MapShape::new(
+                    &id,
                     self.target(outer.get(K_KEY))?,
                     self.target(outer.get(K_VALUE))?,
                 )))
             } else if s == V_STRUCTURE {
                 let members = if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
-                    self.members(vs)?
+                    self.members(&id, vs)?
                 } else {
                     Default::default()
                 };
@@ -147,7 +151,7 @@ impl JsonReader {
                 )))
             } else if s == V_UNION {
                 let members = if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
-                    self.members(vs)?
+                    self.members(&id, vs)?
                 } else {
                     Default::default()
                 };
@@ -181,8 +185,12 @@ impl JsonReader {
         Ok(traits)
     }
 
-    fn members(&self, json: &Map<String, Value>) -> ModelResult<Vec<Member>> {
-        let mut members: Vec<Member> = Default::default();
+    fn members(
+        &self,
+        parent_id: &ShapeID,
+        json: &Map<String, Value>,
+    ) -> ModelResult<Vec<MemberShape>> {
+        let mut members: Vec<MemberShape> = Default::default();
         for (k, v) in json {
             if let Value::Object(obj) = v {
                 let target = if let Some(Value::String(target)) = obj.get(K_TARGET) {
@@ -196,7 +204,7 @@ impl JsonReader {
                     .into());
                 };
                 let mut member =
-                    Member::with_value(Identifier::from_str(k)?, NodeValue::from(target));
+                    MemberShape::new(parent_id.make_member(Identifier::from_str(k)?), target);
                 if let Some(Value::Object(traits)) = obj.get(K_TRAITS) {
                     member.append_traits(self.traits(traits)?.as_slice());
                 }

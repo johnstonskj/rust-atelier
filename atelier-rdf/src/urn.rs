@@ -1,6 +1,7 @@
 use atelier_core::error::{Error, ErrorKind};
 use atelier_core::model::ShapeID;
-use std::convert::TryFrom;
+use atelier_core::syntax::{SHAPE_ID_ABSOLUTE_SEPARATOR, SHAPE_ID_MEMBER_SEPARATOR};
+use regex::Regex;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -29,29 +30,39 @@ use std::str::FromStr;
 #[derive(Debug)]
 pub struct SmithyUrn(ShapeID);
 
+/// The character separating a `Namespace` and `Identifier` in an absolute `ShapeID`.
+pub const SHAPE_URN_ABSOLUTE_SEPARATOR: char = ':';
+
+/// The character separating the shape name and member name in a `ShapeID`.
+pub const SHAPE_URN_MEMBER_SEPARATOR: char = '/';
+
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
 const URN_SCHEME: &str = "urn:smithy:";
 
-impl TryFrom<ShapeID> for SmithyUrn {
-    type Error = Error;
+lazy_static! {
+    static ref RE_SHAPE_URN: Regex = Regex::new(
+        r"(?x)
+        ^urn:smithy:
+        (_*[[:alpha:]][_[[:alnum:]]]**(\._*[[:alpha:]][_[[:alnum:]]]*)*):
+        (_*[[:alpha:]][_[[:alnum:]]]*)
+        (/(_*[[:alpha:]][_[[:alnum:]]]*))?
+        $"
+    )
+    .unwrap();
+}
 
-    fn try_from(value: ShapeID) -> Result<Self, Self::Error> {
-        if value.is_absolute() {
-            Ok(Self(value))
-        } else {
-            Err(ErrorKind::AbsoluteShapeIDExpected(value.to_string()).into())
-        }
+impl From<ShapeID> for SmithyUrn {
+    fn from(value: ShapeID) -> Self {
+        Self(value)
     }
 }
 
-impl TryFrom<&ShapeID> for SmithyUrn {
-    type Error = Error;
-
-    fn try_from(value: &ShapeID) -> Result<Self, Self::Error> {
-        Self::try_from(value.clone())
+impl From<&ShapeID> for SmithyUrn {
+    fn from(value: &ShapeID) -> Self {
+        Self(value.clone())
     }
 }
 
@@ -65,10 +76,18 @@ impl FromStr for SmithyUrn {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with(URN_SCHEME) {
+        if Self::is_valid(s) {
             let shape_id = &s[URN_SCHEME.len()..];
             Ok(Self(ShapeID::from_str(
-                &shape_id.replace(':', "#").replace('/', "$"),
+                &shape_id
+                    .replace(
+                        SHAPE_URN_ABSOLUTE_SEPARATOR,
+                        &SHAPE_ID_ABSOLUTE_SEPARATOR.to_string(),
+                    )
+                    .replace(
+                        SHAPE_URN_MEMBER_SEPARATOR,
+                        &SHAPE_ID_MEMBER_SEPARATOR.to_string(),
+                    ),
             )?))
         } else {
             Err(ErrorKind::InvalidShapeID(s.to_string()).into())
@@ -82,8 +101,27 @@ impl Display for SmithyUrn {
             f,
             "{}{}",
             URN_SCHEME,
-            self.0.to_string().replace('#', ":").replace('$', "/")
+            self.0
+                .to_string()
+                .replace(
+                    SHAPE_ID_ABSOLUTE_SEPARATOR,
+                    &SHAPE_URN_ABSOLUTE_SEPARATOR.to_string()
+                )
+                .replace(
+                    SHAPE_ID_MEMBER_SEPARATOR,
+                    &SHAPE_URN_MEMBER_SEPARATOR.to_string()
+                )
         )
+    }
+}
+
+impl SmithyUrn {
+    ///
+    /// Returns `true` if the provided string is a valid URN representation, else `false`.
+    /// This is preferred to calling `from_str()` and determining success or failure.
+    ///
+    pub fn is_valid(s: &str) -> bool {
+        RE_SHAPE_URN.is_match(s)
     }
 }
 
@@ -94,22 +132,10 @@ impl Display for SmithyUrn {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use atelier_core::error::Error;
-    use std::convert::TryInto;
-
-    #[test]
-    fn test_urn_relative_shape() {
-        let result: Result<SmithyUrn, Error> =
-            ShapeID::new_unchecked(None, "shape", None).try_into();
-        assert!(result.is_err());
-    }
 
     #[test]
     fn test_urn_formatted_shape() {
-        let result: Result<SmithyUrn, Error> =
-            ShapeID::new_unchecked(Some("example.namespace"), "shape", None).try_into();
-        assert!(result.is_ok());
-        let urn = result.unwrap();
+        let urn: SmithyUrn = ShapeID::new_unchecked("example.namespace", "shape", None).into();
         assert_eq!(
             urn.to_string(),
             "urn:smithy:example.namespace:shape".to_string()
@@ -118,10 +144,8 @@ mod tests {
 
     #[test]
     fn test_urn_formatted_member() {
-        let result: Result<SmithyUrn, Error> =
-            ShapeID::new_unchecked(Some("example.namespace"), "shape", Some("member")).try_into();
-        assert!(result.is_ok());
-        let urn = result.unwrap();
+        let urn: SmithyUrn =
+            ShapeID::new_unchecked("example.namespace", "shape", Some("member")).into();
         assert_eq!(
             urn.to_string(),
             "urn:smithy:example.namespace:shape/member".to_string()
@@ -164,8 +188,10 @@ mod tests {
             "urn:smithy:example.namespace#shape/member",
             "urn:smithy:example.namespace:shape/member/other",
         ];
-        for test in tests.into_iter() {
+        for test in tests.iter() {
+            println!("invalid? {}", test);
             let result = SmithyUrn::from_str(test);
+            println!("{:?}", result);
             assert!(result.is_err());
         }
     }

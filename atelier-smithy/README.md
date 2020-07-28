@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.2.0**
+
+* Major refactor after agreement on the separation of semantic model with Smithy team.
+
 **Version 0.1.5**
 
 * API changes for `ModelReader` and `ModelWriter`.

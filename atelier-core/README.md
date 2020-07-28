@@ -13,7 +13,6 @@ This crate is the foundation for the Atelier set of crates, and provides the fol
 1. The model builder structures that allow for a fluent and easy construction of a core model.
 1. The prelude model containing the set of shapes defined in the Smithy specification.
 1. Traits for reading/writing models in different representations.
-1. Trait and simple implementation for a model registry.
 1. A common `error` module to be used by all Atelier crates.
 
 # Example
@@ -28,30 +27,29 @@ use atelier_core::error::ErrorSource;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::model::builder::{
     Builder, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
-    ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+    ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
 
-let model = ModelBuilder::new("example.motd")
-    .shape(
-        ServiceBuilder::new("MessageOfTheDay")
+let model: Model = ModelBuilder::new(Version::V10, "example.motd")
+    .service(
+        ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
             .documentation("Provides a Message of the day.")
-             .version("2020-06-21")
             .resource("Message")
             .into(),
     )
-    .shape(
+    .resource(
         ResourceBuilder::new("Message")
             .identifier("date", "Date")
             .read("GetMessage")
             .into(),
     )
-    .shape(
+    .simple_shape(
         SimpleShapeBuilder::string("Date")
-            .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
+            .apply_trait(traits::pattern(r"^\d\d\d\d\-\d\d-\d\d$"))
             .into(),
     )
-    .shape(
+    .operation(
         OperationBuilder::new("GetMessage")
             .readonly()
             .input("GetMessageInput")
@@ -59,23 +57,19 @@ let model = ModelBuilder::new("example.motd")
             .error("BadDateValue")
             .into(),
     )
-    .shape(
+    .structure(
         StructureBuilder::new("GetMessageInput")
-            .add_member(
-                MemberBuilder::new("date")
-                    .refers_to("Date")
-                    .into(),
-            )
+            .member("date", "Date")
             .into(),
     )
-    .shape(
+    .structure(
         StructureBuilder::new("GetMessageOutput")
             .add_member(MemberBuilder::string("message").required().into())
             .into(),
     )
-    .shape(
+    .structure(
         StructureBuilder::new("BadDateValue")
-            .error(ErrorSource::Client)
+            .error_source(ErrorSource::Client)
             .add_member(MemberBuilder::string("errorMessage").required().into())
             .into(),
     )
@@ -85,14 +79,19 @@ let model = ModelBuilder::new("example.motd")
 
 ## Runnable Examples
 
-Currently, there is simply one complete example, `weather.rs` in the `examples` directory. As usual this is executed via
-cargo in the following manner. It will print, using `Debug`, the weather example model from the Smithy quick start.
+The example `weather.rs` in the `examples` directory uses the complete example from the Smithy quick start guide. 
+As usual this is executed via cargo in the following manner. 
 
 ```bash
 $ cargo run --example weather
 ```
 
 ## Changes
+
+**Version 0.2.0**
+
+* Major refactor after agreement on the separation of semantic model with Smithy team.
+* Moved UML writer to lib.
 
 **Version 0.1.5**
 

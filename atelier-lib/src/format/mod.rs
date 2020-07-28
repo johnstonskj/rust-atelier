@@ -14,3 +14,6 @@ pub use atelier_openapi as openapi;
 
 #[cfg(feature = "smithy")]
 pub use atelier_smithy as smithy;
+
+#[cfg(feature = "uml")]
+pub mod plant_uml;

@@ -49,7 +49,7 @@ use crate::model::Model;
 /// implementations of this trait would ensure that the model is complete unless they can
 /// specifically serialize an incomplete model (the Smithy IDL can).
 ///
-pub trait ModelWriter<'a>: Default {
+pub trait ModelWriter<'a> {
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
@@ -59,7 +59,7 @@ pub trait ModelWriter<'a>: Default {
 ///
 /// Trait implemented to read a model from a specific representation.
 ///
-pub trait ModelReader: Default {
+pub trait ModelReader {
     ///
     ///  Read a model from the given implementation of `Read`.
     ///
@@ -101,8 +101,4 @@ pub fn write_model_to_string<'a>(
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-#[cfg(feature = "debug")]
 pub mod debug;
-
-#[cfg(feature = "uml")]
-pub mod plant_uml;

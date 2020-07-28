@@ -1,4 +1,4 @@
-use crate::io::parser;
+use crate::parser;
 use atelier_core::error::Result;
 use atelier_core::io::ModelReader;
 use atelier_core::model::Model;

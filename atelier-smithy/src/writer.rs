@@ -1,8 +1,8 @@
 use atelier_core::error::Result;
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, Member, ShapeKind};
-use atelier_core::model::values::Value as NodeValue;
-use atelier_core::model::Model;
+use atelier_core::model::shapes::{AppliedTrait, MemberShape, Shape, ShapeKind};
+use atelier_core::model::values::Value;
+use atelier_core::model::{Model, NamespaceID};
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
     MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
@@ -20,7 +20,9 @@ use std::io::Write;
 /// Write a [Model](../atelier_core/model/struct.Model.html) in the Smithy native representation.
 ///
 #[derive(Debug)]
-pub struct SmithyWriter;
+pub struct SmithyWriter {
+    namespace: NamespaceID,
+}
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
@@ -33,12 +35,6 @@ const STATEMENT_NAMESPACE: &str = "namespace";
 const STATEMENT_USE: &str = "use";
 const STATEMENT_METADATA: &str = "metadata";
 
-impl<'a> Default for SmithyWriter {
-    fn default() -> Self {
-        Self {}
-    }
-}
-
 impl<'a> ModelWriter<'a> for SmithyWriter {
     fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         self.write_control_section(w, model)?;
@@ -48,20 +44,19 @@ impl<'a> ModelWriter<'a> for SmithyWriter {
 }
 
 impl<'a> SmithyWriter {
+    pub fn new(namespace: NamespaceID) -> Self {
+        Self { namespace }
+    }
+
     fn write_control_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
         writeln!(
             w,
-            "${}: \"{}\"",
+            "{}{}: \"{}\"",
+            CONTROL_DATA_PREFIX,
             MEMBER_VERSION,
-            model.version().to_string()
+            model.smithy_version().to_string()
         )?;
         writeln!(w)?;
-        if model.has_control_data() {
-            for (key, value) in model.control_data() {
-                writeln!(w, "{}{} = {}", CONTROL_DATA_PREFIX, key, value)?;
-            }
-            writeln!(w)?;
-        }
         Ok(())
     }
 
@@ -80,45 +75,52 @@ impl<'a> SmithyWriter {
         self.write_use_section(w, model)?;
         self.write_shape_statements(w, model)
     }
-    fn write_namespace_statement(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        writeln!(w, "{} {}", STATEMENT_NAMESPACE, model.namespace())?;
+    fn write_namespace_statement(&mut self, w: &mut impl Write, _: &'a Model) -> Result<()> {
+        writeln!(w, "{} {}", STATEMENT_NAMESPACE, self.namespace)?;
         writeln!(w)?;
         Ok(())
     }
 
     fn write_use_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        for use_shape in model.references() {
-            writeln!(w, "{} {}", STATEMENT_USE, use_shape)?;
+        for use_shape in model
+            .shapes()
+            .filter(|shape| shape.is_unresolved() && !shape.has_traits())
+        {
+            writeln!(w, "{} {}", STATEMENT_USE, use_shape.id())?;
         }
         writeln!(w)?;
         Ok(())
     }
 
     fn write_shape_statements(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
-        for shape in model.shapes() {
-            if !shape.body().is_apply() {
+        let from_namespace = self.namespace.clone();
+        for shape in model
+            .shapes()
+            .filter(|shape| shape.id().namespace() == &from_namespace)
+        {
+            if !shape.body().is_unresolved() {
                 for a_trait in shape.traits() {
                     self.write_trait(w, a_trait, "")?;
                 }
             }
             match shape.body() {
-                ShapeKind::SimpleType(st) => {
+                ShapeKind::Simple(st) => {
                     writeln!(w, "{} {}", st, shape.id())?;
                 }
                 ShapeKind::List(list) => {
                     writeln!(w, "{} {} {{", SHAPE_LIST, shape.id())?;
-                    writeln!(w, "    {}: {}", MEMBER_MEMBER, list.member())?;
+                    writeln!(w, "    {}: {}", MEMBER_MEMBER, list.member().target())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Set(set) => {
                     writeln!(w, "{} {} {{", SHAPE_SET, shape.id())?;
-                    writeln!(w, "    {}: {}", MEMBER_MEMBER, set.member())?;
+                    writeln!(w, "    {}: {}", MEMBER_MEMBER, set.member().target())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Map(map) => {
                     writeln!(w, "{} {} {{", SHAPE_MAP, shape.id())?;
-                    writeln!(w, "    {}: {}", MEMBER_KEY, map.key())?;
-                    writeln!(w, "    {}: {}", MEMBER_VALUE, map.value())?;
+                    writeln!(w, "    {}: {}", MEMBER_KEY, map.key().target())?;
+                    writeln!(w, "    {}: {}", MEMBER_VALUE, map.value().target())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Structure(structured) => {
@@ -247,10 +249,12 @@ impl<'a> SmithyWriter {
                     }
                     writeln!(w, "}}")?;
                 }
-                ShapeKind::Apply => {
-                    for a_trait in shape.traits() {
-                        write!(w, "{} {} ", SHAPE_APPLY, shape.id())?;
-                        self.write_trait(w, a_trait, "")?;
+                ShapeKind::Unresolved => {
+                    if shape.has_traits() {
+                        for a_trait in shape.traits() {
+                            write!(w, "{} {} ", SHAPE_APPLY, shape.id())?;
+                            self.write_trait(w, a_trait, "")?;
+                        }
                     }
                 }
             }
@@ -259,11 +263,16 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_trait(&mut self, w: &mut impl Write, a_trait: &'a Trait, prefix: &str) -> Result<()> {
+    fn write_trait(
+        &mut self,
+        w: &mut impl Write,
+        a_trait: &'a AppliedTrait,
+        prefix: &str,
+    ) -> Result<()> {
         write!(w, "{}{}{}", prefix, TRAIT_PREFIX, a_trait.id())?;
         match a_trait.value() {
             None => writeln!(w)?,
-            Some(NodeValue::Object(map)) => writeln!(
+            Some(Value::Object(map)) => writeln!(
                 w,
                 "({})",
                 map.iter()
@@ -279,7 +288,7 @@ impl<'a> SmithyWriter {
     fn write_members(
         &mut self,
         w: &mut impl Write,
-        members: impl Iterator<Item = &'a Member>,
+        members: impl Iterator<Item = &'a MemberShape>,
         prefix: &str,
     ) -> Result<()> {
         for member in members {
@@ -288,25 +297,16 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_member(&mut self, w: &mut impl Write, member: &'a Member, prefix: &str) -> Result<()> {
+    fn write_member(
+        &mut self,
+        w: &mut impl Write,
+        member: &'a MemberShape,
+        prefix: &str,
+    ) -> Result<()> {
         for a_trait in member.traits() {
             self.write_trait(w, a_trait, prefix)?;
         }
-        writeln!(
-            w,
-            "{}{}: {}",
-            prefix,
-            member.id(),
-            member.value().as_ref().unwrap()
-        )?;
+        writeln!(w, "{}{}: {}", prefix, member.id(), member.target())?;
         Ok(())
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

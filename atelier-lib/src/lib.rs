@@ -14,6 +14,7 @@ default feature, although the core will be included regardless of any feature se
 | "json"       | Yes     | [atelier_json](https://docs.rs/atelier_json)        | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
 | "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
 | "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
+| "uml"        | No      | In this crate                                       | `atelier_lib::format::plant_uml`  | Writing models in a diagram form. |
 
 */
 
@@ -36,5 +37,10 @@ pub mod action;
 
 pub mod assembler;
 
-#[cfg(any(feature = "json", feature = "openapi", feature = "smithy"))]
+#[cfg(any(
+    feature = "json",
+    feature = "openapi",
+    feature = "smithy",
+    feature = "uml"
+))]
 pub mod format;

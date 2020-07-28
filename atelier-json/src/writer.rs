@@ -1,8 +1,8 @@
-use crate::io::syntax::*;
-use crate::io::FILE_EXTENSION;
-use atelier_core::error::{AndPanic, ErrorKind, Result as ModelResult, ResultExt};
+use crate::syntax::*;
+use crate::FILE_EXTENSION;
+use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, Member, TopLevelShape, ShapeKind};
+use atelier_core::model::shapes::{AppliedTrait, MemberShape, Shape, ShapeKind, TopLevelShape};
 use atelier_core::model::values::{Number, Value as NodeValue};
 use atelier_core::model::{Model, ShapeID};
 use serde_json::{to_writer, to_writer_pretty, Map, Number as JsonNumber, Value};
@@ -38,7 +38,7 @@ impl<'a> ModelWriter<'a> for JsonWriter {
 
         let _ = top.insert(
             K_SMITHY.to_string(),
-            Value::String(model.version().to_string()),
+            Value::String(model.smithy_version().to_string()),
         );
 
         let _ = top.insert(K_SHAPES.to_string(), self.shapes(model));
@@ -60,12 +60,8 @@ impl<'a> JsonWriter {
 
     fn shapes(&self, model: &'a Model) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
-        let namespace = model.namespace().clone();
         for shape in model.shapes() {
-            let _ = shape_map.insert(
-                shape.id().to_absolute(namespace.clone()).to_string(),
-                self.shape(shape),
-            );
+            let _ = shape_map.insert(shape.id().to_string(), self.shape(shape));
         }
         if model.has_metadata() {
             let mut meta_map: Map<String, Value> = Default::default();
@@ -83,21 +79,21 @@ impl<'a> JsonWriter {
             let _ = shape_map.insert(K_TRAITS.to_string(), self.traits(shape.traits()));
         }
         match shape.body() {
-            ShapeKind::SimpleType(v) => {
+            ShapeKind::Simple(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(v.to_string()));
             }
             ShapeKind::List(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_LIST.to_string()));
-                let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member()));
+                let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member().target()));
             }
             ShapeKind::Set(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SET.to_string()));
-                let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member()));
+                let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member().target()));
             }
             ShapeKind::Map(v) => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_MAP.to_string()));
-                let _ = shape_map.insert(K_KEY.to_string(), self.reference(v.key()));
-                let _ = shape_map.insert(K_VALUE.to_string(), self.reference(v.value()));
+                let _ = shape_map.insert(K_KEY.to_string(), self.reference(v.key().target()));
+                let _ = shape_map.insert(K_VALUE.to_string(), self.reference(v.value().target()));
             }
             ShapeKind::Structure(v) => {
                 let _ =
@@ -197,7 +193,7 @@ impl<'a> JsonWriter {
                     );
                 }
             }
-            ShapeKind::Apply => {
+            ShapeKind::Unresolved => {
                 let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_APPLY.to_string()));
             }
         }
@@ -218,18 +214,17 @@ impl<'a> JsonWriter {
         Value::Object(trait_map)
     }
 
-    fn members(&self, members: impl Iterator<Item = &'a Member>) -> Value {
+    fn members(&self, members: impl Iterator<Item = &'a MemberShape>) -> Value {
         let mut members_map: Map<String, Value> = Default::default();
         for member in members {
             let mut member_map: Map<String, Value> = Default::default();
             if member.has_traits() {
                 let _ = member_map.insert(K_TRAITS.to_string(), self.traits(member.traits()));
             }
-            if let Some(NodeValue::ShapeID(id)) = member.value() {
-                let _ = member_map.insert(K_TARGET.to_string(), Value::String(id.to_string()));
-            } else {
-                ErrorKind::InvalidValueVariant("ShapeID".to_string()).panic();
-            }
+            let _ = member_map.insert(
+                K_TARGET.to_string(),
+                Value::String(member.target().to_string()),
+            );
             let _ = members_map.insert(member.id().to_string(), Value::Object(member_map));
         }
         Value::Object(members_map)
@@ -242,7 +237,7 @@ impl<'a> JsonWriter {
             NodeValue::Object(v) => {
                 let mut object: Map<String, Value> = Default::default();
                 for (k, v) in v {
-                    let _ = object.insert(v.clone(), self.value(v));
+                    let _ = object.insert(k.clone(), self.value(v));
                 }
                 Value::Object(object)
             }
@@ -251,8 +246,6 @@ impl<'a> JsonWriter {
                 Number::Float(v) => Value::Number(JsonNumber::from_f64(*v).unwrap()),
             },
             NodeValue::Boolean(v) => Value::Bool(*v),
-            NodeValue::ShapeID(v) => self.reference(v),
-            NodeValue::TextBlock(v) => Value::String(v.clone()),
             NodeValue::String(v) => Value::String(v.clone()),
         }
     }

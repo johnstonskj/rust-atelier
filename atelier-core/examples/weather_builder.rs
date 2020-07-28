@@ -7,7 +7,7 @@ document.
 use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::builder::{
     traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
-    ServiceBuilder, SimpleShapeBuilder, StructureBuilder,
+    ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
 use atelier_core::error::ErrorSource;
 use atelier_core::io::debug::DebugWriter;

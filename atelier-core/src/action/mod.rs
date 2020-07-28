@@ -1,5 +1,6 @@
 /*!
-* This module describes actions that can operate on models. These take three major forms:
+* This module provides a set of traits that describes actions that can operate on models. These
+* actions take three major forms; linters, validators, and transformers.
 *
 * 1. **Linters**; these inspect the model for stylistic issues, they are a subset of validators.
 * 1. **Validators**; these inspect models for errors and warnings that may produce errors when the
@@ -18,7 +19,7 @@
 *     run_validation_actions, CorrectTypeReferences
 * };
 * use atelier_core::action::Validator;
-* use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder};
+* use atelier_core::builder::{ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder};
 * use atelier_core::model::Model;
 * use atelier_core::Version;
 *
@@ -139,7 +140,7 @@ pub struct ActionIssue {
 }
 
 ///
-/// A trait implemented by tools that provide validation over a model.
+/// A trait required by `Linter`, `Validator`, and `Transformer`.
 ///
 pub trait Action {
     ///
@@ -148,7 +149,9 @@ pub trait Action {
     fn label(&self) -> &'static str;
 
     ///
-    /// Return all the issues reported by this action.
+    /// Return all the issues reported by this action, note that the set of issues aggregates across
+    /// multiple uses of the implementation, so for a lint tool the same `Linter::check` can be
+    /// for different models and the issues are the sum of all found in all models.
     ///
     fn issues(&self) -> &Vec<ActionIssue>;
 
@@ -159,27 +162,33 @@ pub trait Action {
 }
 
 ///
-/// A trait implemented by tools that provide validation over a model.
+/// Check the model for stylistic or other conventions that the author should be aware of. An
+/// error represents a failure in the linter itself, not the presence of any issues which
+/// should be fetched using `Action::issues` or `Action::issues_mut`.
 ///
 pub trait Linter: Action {
     ///
-    /// Validate the model returning any issue, or issues, it may contain.
+    /// Check the model adding any issues found to the `Action:issues` collection.
     ///
     fn check(&mut self, model: &Model) -> ModelResult<()>;
 }
 
 ///
-/// A trait implemented by tools that provide validation over a model.
+/// Validate the model according to rules that determine whether it is complete and usable.. An
+/// error represents a failure in the validator itself, not the presence of any issues which
+/// should be fetched using `Action::issues` or `Action::issues_mut`.
 ///
 pub trait Validator: Action {
     ///
-    /// Validate the model returning any issue, or issues, it may contain.
+    /// Validate the model adding any issues found to the `Action:issues` collection.
     ///
     fn validate(&mut self, model: &Model) -> ModelResult<()>;
 }
 
 ///
-/// A trait implemented by tools that transform one model into another.
+/// Create a new model from an existing one; this might be a filter, a decorator, or generator. An
+/// error represents a failure in the transformer itself, not the presence of any issues which
+/// should be fetched using `Action::issues` or `Action::issues_mut`.
 ///
 pub trait Transformer: Action {
     ///

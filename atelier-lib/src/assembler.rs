@@ -10,10 +10,12 @@ TBD
 use crate::core::error::{Error, ErrorKind};
 #[cfg(feature = "json")]
 use crate::format::json;
+#[cfg(feature = "uml")]
+use crate::format::plant_uml;
 #[cfg(feature = "smithy")]
 use crate::format::smithy;
 use atelier_core::io::{ModelReader, ModelWriter};
-use atelier_core::model::Model;
+use atelier_core::model::{Model, NamespaceID};
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::{read_dir, File};
@@ -41,9 +43,9 @@ impl Default for ModelAssembler {
         Self {
             extensions: [
                 #[cfg(feature = "json")]
-                json::io::FILE_EXTENSION,
+                json::FILE_EXTENSION,
                 #[cfg(feature = "smithy")]
-                smithy::io::FILE_EXTENSION,
+                smithy::FILE_EXTENSION,
             ]
             .iter()
             .map(|s| s.to_string())
@@ -118,13 +120,13 @@ impl ModelAssembler {
 
                 match ext.as_ref() {
                     #[cfg(feature = "json")]
-                    json::io::FILE_EXTENSION => {
-                        let mut reader = json::io::JsonReader::default();
+                    json::FILE_EXTENSION => {
+                        let mut reader = json::JsonReader::default();
                         reader.read(&mut file)
                     }
                     #[cfg(feature = "smithy")]
-                    smithy::io::FILE_EXTENSION => {
-                        let mut reader = smithy::io::SmithyReader::default();
+                    smithy::FILE_EXTENSION => {
+                        let mut reader = smithy::SmithyReader::default();
                         reader.read(&mut file)
                     }
                     _ => {
@@ -139,7 +141,11 @@ impl ModelAssembler {
     ///
     /// Write a model to a file, this will only process a single file at a time.
     ///
-    pub fn write_model_to_file(path: &PathBuf, model: &Model) -> Result<(), Error> {
+    pub fn write_model_to_file(
+        path: &PathBuf,
+        model: &Model,
+        only_namespace: Option<NamespaceID>,
+    ) -> Result<(), Error> {
         match path.extension() {
             None => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),
             Some(ext) => {
@@ -148,17 +154,18 @@ impl ModelAssembler {
 
                 match ext.as_ref() {
                     #[cfg(feature = "json")]
-                    json::io::FILE_EXTENSION => {
-                        let mut writer = json::io::JsonWriter::default();
+                    json::FILE_EXTENSION => {
+                        let mut writer = json::JsonWriter::default();
                         writer.write(&mut file, model)
                     }
                     #[cfg(feature = "smithy")]
-                    smithy::io::FILE_EXTENSION => {
-                        let mut writer = smithy::io::SmithyWriter::default();
+                    smithy::FILE_EXTENSION => {
+                        let mut writer = smithy::SmithyWriter::new(only_namespace.unwrap());
                         writer.write(&mut file, model)
                     }
-                    crate::core::io::plant_uml::FILE_EXTENSION => {
-                        let mut writer = crate::core::io::plant_uml::PlantUmlWriter::default();
+                    #[cfg(feature = "uml")]
+                    plant_uml::FILE_EXTENSION => {
+                        let mut writer = plant_uml::PlantUmlWriter::default();
                         writer.write(&mut file, model)
                     }
                     _ => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),

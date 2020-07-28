@@ -47,6 +47,17 @@ macro_rules! from_mut {
     };
 }
 
+macro_rules! shape_traits_impl {
+    ($builder:ident) => {
+        impl ShapeTraits for $builder {
+            fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
+                self.applied_traits.push(a_trait);
+                self
+            }
+        }
+    };
+}
+
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
@@ -135,11 +146,70 @@ pub struct MemberBuilder {
     pub(super) target: String,
 }
 
+///
+/// Provides all the traits for Smithy where trait selector = "*".
+pub trait ShapeTraits {
+    fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self
+    where
+        Self: Sized;
+
+    fn documentation(&mut self, text: &str) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::documentation(text))
+    }
+
+    fn external_documentation(&mut self, map: &[(&str, &str)]) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::external_documentation(map))
+    }
+
+    fn deprecated(&mut self, message: Option<&str>, since: Option<&str>) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::deprecated(message, since))
+    }
+
+    fn private(&mut self) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::private())
+    }
+
+    fn since(&mut self, date: &str) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::since(date))
+    }
+
+    fn tagged(&mut self, tags: &[&str]) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::tagged(tags))
+    }
+
+    fn unstable(&mut self) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.apply_trait(traits::unstable())
+    }
+}
+
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { SimpleShapeBuilder }
+
+shape_traits_impl! { SimpleShapeBuilder }
 
 impl SimpleShapeBuilder {
     ///Construct a new simple shape builder.
@@ -218,23 +288,6 @@ impl SimpleShapeBuilder {
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
-
     add_trait!(pub boxed);
 
     add_trait!(pub sensitive);
@@ -245,6 +298,8 @@ impl SimpleShapeBuilder {
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { ListBuilder }
+
+shape_traits_impl! { ListBuilder }
 
 impl ListBuilder {
     ///Construct a new list or set shape builder.
@@ -262,23 +317,6 @@ impl ListBuilder {
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
-
     add_trait!(pub sensitive);
 
     add_trait!(pub unique_items);
@@ -287,6 +325,8 @@ impl ListBuilder {
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { MapBuilder }
+
+shape_traits_impl! { MapBuilder }
 
 impl MapBuilder {
     ///Construct a new map shape builder.
@@ -308,28 +348,13 @@ impl MapBuilder {
     }
 
     // --------------------------------------------------------------------------------------------
-
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
 }
 
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { StructureBuilder }
+
+shape_traits_impl! { StructureBuilder }
 
 impl StructureBuilder {
     ///Construct a new map shape builder.
@@ -402,26 +427,7 @@ impl StructureBuilder {
         self.member(id, "Timestamp")
     }
 
-    // --------------------------------------------------------------------------------------------
-
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
     add_trait!(pub error_source(src: ErrorSource));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
 
     add_trait!(pub sensitive);
 }
@@ -429,6 +435,8 @@ impl StructureBuilder {
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { ServiceBuilder }
+
+shape_traits_impl! { ServiceBuilder }
 
 impl ServiceBuilder {
     pub fn new(shape_name: &str, version: &str) -> Self {
@@ -471,23 +479,6 @@ impl ServiceBuilder {
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
-
     add_trait!(pub sensitive);
 
     add_trait!(pub paginated(
@@ -502,6 +493,8 @@ impl ServiceBuilder {
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { OperationBuilder }
+
+shape_traits_impl! { OperationBuilder }
 
 impl OperationBuilder {
     pub fn new(shape_name: &str) -> Self {
@@ -537,24 +530,7 @@ impl OperationBuilder {
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
     add_trait!(pub readonly);
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
 
     add_trait!(pub sensitive);
 
@@ -568,6 +544,8 @@ impl OperationBuilder {
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { ResourceBuilder }
+
+shape_traits_impl! { ResourceBuilder }
 
 impl ResourceBuilder {
     pub fn new(shape_name: &str) -> Self {
@@ -661,23 +639,6 @@ impl ResourceBuilder {
 
     // --------------------------------------------------------------------------------------------
 
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
-
     add_trait!(pub sensitive);
 
     add_trait!(pub no_replace);
@@ -689,6 +650,8 @@ impl ResourceBuilder {
 
 from_mut! { ReferenceBuilder }
 
+shape_traits_impl! { ReferenceBuilder }
+
 impl ReferenceBuilder {
     /// Construct a new `ShapeKind::Unresolved` builder, with id.
     pub fn new(id: &str) -> Self {
@@ -697,30 +660,13 @@ impl ReferenceBuilder {
             applied_traits: Default::default(),
         }
     }
-
-    // --------------------------------------------------------------------------------------------
-
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
 }
 
 // ------------------------------------------------------------------------------------------------
 
 from_mut! { MemberBuilder }
+
+shape_traits_impl! { MemberBuilder }
 
 impl MemberBuilder {
     /// Construct a new member shape builder, with id target
@@ -738,6 +684,14 @@ impl MemberBuilder {
             applied_traits: Default::default(),
             target: ShapeID::new_unchecked(target_namespace, target_shape_name, None).to_string(),
         }
+    }
+
+    pub fn name(&self) -> &String {
+        &self.member_name
+    }
+
+    pub fn target(&self) -> &String {
+        &self.target
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Blob`.
@@ -806,23 +760,6 @@ impl MemberBuilder {
     }
 
     // --------------------------------------------------------------------------------------------
-
-    pub fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self {
-        self.applied_traits.push(a_trait);
-        self
-    }
-
-    add_trait!(pub documentation(text: &str));
-
-    add_trait!(pub external_documentation(map: &[(&str, &str)]));
-
-    add_trait!(pub deprecated(message: Option<&str>, since: Option<&str>));
-
-    add_trait!(pub since(date: &str));
-
-    add_trait!(pub tagged(tags: &[&str]));
-
-    add_trait!(pub unstable);
 
     add_trait!(pub required);
 }

@@ -1,9 +1,5 @@
 /*!
-One-line description.
-
-More detailed description, with
-
-# Example
+This module provides a trait and public function to help implement model visitors.
 
 */
 
@@ -60,20 +56,20 @@ pub trait ModelVisitor {
 
     /// Called once for each key in the model's metadata.
     #[allow(unused_variables)]
-    fn metadata(&self, key: &String, value: &Value) -> Result<(), Self::Error> {
+    fn metadata(&self, key: &str, value: &Value) -> Result<(), Self::Error> {
         Ok(())
     }
 
-    visit_fn! { simple_shape, Simple, "Called for each simple shape" }
-    visit_fn! { list, ListOrSet, "Called for each list shape" }
-    visit_fn! { set, ListOrSet, "Called for each set shape" }
-    visit_fn! { map, Map, "Called for each map shape" }
-    visit_fn! { structure, StructureOrUnion, "Called for each structure shape" }
-    visit_fn! { union, StructureOrUnion, "Called for each union shape" }
-    visit_fn! { service, Service, "Called for each service shape" }
-    visit_fn! { operation, Operation, "Called for each operation shape" }
-    visit_fn! { resource, Resource, "Called for each resource shape" }
-    visit_fn! { unresolved_id, "Called for each unresolved shape identifier" }
+    visit_fn! { simple_shape, Simple, "Called for each `ShapeKind::Simple` in this model's **shapes** collection." }
+    visit_fn! { list, ListOrSet, "Called for each `ShapeKind::List` in this model's **shapes** collection." }
+    visit_fn! { set, ListOrSet, "Called for each `ShapeKind::Set` in this model's **shapes** collection." }
+    visit_fn! { map, Map, "Called for each `ShapeKind::Map` in this model's **shapes** collection." }
+    visit_fn! { structure, StructureOrUnion, "Called for each `ShapeKind::Structure` in this model's **shapes** collection." }
+    visit_fn! { union, StructureOrUnion, "Called for each `ShapeKind::Union` in this model's **shapes** collection." }
+    visit_fn! { service, Service, "Called for each `ShapeKind::Service` in this model's **shapes** collection." }
+    visit_fn! { operation, Operation, "Called for each `ShapeKind::Operation` in this model's **shapes** collection." }
+    visit_fn! { resource, Resource, "Called for each `ShapeKind::Resource` in this model's **shapes** collection." }
+    visit_fn! { unresolved_id, "Called for each `ShapeKind::Unresolved` shape identifier in this model's **shapes** collection." }
 }
 
 // ------------------------------------------------------------------------------------------------

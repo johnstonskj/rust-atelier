@@ -97,12 +97,12 @@ pub fn main() {
 
     // ----------------------------------------------------------------------------------------
     let mut model = Model::new(Version::V10);
-    model.add_shape(message);
-    model.add_shape(date);
-    model.add_shape(get_message);
-    model.add_shape(input);
-    model.add_shape(output);
-    model.add_shape(error);
+    let _ = model.add_shape(message);
+    let _ = model.add_shape(date);
+    let _ = model.add_shape(get_message);
+    let _ = model.add_shape(input);
+    let _ = model.add_shape(output);
+    let _ = model.add_shape(error);
 
     println!("{:#?}", model);
 }

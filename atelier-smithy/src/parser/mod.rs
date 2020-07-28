@@ -1,15 +1,17 @@
-use crate::io::parser::error::ParserError;
-use atelier_core::error::{Error, ErrorKind, Result as CoreResult, ResultExt};
-use atelier_core::model::shapes::{
-    AppliedTrait, ListOrSet, Map, Member, Operation, Resource, Service, TopLevelShape, ShapeKind, Simple,
-    StructureOrUnion,
+use crate::parser::error::ParserError;
+use atelier_core::builder::shapes::ShapeTraits;
+use atelier_core::builder::{
+    ListBuilder, MapBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ReferenceBuilder,
+    ResourceBuilder, ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
+use atelier_core::error::{Error, ErrorKind, Result as ModelResult, ResultExt};
+use atelier_core::model::shapes::Simple;
 use atelier_core::model::values::{Number, Value as NodeValue, ValueMap};
-use atelier_core::model::{Identifier, Model, NamespaceID, ShapeID};
+use atelier_core::model::Model;
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
-    MEMBER_INPUT, MEMBER_LIST, MEMBER_OPERATIONS, MEMBER_OUTPUT, MEMBER_PUT, MEMBER_READ,
-    MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VERSION,
+    MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
+    MEMBER_PUT, MEMBER_READ, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE, MEMBER_VERSION,
 };
 use atelier_core::Version;
 use pest::error::Error as PestError;
@@ -31,7 +33,7 @@ struct SmithyParser;
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-pub(crate) fn parse(input: &str) -> CoreResult<Model> {
+pub(crate) fn parse(input: &str) -> ModelResult<Model> {
     let mut parsed = SmithyParser::parse(Rule::idl, input).map_err(from_pest_error)?;
     let top_node = parsed.next().unwrap();
     parse_idl(top_node)
@@ -39,7 +41,7 @@ pub(crate) fn parse(input: &str) -> CoreResult<Model> {
 
 #[cfg(feature = "debug")]
 #[allow(dead_code)]
-pub(crate) fn parse_and_debug(w: &mut impl Write, input: &str) -> CoreResult<()> {
+pub(crate) fn parse_and_debug(w: &mut impl Write, input: &str) -> ModelResult<()> {
     let parsed = SmithyParser::parse(Rule::idl, input).map_err(from_pest_error)?;
     writeln!(w, "{}", pest_ascii_tree::into_ascii_tree(parsed).unwrap())?;
     Ok(())
@@ -59,12 +61,12 @@ macro_rules! unexpected {
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
-fn parse_idl(input_pair: Pair<'_, Rule>) -> CoreResult<Model> {
+fn parse_idl(input_pair: Pair<'_, Rule>) -> ModelResult<Model> {
     match input_pair.as_rule() {
         Rule::idl => {
             let mut control_data: ValueMap = Default::default();
             let mut meta_data: ValueMap = Default::default();
-            let mut shape_section: Option<(NamespaceID, Vec<ShapeID>, Vec<TopLevelShape>)> = None;
+            let mut builder: Option<ModelBuilder> = None;
             for inner in input_pair.into_inner() {
                 match inner.as_rule() {
                     Rule::control_section => {
@@ -74,34 +76,29 @@ fn parse_idl(input_pair: Pair<'_, Rule>) -> CoreResult<Model> {
                         meta_data = parse_metadata_section(inner)?;
                     }
                     Rule::shape_section => {
-                        shape_section = Some(parse_shape_section(inner)?);
+                        let version =
+                            if let Some(NodeValue::String(version)) = control_data.get("version") {
+                                Version::from_str(version)?
+                            } else {
+                                Version::default()
+                            };
+                        builder = Some(parse_shape_section(inner, version)?);
                     }
+                    Rule::EOI => {}
                     _ => unexpected!("parse_idl", inner),
                 }
             }
-            let version = if let Some(NodeValue::String(version)) = control_data.get("version") {
-                Version::from_str(version)?
-            } else {
-                Version::default()
-            };
-            let shape_section = shape_section.unwrap();
-            let mut model = Model::new(version);
-            let namespace = shape_section.0;
-            for (k, v) in control_data {
-                model.add_control_data(k, v);
-            }
-            model.append_references(shape_section.1.as_slice());
-            model.append_shapes(shape_section.2.as_slice());
+            let mut builder = builder.unwrap();
             for (k, v) in meta_data {
-                model.add_metadata(k, v);
+                let _ = builder.meta_data(k, v);
             }
-            Ok(model)
+            Ok((&mut builder).into())
         }
         _ => unexpected!("parse_idl", input_pair),
     }
 }
 
-fn parse_control_section(input_pair: Pair<'_, Rule>) -> CoreResult<ValueMap> {
+fn parse_control_section(input_pair: Pair<'_, Rule>) -> ModelResult<ValueMap> {
     let mut map: ValueMap = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
@@ -115,7 +112,7 @@ fn parse_control_section(input_pair: Pair<'_, Rule>) -> CoreResult<ValueMap> {
     Ok(map)
 }
 
-fn parse_metadata_section(input_pair: Pair<'_, Rule>) -> CoreResult<ValueMap> {
+fn parse_metadata_section(input_pair: Pair<'_, Rule>) -> ModelResult<ValueMap> {
     let mut map: ValueMap = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
@@ -129,48 +126,44 @@ fn parse_metadata_section(input_pair: Pair<'_, Rule>) -> CoreResult<ValueMap> {
     Ok(map)
 }
 
-fn parse_shape_section(
-    input_pair: Pair<'_, Rule>,
-) -> CoreResult<(NamespaceID, Vec<ShapeID>, Vec<TopLevelShape>)> {
-    let mut namespace: Option<NamespaceID> = None;
-    let mut uses: Vec<ShapeID> = Default::default();
-    let mut shapes: Vec<TopLevelShape> = Default::default();
+fn parse_shape_section(input_pair: Pair<'_, Rule>, version: Version) -> ModelResult<ModelBuilder> {
+    let mut builder: Option<ModelBuilder> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::namespace_statement => {
-                namespace = Some(parse_namespace_statement(inner)?);
+                builder = Some(parse_namespace_statement(inner, version)?);
             }
             Rule::use_section => {
-                uses = parse_use_section(inner)?;
+                parse_use_section(inner, builder.as_mut().unwrap())?;
             }
             Rule::shape_statements => {
-                shapes = parse_shape_statements(inner)?;
+                parse_shape_statements(inner, builder.as_mut().unwrap())?;
             }
             _ => unexpected!("parse_shape_section", inner),
         }
     }
-    Ok((namespace.unwrap(), uses, shapes))
+    Ok(builder.unwrap())
 }
 
-fn parse_namespace_statement(input_pair: Pair<'_, Rule>) -> CoreResult<NamespaceID> {
+fn parse_namespace_statement(
+    input_pair: Pair<'_, Rule>,
+    version: Version,
+) -> ModelResult<ModelBuilder> {
     let namespace: Pair<'_, Rule> = input_pair.into_inner().next().unwrap();
     if let Rule::namespace = namespace.as_rule() {
-        NamespaceID::from_str(namespace.as_str())
+        Ok(ModelBuilder::new(version, namespace.as_str()))
     } else {
-        ParserError::new("parse_namespace_statement")
-            .context(&namespace)
-            .into()
+        ParserError::new("parse_namespace_statement").into()
     }
 }
 
-fn parse_use_section(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<ShapeID>> {
-    let mut uses: Vec<ShapeID> = Default::default();
+fn parse_use_section(input_pair: Pair<'_, Rule>, builder: &mut ModelBuilder) -> ModelResult<()> {
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::use_statement => {
                 let absolute_root_shape_id: Pair<'_, Rule> = inner.into_inner().next().unwrap();
                 if let Rule::absolute_root_shape_id = absolute_root_shape_id.as_rule() {
-                    uses.push(ShapeID::from_str(absolute_root_shape_id.as_str())?);
+                    let _ = builder.uses(absolute_root_shape_id.as_str());
                 } else {
                     return ParserError::unreachable("parse_use_section")
                         .context(&absolute_root_shape_id)
@@ -180,28 +173,31 @@ fn parse_use_section(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<ShapeID>> {
             _ => unexpected!("parse_use_section", inner),
         }
     }
-    Ok(uses)
+    Ok(())
 }
 
-fn parse_shape_statements(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<TopLevelShape>> {
-    let mut shapes: Vec<TopLevelShape> = Default::default();
+fn parse_shape_statements(
+    input_pair: Pair<'_, Rule>,
+    builder: &mut ModelBuilder,
+) -> ModelResult<()> {
     for shape_statement in input_pair.into_inner() {
         match shape_statement.as_rule() {
             Rule::shape_statement => {
-                shapes.push(parse_shape_statement(shape_statement)?);
+                parse_shape_statement(shape_statement, builder)?;
             }
             Rule::EOI => {}
             _ => unexpected!("parse_shape_statements", shape_statement),
         }
     }
-    Ok(shapes)
+    Ok(())
 }
 
-fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<TopLevelShape> {
+fn parse_shape_statement(
+    input_pair: Pair<'_, Rule>,
+    builder: &mut ModelBuilder,
+) -> ModelResult<()> {
     let mut documentation: Vec<String> = Default::default();
-    let mut traits: Vec<AppliedTrait> = Default::default();
-    let mut inner: Option<(Identifier, ShapeKind)> = None;
-    let mut applies: Option<(ShapeID, AppliedTrait)> = None;
+    let mut traits: Vec<TraitBuilder> = Default::default();
     for shape_statement in input_pair.into_inner() {
         match shape_statement.as_rule() {
             Rule::documentation_text => {
@@ -211,58 +207,62 @@ fn parse_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<TopLevelShape
                 traits = parse_trait_statements(shape_statement)?;
             }
             Rule::simple_shape_statement => {
-                inner = Some(parse_simple_shape_statement(shape_statement)?);
+                let mut shape = parse_simple_shape_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.simple_shape(shape);
             }
             Rule::list_statement => {
-                inner = Some(parse_list_statement(shape_statement)?);
+                let mut shape = parse_list_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.list(shape);
             }
             Rule::set_statement => {
-                inner = Some(parse_set_statement(shape_statement)?);
+                let mut shape = parse_list_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.set(shape);
             }
             Rule::map_statement => {
-                inner = Some(parse_map_statement(shape_statement)?);
+                let mut shape = parse_map_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.map(shape);
             }
             Rule::structure_statement => {
-                inner = Some(parse_structure_statement(shape_statement)?);
+                let mut shape = parse_structure_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.structure(shape);
             }
             Rule::union_statement => {
-                inner = Some(parse_union_statement(shape_statement)?);
+                let mut shape = parse_union_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.union(shape);
             }
             Rule::service_statement => {
-                inner = Some(parse_service_statement(shape_statement)?);
+                let mut shape = parse_service_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.service(shape);
             }
             Rule::operation_statement => {
-                inner = Some(parse_operation_statement(shape_statement)?);
+                let mut shape = parse_operation_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.operation(shape);
             }
             Rule::resource_statement => {
-                inner = Some(parse_resource_statement(shape_statement)?);
+                let mut shape = parse_resource_statement(shape_statement)?;
+                apply_traits(&mut shape, &documentation, &traits);
+                let _ = builder.resource(shape);
             }
             Rule::apply_statement => {
-                applies = Some(parse_apply_statement(shape_statement)?);
+                let shape = parse_apply_statement(shape_statement)?;
+                let _ = builder.reference(shape);
             }
+            Rule::EOI => {}
             _ => unexpected!("parse_shape_statement", shape_statement),
         }
     }
-    if let Some((id, inner)) = inner {
-        let mut shape = TopLevelShape::local(id, inner);
-        if !documentation.is_empty() {
-            shape.documentation(&documentation.join("\n"));
-        }
-        for a_trait in traits {
-            shape.add_trait(a_trait);
-        }
-        Ok(shape)
-    } else if let Some((id, a_trait)) = applies {
-        let inner = ShapeKind::Apply;
-        let mut shape = TopLevelShape::new(id, inner);
-        shape.add_trait(a_trait);
-        Ok(shape)
-    } else {
-        ParserError::new("parse_shape_statement").into()
-    }
+    Ok(())
 }
 
-fn parse_documentation_text(input_pair: Pair<'_, Rule>) -> CoreResult<String> {
+fn parse_documentation_text(input_pair: Pair<'_, Rule>) -> ModelResult<String> {
     if let Rule::documentation_text = input_pair.as_rule() {
         Ok(input_pair.as_str().to_string())
     } else {
@@ -272,8 +272,8 @@ fn parse_documentation_text(input_pair: Pair<'_, Rule>) -> CoreResult<String> {
     }
 }
 
-fn parse_trait_statements(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<AppliedTrait>> {
-    let mut traits: Vec<AppliedTrait> = Default::default();
+fn parse_trait_statements(input_pair: Pair<'_, Rule>) -> ModelResult<Vec<TraitBuilder>> {
+    let mut traits: Vec<TraitBuilder> = Default::default();
     for a_trait in input_pair.into_inner() {
         match a_trait.as_rule() {
             Rule::a_trait => {
@@ -285,14 +285,14 @@ fn parse_trait_statements(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<AppliedT
     Ok(traits)
 }
 
-fn parse_a_trait(input_pair: Pair<'_, Rule>) -> CoreResult<AppliedTrait> {
-    let mut id: Option<ShapeID> = None;
+fn parse_a_trait(input_pair: Pair<'_, Rule>) -> ModelResult<TraitBuilder> {
+    let mut id: Option<String> = None;
     let mut node_value: Option<NodeValue> = None;
-    let mut members: HashMap<Key, NodeValue> = Default::default();
+    let mut members: HashMap<String, NodeValue> = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::shape_id => {
-                id = Some(ShapeID::from_str(inner.as_str())?);
+                id = Some(inner.as_str().to_string());
             }
             Rule::node_value => {
                 node_value = Some(parse_node_value(inner)?);
@@ -312,15 +312,15 @@ fn parse_a_trait(input_pair: Pair<'_, Rule>) -> CoreResult<AppliedTrait> {
         node_value = Some(NodeValue::Object(members));
     }
     match (id, node_value) {
-        (Some(id), None) => Ok(AppliedTrait::new(id)),
-        (Some(id), Some(node_value)) => Ok(AppliedTrait::with_value(id, node_value)),
+        (Some(id), None) => Ok(TraitBuilder::new(&id)),
+        (Some(id), Some(node_value)) => Ok(TraitBuilder::with_value(&id, node_value)),
         _ => ParserError::unreachable("parse_a_trait").into(),
     }
 }
 
 #[allow(unused_assignments)]
-fn parse_trait_structure_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<(Key, NodeValue)> {
-    let mut id: Option<Key> = None;
+fn parse_trait_structure_kvp(input_pair: Pair<'_, Rule>) -> ModelResult<(String, NodeValue)> {
+    let mut id: Option<String> = None;
     let mut node_value: Option<NodeValue> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
@@ -329,7 +329,7 @@ fn parse_trait_structure_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<(Key, Nod
                     match inner.as_rule() {
                         Rule::quoted_chars => {
                             // erroneous: value assigned to `id` is never read
-                            id = Some(Key::String(inner.as_str().to_string()))
+                            id = Some(inner.as_str().to_string())
                         }
                         _ => unexpected!("parse_trait_structure_kvp", inner),
                     }
@@ -340,7 +340,7 @@ fn parse_trait_structure_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<(Key, Nod
                         .into();
                 }
             }
-            Rule::identifier => id = Some(Key::Identifier(Identifier::from_str(inner.as_str())?)),
+            Rule::identifier => id = Some(inner.as_str().to_string()),
             Rule::node_value => {
                 node_value = Some(parse_node_value(inner)?);
             }
@@ -353,13 +353,13 @@ fn parse_trait_structure_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<(Key, Nod
     }
 }
 
-fn parse_simple_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
-    let mut id: Option<Identifier> = None;
+fn parse_simple_shape_statement(input_pair: Pair<'_, Rule>) -> ModelResult<SimpleShapeBuilder> {
+    let mut id: Option<String> = None;
     let mut simple_type: Option<Simple> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::identifier => {
-                id = Some(Identifier::from_str(inner.as_str())?);
+                id = Some(inner.as_str().to_string());
             }
             Rule::type_blob => simple_type = Some(Simple::Blob),
             Rule::type_boolean => simple_type = Some(Simple::Boolean),
@@ -378,78 +378,37 @@ fn parse_simple_shape_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Ident
         }
     }
     match (id, simple_type) {
-        (Some(id), Some(simple_type)) => Ok((id, ShapeKind::Simple(simple_type))),
+        (Some(shape_name), Some(simple_type)) => {
+            Ok(SimpleShapeBuilder::new(&shape_name, simple_type))
+        }
         _ => ParserError::unreachable("parse_simple_shape_statement").into(),
     }
 }
 
-fn parse_list_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_list_statement(input_pair: Pair<'_, Rule>) -> ModelResult<ListBuilder> {
     let (id, members) = parse_membered_statement(input_pair)?;
     for member in members {
-        if member.id() == &Identifier::from_str("member").unwrap() {
-            return Ok((
-                id,
-                ShapeKind::List(ListOrSet::new(
-                    member
-                        .value()
-                        .as_ref()
-                        .unwrap()
-                        .as_shape_id()
-                        .unwrap()
-                        .clone(),
-                )),
-            ));
-        }
+        return if member.name() == MEMBER_MEMBER {
+            Ok(ListBuilder::new(&id, member.target()))
+        } else {
+            ParserError::new("parse_list_statement")
+                .unreachable_rule()
+                .debug_context(&member)
+                .into()
+        };
     }
     ParserError::unreachable("parse_list_statement").into()
 }
 
-fn parse_set_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_map_statement(input_pair: Pair<'_, Rule>) -> ModelResult<MapBuilder> {
     let (id, members) = parse_membered_statement(input_pair)?;
+    let mut key: Option<String> = None;
+    let mut value: Option<String> = None;
     for member in members {
-        if member.id() == &Identifier::from_str("member").unwrap() {
-            return Ok((
-                id,
-                ShapeKind::Set(ListOrSet::new(
-                    member
-                        .value()
-                        .as_ref()
-                        .unwrap()
-                        .as_shape_id()
-                        .unwrap()
-                        .clone(),
-                )),
-            ));
-        }
-    }
-    ParserError::unreachable("parse_set_statement").into()
-}
-
-fn parse_map_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
-    let (id, members) = parse_membered_statement(input_pair)?;
-    let mut key: Option<ShapeID> = None;
-    let mut value: Option<ShapeID> = None;
-    for member in members {
-        if member.id() == &Identifier::from_str("key").unwrap() {
-            key = Some(
-                member
-                    .value()
-                    .as_ref()
-                    .unwrap()
-                    .as_shape_id()
-                    .unwrap()
-                    .clone(),
-            )
-        } else if member.id() == &Identifier::from_str("value").unwrap() {
-            value = Some(
-                member
-                    .value()
-                    .as_ref()
-                    .unwrap()
-                    .as_shape_id()
-                    .unwrap()
-                    .clone(),
-            )
+        if member.name() == MEMBER_KEY {
+            key = Some(member.target().to_string())
+        } else if member.name() == MEMBER_VALUE {
+            value = Some(member.target().to_string())
         } else {
             return ParserError::new("parse_map_statement")
                 .unreachable_rule()
@@ -458,34 +417,38 @@ fn parse_map_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, Sh
         }
     }
     match (key, value) {
-        (Some(k), Some(v)) => Ok((id, ShapeKind::Map(Map::new(k, v)))),
+        (Some(k), Some(v)) => Ok(MapBuilder::new(&id, &k, &v)),
         _ => ParserError::unreachable("parse_map_statement").into(),
     }
 }
 
-fn parse_structure_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_structure_statement(input_pair: Pair<'_, Rule>) -> ModelResult<StructureBuilder> {
     let (id, members) = parse_membered_statement(input_pair)?;
-    Ok((
-        id,
-        ShapeKind::Structure(StructureOrUnion::with_members(members.as_slice())),
-    ))
+    let mut shape = StructureBuilder::new(&id);
+    for member in members {
+        let _ = shape.add_member(member);
+    }
+    Ok(shape)
 }
 
-fn parse_union_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_union_statement(input_pair: Pair<'_, Rule>) -> ModelResult<StructureBuilder> {
     let (id, members) = parse_membered_statement(input_pair)?;
-    Ok((
-        id,
-        ShapeKind::Union(StructureOrUnion::with_members(members.as_slice())),
-    ))
+    let mut shape = StructureBuilder::new(&id);
+    for member in members {
+        let _ = shape.add_member(member);
+    }
+    Ok(shape)
 }
 
-fn parse_membered_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, Vec<Member>)> {
-    let mut id: Option<Identifier> = None;
-    let mut members: Vec<Member> = Default::default();
+fn parse_membered_statement(
+    input_pair: Pair<'_, Rule>,
+) -> ModelResult<(String, Vec<MemberBuilder>)> {
+    let mut id: Option<String> = None;
+    let mut members: Vec<MemberBuilder> = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::identifier => {
-                id = Some(Identifier::from_str(inner.as_str())?);
+                id = Some(inner.as_str().to_string());
             }
             Rule::empty_shape_members => {}
             Rule::populated_shape_members => {
@@ -501,11 +464,11 @@ fn parse_membered_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifie
     }
 }
 
-fn parse_populated_shape_members(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<Member>> {
+fn parse_populated_shape_members(input_pair: Pair<'_, Rule>) -> ModelResult<Vec<MemberBuilder>> {
     let mut members = Vec::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
-            Rule::hape_member_kvp => {
+            Rule::shape_member_kvp => {
                 members.push(parse_shape_member_kvp(inner)?);
             }
             _ => unexpected!("parse_populated_shape_members", inner),
@@ -514,11 +477,11 @@ fn parse_populated_shape_members(input_pair: Pair<'_, Rule>) -> CoreResult<Vec<M
     Ok(members)
 }
 
-fn parse_shape_member_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<Member> {
+fn parse_shape_member_kvp(input_pair: Pair<'_, Rule>) -> ModelResult<MemberBuilder> {
     let mut documentation: Vec<String> = Default::default();
-    let mut traits: Vec<AppliedTrait> = Default::default();
-    let mut id: Option<Identifier> = None;
-    let mut shape_id: Option<ShapeID> = None;
+    let mut traits: Vec<TraitBuilder> = Default::default();
+    let mut id: Option<String> = None;
+    let mut shape_id: Option<String> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::documentation_text => {
@@ -528,43 +491,54 @@ fn parse_shape_member_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<Member> {
                 traits = parse_trait_statements(inner)?;
             }
             Rule::identifier => {
-                id = Some(Identifier::from_str(inner.as_str())?);
+                id = Some(inner.as_str().to_string());
             }
             Rule::shape_id => {
-                shape_id = Some(ShapeID::from_str(inner.as_str())?);
+                shape_id = Some(inner.as_str().to_string());
             }
             _ => unexpected!("parse_shape_member_kvp", inner),
         }
     }
     match (id, shape_id) {
         (Some(id), Some(shape_id)) => {
-            let mut member = Member::new(id, shape_id);
-            for doc in documentation {
-                member.documentation(&doc);
-            }
-            for a_trait in traits {
-                member.add_trait(a_trait);
-            }
+            let mut member = MemberBuilder::new(&id, &shape_id);
+            apply_traits(&mut member, &documentation, &traits);
             Ok(member)
         }
         _ => ParserError::unreachable("parse_shape_member_kvp").into(),
     }
 }
 
-fn parse_service_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_service_statement(input_pair: Pair<'_, Rule>) -> ModelResult<ServiceBuilder> {
     let (id, object) = parse_id_and_object(input_pair)?;
     if let NodeValue::Object(object) = object {
-        let mut service = Service::default();
+        let mut service = ServiceBuilder::new(
+            &id,
+            object.get(MEMBER_VERSION).unwrap().as_string().unwrap(),
+        );
         for (key, value) in object {
-            match &key {
-                Key::Identifier(id) => {
-                    if id.to_string() == MEMBER_VERSION
-                        || id.to_string() == MEMBER_OPERATIONS
-                        || id.to_string() == MEMBER_RESOURCES
-                    {
-                        service.set_member(Member::with_value(id.clone(), value))?;
+            match key.as_str() {
+                MEMBER_VERSION => {}
+                MEMBER_OPERATIONS => {
+                    if let NodeValue::Array(values) = value {
+                        for value in values {
+                            let _ = service.operation(&value.as_string().unwrap());
+                        }
                     } else {
-                        return Err(ErrorKind::UnknownMember(key.to_string()).into());
+                        return ParserError::unreachable("parse_service_statement")
+                            .context(&value)
+                            .into();
+                    }
+                }
+                MEMBER_RESOURCES => {
+                    if let NodeValue::Array(values) = value {
+                        for value in values {
+                            let _ = service.resource(&value.as_string().unwrap());
+                        }
+                    } else {
+                        return ParserError::unreachable("parse_service_statement")
+                            .context(&value)
+                            .into();
                     }
                 }
                 _ => {
@@ -574,7 +548,7 @@ fn parse_service_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier
                 }
             }
         }
-        Ok((id, ShapeKind::Service(service)))
+        Ok(service)
     } else {
         ParserError::unreachable("parse_service_statement")
             .context(&object)
@@ -582,20 +556,27 @@ fn parse_service_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier
     }
 }
 
-fn parse_operation_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_operation_statement(input_pair: Pair<'_, Rule>) -> ModelResult<OperationBuilder> {
     let (id, object) = parse_id_and_object(input_pair)?;
     if let NodeValue::Object(object) = object {
-        let mut operation = Operation::default();
+        let mut operation = OperationBuilder::new(&id);
         for (key, value) in object {
-            match &key {
-                Key::Identifier(id) => {
-                    if id.to_string() == MEMBER_INPUT
-                        || id.to_string() == MEMBER_OUTPUT
-                        || id.to_string() == MEMBER_ERRORS
-                    {
-                        operation.set_member(Member::with_value(id.clone(), value))?;
+            match key.as_str() {
+                MEMBER_INPUT => {
+                    let _ = operation.input(&value.as_string().unwrap());
+                }
+                MEMBER_OUTPUT => {
+                    let _ = operation.output(&value.as_string().unwrap());
+                }
+                MEMBER_ERRORS => {
+                    if let NodeValue::Array(values) = value {
+                        for value in values {
+                            let _ = operation.error(&value.as_string().unwrap());
+                        }
                     } else {
-                        return Err(ErrorKind::UnknownMember(key.to_string()).into());
+                        return ParserError::unreachable("parse_operation_statement")
+                            .context(&value)
+                            .into();
                     }
                 }
                 _ => {
@@ -605,7 +586,7 @@ fn parse_operation_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifi
                 }
             }
         }
-        Ok((id, ShapeKind::Operation(operation)))
+        Ok(operation)
     } else {
         ParserError::unreachable("parse_operation_statement")
             .context(&object)
@@ -613,27 +594,72 @@ fn parse_operation_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifi
     }
 }
 
-fn parse_resource_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, ShapeKind)> {
+fn parse_resource_statement(input_pair: Pair<'_, Rule>) -> ModelResult<ResourceBuilder> {
     let (id, object) = parse_id_and_object(input_pair)?;
     if let NodeValue::Object(object) = object {
-        let mut resource = Resource::default();
+        let mut resource = ResourceBuilder::new(&id);
         for (key, value) in object {
-            match &key {
-                Key::Identifier(id) => {
-                    if id.to_string() == MEMBER_IDENTIFIERS
-                        || id.to_string() == MEMBER_CREATE
-                        || id.to_string() == MEMBER_PUT
-                        || id.to_string() == MEMBER_READ
-                        || id.to_string() == MEMBER_UPDATE
-                        || id.to_string() == MEMBER_DELETE
-                        || id.to_string() == MEMBER_LIST
-                        || id.to_string() == MEMBER_OPERATIONS
-                        || id.to_string() == MEMBER_COLLECTION_OPERATIONS
-                        || id.to_string() == MEMBER_RESOURCES
-                    {
-                        resource.set_member(Member::with_value(id.clone(), value))?;
+            match key.as_str() {
+                MEMBER_IDENTIFIERS => {
+                    if let NodeValue::Object(identifiers) = value {
+                        for (id, target) in identifiers {
+                            let _ = resource.identifier(&id, &target.as_string().unwrap());
+                        }
                     } else {
-                        return Err(ErrorKind::UnknownMember(key.to_string()).into());
+                        return ParserError::unreachable("parse_resource_statement")
+                            .context(&value)
+                            .into();
+                    }
+                }
+                MEMBER_CREATE => {
+                    let _ = resource.create(&value.as_string().unwrap());
+                }
+                MEMBER_PUT => {
+                    let _ = resource.put(&value.as_string().unwrap());
+                }
+                MEMBER_READ => {
+                    let _ = resource.read(&value.as_string().unwrap());
+                }
+                MEMBER_UPDATE => {
+                    let _ = resource.update(&value.as_string().unwrap());
+                }
+                MEMBER_DELETE => {
+                    let _ = resource.delete(&value.as_string().unwrap());
+                }
+                MEMBER_LIST => {
+                    let _ = resource.list(&value.as_string().unwrap());
+                }
+                MEMBER_OPERATIONS => {
+                    if let NodeValue::Array(values) = value {
+                        for value in values {
+                            let _ = resource.operation(&value.as_string().unwrap());
+                        }
+                    } else {
+                        return ParserError::unreachable("parse_resource_statement")
+                            .context(&value)
+                            .into();
+                    }
+                }
+                MEMBER_COLLECTION_OPERATIONS => {
+                    if let NodeValue::Array(values) = value {
+                        for value in values {
+                            let _ = resource.collection_operation(&value.as_string().unwrap());
+                        }
+                    } else {
+                        return ParserError::unreachable("parse_resource_statement")
+                            .context(&value)
+                            .into();
+                    }
+                }
+                MEMBER_RESOURCES => {
+                    if let NodeValue::Array(values) = value {
+                        for value in values {
+                            let _ = resource.resource(&value.as_string().unwrap());
+                        }
+                    } else {
+                        return ParserError::unreachable("parse_resource_statement")
+                            .context(&value)
+                            .into();
                     }
                 }
                 _ => {
@@ -643,7 +669,7 @@ fn parse_resource_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifie
                 }
             }
         }
-        Ok((id, ShapeKind::Resource(resource)))
+        Ok(resource)
     } else {
         ParserError::unreachable("parse_resource_statement")
             .context(&object)
@@ -651,13 +677,13 @@ fn parse_resource_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifie
     }
 }
 
-fn parse_id_and_object(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, NodeValue)> {
-    let mut id: Option<Identifier> = None;
+fn parse_id_and_object(input_pair: Pair<'_, Rule>) -> ModelResult<(String, NodeValue)> {
+    let mut id: Option<String> = None;
     let mut node_value: Option<NodeValue> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::identifier => {
-                id = Some(Identifier::from_str(inner.as_str())?);
+                id = Some(inner.as_str().to_string());
             }
             Rule::empty_node_object => node_value = Some(empty_node_object()),
             Rule::populated_node_object => node_value = Some(parse_populated_node_object(inner)?),
@@ -670,25 +696,30 @@ fn parse_id_and_object(input_pair: Pair<'_, Rule>) -> CoreResult<(Identifier, No
     }
 }
 
-fn parse_apply_statement(input_pair: Pair<'_, Rule>) -> CoreResult<(ShapeID, AppliedTrait)> {
-    let mut id: Option<ShapeID> = None;
-    let mut a_trait: Option<AppliedTrait> = None;
+fn parse_apply_statement(input_pair: Pair<'_, Rule>) -> ModelResult<ReferenceBuilder> {
+    let mut id: Option<String> = None;
+    let mut a_trait: Option<TraitBuilder> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::identifier => {
-                id = Some(ShapeID::from_str(inner.as_str())?);
+                id = Some(inner.as_str().to_string());
             }
             Rule::a_trait => a_trait = Some(parse_a_trait(inner)?),
             _ => unexpected!("parse_apply_statement", inner),
         }
     }
-    match (id, a_trait) {
-        (Some(id), Some(a_trait)) => Ok((id, a_trait)),
-        _ => ParserError::unreachable("parse_apply_statement").into(),
+    if let Some(id) = id {
+        let mut reference = ReferenceBuilder::new(&id);
+        if let Some(a_trait) = a_trait {
+            let _ = reference.apply_trait(a_trait);
+        }
+        Ok(reference)
+    } else {
+        ParserError::unreachable("parse_apply_statement").into()
     }
 }
 
-fn parse_node_value(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
+fn parse_node_value(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     let inner: Pair<'_, Rule> = input_pair.into_inner().next().unwrap();
     Ok(match inner.as_rule() {
         Rule::empty_node_array => empty_node_array(),
@@ -709,7 +740,7 @@ fn parse_node_value(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
         Rule::kw_true => NodeValue::Boolean(true),
         Rule::kw_false => NodeValue::Boolean(false),
         Rule::kw_null => NodeValue::None,
-        Rule::shape_id => NodeValue::String(ShapeID::from_str(inner.as_str())?.to_string()),
+        Rule::shape_id => NodeValue::String(inner.as_str().to_string()),
         Rule::text_block => parse_text_block(inner)?,
         Rule::quoted_text => parse_quoted_text(inner)?,
         _ => {
@@ -720,29 +751,31 @@ fn parse_node_value(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
     })
 }
 
-fn parse_quoted_text(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
+fn parse_quoted_text(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     for inner in input_pair.into_inner() {
-        match inner.as_rule() {
-            Rule::quoted_chars => return Ok(NodeValue::String(inner.as_str().to_string())),
+        return match inner.as_rule() {
+            Rule::quoted_chars => Ok(NodeValue::String(inner.as_str().to_string())),
             _ => unexpected!("parse_quoted_text", inner),
-        }
+        };
     }
+    ParserError::unreachable("parse_quoted_text").into()
 }
 
-fn parse_text_block(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
+fn parse_text_block(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::block_quoted_chars => return Ok(NodeValue::String(inner.as_str().to_string())),
             _ => unexpected!("parse_text_block", inner),
         }
     }
+    ParserError::unreachable("parse_text_block").into()
 }
 
 fn empty_node_array() -> NodeValue {
     NodeValue::Array(Default::default())
 }
 
-fn parse_populated_node_array(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
+fn parse_populated_node_array(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     let mut array: Vec<NodeValue> = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
@@ -757,7 +790,7 @@ fn empty_node_object() -> NodeValue {
     NodeValue::Object(Default::default())
 }
 
-fn parse_populated_node_object(input_pair: Pair<'_, Rule>) -> CoreResult<NodeValue> {
+fn parse_populated_node_object(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     let mut object: ValueMap = Default::default();
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
@@ -771,16 +804,16 @@ fn parse_populated_node_object(input_pair: Pair<'_, Rule>) -> CoreResult<NodeVal
     Ok(NodeValue::Object(object))
 }
 
-fn parse_node_object_kvp(input_pair: Pair<'_, Rule>) -> CoreResult<(Key, NodeValue)> {
-    let mut key: Option<Key> = None;
+fn parse_node_object_kvp(input_pair: Pair<'_, Rule>) -> ModelResult<(String, NodeValue)> {
+    let mut key: Option<String> = None;
     let mut value: Option<NodeValue> = None;
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::identifier => {
-                key = Some(Key::Identifier(Identifier::from_str(inner.as_str())?));
+                key = Some(inner.as_str().to_string());
             }
             Rule::quoted_text => {
-                key = Some(Key::String(inner.as_str().to_string()));
+                key = Some(inner.as_str().to_string());
             }
             Rule::node_value => value = Some(parse_node_value(inner)?),
             _ => unexpected!("parse_node_object_kvp", inner),
@@ -797,6 +830,15 @@ fn from_pest_error(e: PestError<Rule>) -> Error {
         e,
         ErrorKind::Deserialization("Smithy".to_string(), "pest".to_string(), None),
     )
+}
+
+fn apply_traits(shape: &mut impl ShapeTraits, doc: &[String], traits: &[TraitBuilder]) {
+    if !doc.is_empty() {
+        let _ = shape.documentation(&doc.join("\n"));
+    }
+    for a_trait in traits {
+        let _ = shape.apply_trait(a_trait.clone());
+    }
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 use atelier_core::builder::{
     traits, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
-    SimpleShapeBuilder, StructureBuilder,
+    ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
 use atelier_core::error::ErrorSource;
 use atelier_core::model::Model;

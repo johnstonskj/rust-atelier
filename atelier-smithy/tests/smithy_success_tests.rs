@@ -1,11 +1,11 @@
 use atelier_core::io::read_model_from_string;
-use atelier_core::model::shapes::ShapeKind;
-use atelier_core::model::{Annotated, Named, ShapeID};
+use atelier_core::model::shapes::{Shape, ShapeKind};
+use atelier_core::model::ShapeID;
 use atelier_core::syntax::{
     SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET,
     SHAPE_STRUCTURE, SHAPE_UNION,
 };
-use atelier_smithy::io::SmithyReader;
+use atelier_smithy::SmithyReader;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -41,7 +41,7 @@ fn test_file_parses(file_name: &str) {
 
     let mut reader = SmithyReader::default();
     let result = read_model_from_string(&mut reader, content);
-    let trait_trait = ShapeID::from_str("trait").unwrap();
+    let trait_trait = ShapeID::from_str("smithy.api#trait").unwrap();
     match result {
         Ok(parsed) => {
             let mut names = parsed
@@ -56,7 +56,7 @@ fn test_file_parses(file_name: &str) {
                             ""
                         },
                         match shape.body() {
-                            ShapeKind::SimpleType(v) => v.to_string(),
+                            ShapeKind::Simple(v) => v.to_string(),
                             ShapeKind::List(_) => SHAPE_LIST.to_string(),
                             ShapeKind::Set(_) => SHAPE_SET.to_string(),
                             ShapeKind::Map(_) => SHAPE_MAP.to_string(),
@@ -65,7 +65,7 @@ fn test_file_parses(file_name: &str) {
                             ShapeKind::Service(_) => SHAPE_SERVICE.to_string(),
                             ShapeKind::Operation(_) => SHAPE_OPERATION.to_string(),
                             ShapeKind::Resource(_) => SHAPE_RESOURCE.to_string(),
-                            ShapeKind::Apply => SHAPE_APPLY.to_string(),
+                            ShapeKind::Unresolved => SHAPE_APPLY.to_string(),
                         }
                     )
                 })

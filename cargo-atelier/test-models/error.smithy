@@ -7,8 +7,3 @@ structure thisIsMyStructure {
     someJSONThing: someUnknownShape,
     OK: Boolean
 }
-
-string someUnknownShape
-
-@trait
-structure ThisIsNotAGoodName {}

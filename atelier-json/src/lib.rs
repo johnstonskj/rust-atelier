@@ -57,7 +57,7 @@ The following will parse the model above.
 
 ```rust
 use atelier_core::io::read_model_from_string;
-use atelier_json::io::JsonReader;
+use atelier_json::JsonReader;
 
 # const JSON: &str =
 #        r#"{ "smithy": "1.0", "shapes": { "smithy.example#MyString": { "type": "string" } } }"#;
@@ -93,7 +93,24 @@ println!("{:#?}", result.unwrap());
 )]
 
 // ------------------------------------------------------------------------------------------------
+// Public Values
+// ------------------------------------------------------------------------------------------------
+
+///
+/// The extension to use when reading from, or writing to, files of this type.
+///
+pub const FILE_EXTENSION: &str = "json";
+
+// ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-pub mod io;
+#[doc(hidden)]
+pub mod reader;
+pub use reader::JsonReader;
+
+#[doc(hidden)]
+pub mod writer;
+pub use writer::JsonWriter;
+
+mod syntax;

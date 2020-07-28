@@ -17,7 +17,7 @@
 * use atelier_core::action::lint::{run_linter_actions, NamingConventions};
 * use atelier_core::action::Linter;
 * use atelier_core::builder::{
-*     ListBuilder, ModelBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+*     ListBuilder, ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder
 * };
 * use atelier_core::model::{NamespaceID, Model};
 * use atelier_core::Version;

@@ -1,7 +1,17 @@
 /*!
 Builders to construct models in a more fluent style. See the example in the
-[library overview](../../index.html#builder-api-example).
+[library overview](../index.html#the-model-builder-api-example).
 
+Typically the model is constructed by calling the shape methods (`simple_shape`, `list`, `map`,
+`structure`, `service`, etc.) providing a corresponding builder instance that is cached in the
+model builder. When the Model is constructed all of these builders are executed to construct the
+corresponding shapes in the semantic model. This allows for name resolution to be done once all
+members are added to the model.
+
+Note that the builder API does not do any model consistency checking, other than 1) checking the
+syntax of strings used to construct `Namespace`, `Identifier`, and `ShapeID` values, 2) ensuring
+that all unqualified names can be resolved to absolute shape identifiers as required by the semantic
+model. In these cases the model builder does not currently return `Result` values, but will panic.
 */
 
 use crate::error::ErrorKind;
@@ -164,17 +174,18 @@ impl ModelBuilder {
 
     /// Short-cut method, this creates a new `ShapeKind::Unresolved` in the model.
     pub fn uses(&mut self, shape: &str) -> &mut Self {
-        self.shapes
-            .push(TopLevelShapeBuilder::Reference(ReferenceBuilder::new(
-                shape,
-            )));
-        self
+        self.reference(ReferenceBuilder::new(shape))
     }
 
     /// Short-cut method, this creates a new `ShapeKind::Unresolved`, with a trait, in the model.
     pub fn apply(&mut self, shape: &str, a_trait: TraitBuilder) -> &mut Self {
         let mut builder = ReferenceBuilder::new(shape);
         let _ = builder.apply_trait(a_trait);
+        self.reference(builder)
+    }
+
+    /// Create and add a new resource shape to this model using the `ResourceBuilder` instance.
+    pub fn reference(&mut self, builder: ReferenceBuilder) -> &mut Self {
         self.shapes.push(TopLevelShapeBuilder::Reference(builder));
         self
     }
@@ -204,12 +215,10 @@ impl ModelBuilder {
             {
                 self.prelude_namespace.make_shape(shape_name)
             } else {
-                eprintln!("name: {} -> {}", name, shape_name);
-                eprintln!("{:?}", self.shape_names);
-                panic!(ErrorKind::UnknownShape(name.to_string()))
+                panic!("{:?}", ErrorKind::UnknownShape(name.to_string()))
             }
         } else {
-            panic!(ErrorKind::InvalidShapeID(name.to_string()))
+            panic!("{:?}", ErrorKind::InvalidShapeID(name.to_string()))
         }
     }
 
@@ -264,18 +273,19 @@ impl ModelBuilder {
     }
 
     fn make_map(&self, builder: &MapBuilder) -> TopLevelShape {
+        println!("{:#?}", builder);
         let shape_name = self.resolve_shape_name(&builder.shape_name);
         TopLevelShape::with_traits(
             shape_name.clone(),
             ShapeKind::Map(Map::from(
                 MemberShape::with_traits(
                     shape_name.make_member(builder.key.member_name.parse().unwrap()),
-                    builder.key.target.parse().unwrap(),
+                    self.resolve_shape_name(&builder.key.target),
                     &self.make_traits(&builder.key.applied_traits),
                 ),
                 MemberShape::with_traits(
                     shape_name.make_member(builder.value.member_name.parse().unwrap()),
-                    builder.value.target.parse().unwrap(),
+                    self.resolve_shape_name(&builder.value.target),
                     &self.make_traits(&builder.value.applied_traits),
                 ),
             )),
@@ -433,7 +443,7 @@ impl ModelBuilder {
 pub mod shapes;
 pub use shapes::{
     ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ReferenceBuilder, ResourceBuilder,
-    ServiceBuilder, SimpleShapeBuilder, StructureBuilder,
+    ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
 
 #[doc(hidden)]

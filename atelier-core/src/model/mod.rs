@@ -88,23 +88,81 @@ impl Model {
     }
 
     // --------------------------------------------------------------------------------------------
-    object_member! { metadata, metadata_value, String => Value, has_metadata, has_metadata_value, add_metadata, remove_metadata }
 
-    object_member! { shapes, shape, ShapeID, TopLevelShape, has_shapes, has_shape, add_shape = add_a_shape, remove_shape }
-
-    /// Return a list of all the shape IDs representing shapes defined in the model.
-    pub fn shape_names(&self) -> impl Iterator<Item = &ShapeID> {
-        self.shapes.keys()
+    /// Returns `true` if this model's **metadata** collection has _any_ elements, else `false`.
+    pub fn has_metadata(&self) -> bool {
+        !self.metadata.is_empty()
     }
 
-    /// Add an instance of `Shape`.
-    pub fn add_a_shape(&mut self, shape: TopLevelShape) -> ModelResult<Option<TopLevelShape>> {
+    /// Returns `true` if this model's **metadata** collection has a shape with the provided key`, else `false`.
+    pub fn has_metadata_value(&self, key: &str) -> bool {
+        !self.metadata.contains_key(key)
+    }
+
+    /// Returns the value in this model's **metadata** collection with the provide key.
+    pub fn metadata_value(&self, key: &str) -> Option<&Value> {
+        self.metadata.get(key)
+    }
+
+    /// Add a key/value pair to this model's **metadata** collection.
+    pub fn add_metadata(&mut self, key: String, metadata_value: Value) -> Option<Value> {
+        self.metadata.insert(key, metadata_value)
+    }
+
+    /// Remove the value with the associated key, from this model's **metadata** collection.
+    pub fn remove_metadata(&mut self, key: &str) -> Option<Value> {
+        self.metadata.remove(key)
+    }
+
+    /// Return an iterator over all key/value pairs in this model's **metadata** collection.
+    pub fn metadata(&self) -> impl Iterator<Item = (&String, &Value)> {
+        self.metadata.iter()
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    /// Returns `true` if this model's **shapes** collection has _any_ elements, else `false`.
+    pub fn has_shapes(&self) -> bool {
+        !self.shapes.is_empty()
+    }
+
+    /// Returns `true` if this model's **shapes** collection has a shape with the provided `ShapeID`, else `false`.
+    pub fn has_shape(&self, shape_id: &ShapeID) -> bool {
+        !self.shapes.contains_key(shape_id)
+    }
+
+    /// Returns the shape in this model's **shapes** collection with the provided `ShapeID`.
+    pub fn shape(&self, shape_id: &ShapeID) -> Option<&TopLevelShape> {
+        self.shapes.get(shape_id)
+    }
+
+    /// Add an instance of `TopLevelShape` to  this model's **shapes** collection.
+    pub fn add_shape(&mut self, shape: TopLevelShape) -> ModelResult<Option<TopLevelShape>> {
         if shape.id().is_member() {
             Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into())
         } else {
             // TODO: check for any existing unresolved shape
             Ok(self.shapes.insert(shape.id().clone(), shape))
         }
+    }
+
+    /// Remove any element, equal to the provided value, from this model's **shapes** collection.
+    pub fn remove_shape(&mut self, shape_id: &ShapeID) -> Option<TopLevelShape> {
+        self.shapes.remove(shape_id)
+    }
+
+    /// Return an iterator over all shapes in this model's **shapes** collection.
+    pub fn shapes(&self) -> impl Iterator<Item = &TopLevelShape> {
+        self.shapes.values()
+    }
+
+    /// Return an iterator over all names for shapes defined within this model; this filters out
+    /// any shape in the model's **shapes** collection with kind `ShapeKind::Unresolved`.
+    pub fn shape_names(&self) -> impl Iterator<Item = &ShapeID> {
+        self.shapes
+            .values()
+            .filter(|shape| !shape.is_unresolved())
+            .map(|shape| shape.id())
     }
 
     // --------------------------------------------------------------------------------------------

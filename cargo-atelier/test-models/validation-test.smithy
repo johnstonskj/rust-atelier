@@ -1,9 +1,7 @@
 namespace org.example.smithy
 
-@unknownTrait
 structure MyStructure {
     known: String,
-    unknown: NotString,
     wrongType: SomeOperation,
 }
 
@@ -12,5 +10,6 @@ operation SomeOperation {
 }
 
 service SomeService {
+    version: "1.0",
     operations: [MyStructure]
 }

@@ -1,12 +1,3 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::{Command, File, FileCommand, FileFormat, Options, TransformCommand};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -72,15 +63,15 @@ pub(crate) enum SubCommand {
         /// The representation of the output file
         #[structopt(short, long, default_value = "json")]
         write_format: FileFormat,
+
+        /// The namespace to write, if a format is constrained to one
+        #[structopt(short, long)]
+        namespace: Option<String>,
     },
 }
 
 #[derive(Debug)]
 pub struct CommandLineError {}
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
 // Public Functions
@@ -123,6 +114,7 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
             read_format,
             out_file,
             write_format,
+            namespace,
         } => Ok(Command::Convert(
             TransformCommand {
                 input_file: File {
@@ -133,6 +125,7 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
                     file_name: out_file,
                     format: write_format,
                 },
+                namespace,
             },
             options,
         )),
@@ -162,11 +155,3 @@ impl CommandLineError {
         Box::new(Self::default())
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
