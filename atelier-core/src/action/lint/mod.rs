@@ -128,10 +128,7 @@ impl Linter for NamingConventions {
 
             match shape.body() {
                 // TODO: term used in names
-                // simple shape, list/set/map/structure/union should not contain other's terms
-                // operation usage should check any prefix for the correct verb
-                // operation input/output should check suffix
-                //
+                // (https://github.com/johnstonskj/rust-atelier/issues/7)
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
                     for member in body.members() {
                         self.check_member_name(member.id());

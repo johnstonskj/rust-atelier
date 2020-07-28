@@ -142,6 +142,7 @@ impl Model {
             Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into())
         } else {
             // TODO: check for any existing unresolved shape
+            // (https://github.com/johnstonskj/rust-atelier/issues/3)
             Ok(self.shapes.insert(shape.id().clone(), shape))
         }
     }

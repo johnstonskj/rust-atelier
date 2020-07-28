@@ -74,6 +74,7 @@ impl Shape for MemberShape {
 
     fn apply_trait(&mut self, a_trait: AppliedTrait) {
         // TODO: apply trait duplicate rules.
+        // (https://github.com/johnstonskj/rust-atelier/issues/5)
         self.traits.push(a_trait);
     }
 
