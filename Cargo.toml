@@ -1,3 +1,12 @@
 [workspace]
 
-members = ["atelier-lib", "atelier-json", "atelier-openapi", "atelier-smithy", "atelier-core", "cargo-atelier"]
+members = [
+    "atelier-core",
+    "atelier-json",
+    "atelier-lib",
+    "atelier-openapi",
+    "atelier-rdf",
+    "atelier-select",
+    "atelier-smithy",
+    "cargo-atelier"
+    ]

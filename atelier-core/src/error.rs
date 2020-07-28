@@ -5,6 +5,7 @@ Standard `Error`, `ErrorKind`, and `Result` types.
 #![allow(missing_docs)]
 
 use crate::action::ActionIssue;
+use crate::model::identity::ShapeID;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -23,6 +24,26 @@ error_chain! {
         InvalidShapeID(id: String) {
             description("Invalid shape ID format")
             display("Invalid shape ID format: '{}'", id)
+        }
+        #[doc("Expected an absolute shape ID")]
+        AbsoluteShapeIDExpected(id: ShapeID) {
+            description("Expected an absolute shape ID")
+            display("Expected an absolute shape ID: '{}'", id)
+        }
+        #[doc("Expected a shape, not member, ID")]
+        ShapeIDExpected(id: ShapeID) {
+            description("Expected a shape, not member, ID")
+            display("Expected a shape, not member, ID: '{}'", id)
+        }
+        #[doc("Expected a member, not shape, ID")]
+        MemberIDExpected(id: ShapeID) {
+            description("Expected a member, not shape, ID")
+            display("Expected a member, not shape, ID: '{}'", id)
+        }
+        #[doc("Invalid shape kind variant")]
+        InvalidShapeVariant(expecting: String) {
+            description("Invalid shape kind variant")
+            display("Invalid shape kind variant, expecting a `ShapeKind::{}`", expecting)
         }
         #[doc("Invalid value variant")]
         InvalidValueVariant(expecting: String) {
@@ -48,6 +69,11 @@ error_chain! {
         Deserialization(representation: String, location: String, context: Option<String>) {
             description("An error occurred de-serializing a model")
             display("An error occurred de-serializing a model from {} at location '{}' (context '{:?}')", representation, location, context)
+        }
+        #[doc("A reference to an unknown shape ID was encountered")]
+        UnknownShape(s: String) {
+            description("A reference to an unknown shape ID was encountered")
+            display("A reference to an unknown shape ID was encountered: {}", s)
         }
         #[doc("An unknown member ID was encountered")]
         UnknownMember(s: String) {
@@ -83,31 +109,9 @@ pub enum ErrorSource {
     Server,
 }
 
-///
-/// Allows any value that implements `Display` to be the message in a panic.
-///
-pub trait AndPanic: Display {
-    ///
-    /// Call `panic!` using the string serialization of the current value.
-    ///
-    fn panic(&self) -> ! {
-        panic!(self.to_string())
-    }
-}
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-pub(crate) fn invalid_value_variant(var: &str) -> ! {
-    ErrorKind::InvalidValueVariant(var.to_string()).panic()
-}
-
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
-
-impl AndPanic for ErrorKind {}
 
 impl Display for ErrorSource {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

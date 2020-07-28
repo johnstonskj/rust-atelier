@@ -28,8 +28,8 @@ impl Default for DebugWriter {
     }
 }
 
-impl<'a> ModelWriter<'a> for DebugWriter {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::error::Result<()> {
+impl ModelWriter for DebugWriter {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> crate::error::Result<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
     }

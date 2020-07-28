@@ -1,0 +1,22 @@
+[package]
+name = "atelier_rdf"
+description = "Rust native RDF format for the AWS Smithy semantic model."
+version = "0.1.0"
+authors = ["Simon Johnston <johnstonskj@gmail.com>"]
+edition = "2018"
+documentation = "https://docs.rs/atelier_rdf/"
+repository = "https://github.com/johnstonskj/rust-atelier.git"
+license = "MIT"
+readme = "README.md"
+publish = true
+
+[package.metadata.docs.rs]
+# This sets the default target to `x86_64-unknown-linux-gnu`
+# and only builds that target for documentation.
+targets = ["x86_64-unknown-linux-gnu"]
+all-features = true
+
+[dependencies]
+atelier_core = { version = "0.2.0", path = "../atelier-core" }
+lazy_static = "1.4.0"
+regex = "1.3.9"

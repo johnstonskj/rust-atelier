@@ -1,5 +1,5 @@
 use atelier_core::io::read_model_from_string;
-use atelier_json::io::JsonReader;
+use atelier_json::JsonReader;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;

@@ -1,21 +1,14 @@
-use atelier_core::model::identity::{Identifier, Namespace, ShapeID};
+use atelier_core::model::identity::{Identifier, NamespaceID, ShapeID};
 use std::str::FromStr;
 
-const ID_GOOD: &[&str] = &["a", "aBc", "_aBc", "a1", "a1c", "a_c", "a_"];
+const ID_GOOD: &[&str] = &["a", "aBc", "_aBc", "___aBc", "a1", "a1c", "a_c", "a_"];
 const ID_BAD: &[&str] = &["", "_", "1", "1a", "_1", "a!"];
 
 const NAMESPACE_GOOD: &[&str] = &["aBc", "aBc.dEf", "aBc.dEf.gHi"];
 const NAMESPACE_BAD: &[&str] = &["", ".aBc", "aBc."];
 
-const SHAPE_ID_GOOD: &[&str] = &[
-    "aBc",
-    "aBc#dEf",
-    "aBc.dEf#gHi",
-    "aBc$xYz",
-    "aBc#dEf$xYz",
-    "aBc.dEf#gHi$xYz",
-];
-const SHAPE_ID_BAD: &[&str] = &[""];
+const SHAPE_ID_GOOD: &[&str] = &["aBc#dEf", "aBc.dEf#gHi", "aBc#dEf$xYz", "aBc.dEf#gHi$xYz"];
+const SHAPE_ID_BAD: &[&str] = &["", "aBc", "aBc$xYz"];
 
 // ------------------------------------------------------------------------------------------------
 
@@ -31,13 +24,13 @@ fn test_identifier_is_valid() {
 }
 
 #[test]
-fn test_namepace_is_valid() {
+fn test_namespace_is_valid() {
     for id in NAMESPACE_GOOD {
-        assert!(Namespace::is_valid(id));
+        assert!(NamespaceID::is_valid(id));
     }
 
     for id in NAMESPACE_BAD {
-        assert!(!Namespace::is_valid(id));
+        assert!(!NamespaceID::is_valid(id));
     }
 }
 
@@ -68,11 +61,11 @@ fn test_identifier_from_str() {
 #[test]
 fn test_namespace_from_str() {
     for id in NAMESPACE_GOOD {
-        assert!(Namespace::from_str(id).is_ok());
+        assert!(NamespaceID::from_str(id).is_ok());
     }
 
     for id in NAMESPACE_BAD {
-        assert!(Namespace::from_str(id).is_err());
+        assert!(NamespaceID::from_str(id).is_err());
     }
 }
 
@@ -91,18 +84,10 @@ fn test_shape_id_from_str() {
 
 #[test]
 fn test_shape_id_parts() {
-    let shape_id = ShapeID::from_str("SomeShapeName").unwrap();
-    assert!(shape_id.namespace().is_none());
-    assert_eq!(
-        shape_id.shape_name().to_string(),
-        "SomeShapeName".to_string()
-    );
-    assert!(shape_id.member_name().is_none());
-
     let shape_id = ShapeID::from_str("com.example#SomeShapeName").unwrap();
     assert_eq!(
         shape_id.namespace(),
-        &Some(Namespace::from_str("com.example").unwrap())
+        &NamespaceID::from_str("com.example").unwrap()
     );
     assert_eq!(
         shape_id.shape_name().to_string(),
@@ -113,7 +98,7 @@ fn test_shape_id_parts() {
     let shape_id = ShapeID::from_str("com.example#SomeShapeName$aMember").unwrap();
     assert_eq!(
         shape_id.namespace(),
-        &Some(Namespace::from_str("com.example").unwrap())
+        &NamespaceID::from_str("com.example").unwrap()
     );
     assert_eq!(
         shape_id.shape_name().to_string(),

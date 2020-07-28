@@ -1,108 +1,115 @@
 /*!
-This module describes actions that can operate on models. These take three major forms:
-
-1. **Linters**; these inspect the model for stylistic issues, they are a subset of validators.
-1. **Validators**; these inspect models for errors and warnings that may produce errors when the
-   model is used.
-1. **Transformers**; these take in a model and transform it into another model.
-
-# Example
-
-The following example is taken from the Smithy specification discussing
-[relative name resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution).
-The `run_validation_actions` function is commonly used to take a list of actions to be performed
-on the model in sequence.
-
-```rust
-use atelier_core::action::validate::{
-    NoOrphanedReferences, run_validation_actions, CorrectTypeReferences
-};
-use atelier_core::action::Validator;
-use atelier_core::model::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
-use atelier_core::model::Model;
-use atelier_core::Version;
-
-let model: Model = ModelBuilder::new("smithy.example", Some(Version::V10))
-    .uses("foo.baz#Bar")
-    .shape(SimpleShapeBuilder::string("MyString").into())
-    .shape(
-        StructureBuilder::new("MyStructure")
-            .member("a", "MyString")
-            .member("b", "smithy.example#MyString")
-            .member("c", "Bar")
-            .member("d", "foo.baz#Bar")
-            .member("e", "foo.baz#MyString")
-            .member("f", "String")
-            .member("g", "MyBoolean")
-            .member("h", "InvalidShape")
-            .into(),
-    )
-    .shape(SimpleShapeBuilder::boolean("MyBoolean").into())
-    .into();
-let result = run_validation_actions(&[
-        Box::new(NoOrphanedReferences::default()),
-        Box::new(CorrectTypeReferences::default()),
-    ], &model, false);
-```
-
-This will result in the following list of validation errors. Note that the error is denoted against
-shape or member identifier accordingly.
-
-```text
-[
-    ActionIssue {
-        reporter: "NoOrphanedReferences",
-        level: Error,
-        message: "Shape, or member, has a trait that refers to an unknown identifier: notKnown",
-        locus: Some(
-            ShapeID {
-                namespace: None,
-                shape_name: Identifier(
-                    "MyStructure",
-                ),
-                member_name: None,
-            },
-        ),
-    },
-    ActionIssue {
-        reporter: "NoOrphanedReferences",
-        level: Error,
-        message: "Shape, or member, refers to an unknown identifier: foo.baz#MyString",
-        locus: Some(
-            ShapeID {
-                namespace: None,
-                shape_name: Identifier(
-                    "MyStructure",
-                ),
-                member_name: None,
-            },
-        ),
-    },
-    ActionIssue {
-        reporter: "NoOrphanedReferences",
-        level: Error,
-        message: "Shape, or member, refers to an unknown identifier: InvalidShape",
-        locus: Some(
-            ShapeID {
-                namespace: None,
-                shape_name: Identifier(
-                    "MyStructure",
-                ),
-                member_name: None,
-            },
-        ),
-    },
-]
-```
-
+* This module provides a set of traits that describes actions that can operate on models. These
+* actions take three major forms; linters, validators, and transformers.
+*
+* 1. **Linters**; these inspect the model for stylistic issues, they are a subset of validators.
+* 1. **Validators**; these inspect models for errors and warnings that may produce errors when the
+*    model is used.
+* 1. **Transformers**; these take in a model and transform it into another model.
+*
+* # Example
+*
+* The following example is taken from the Smithy specification discussing
+* [relative name resolution](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution).
+* The `run_validation_actions` function is commonly used to take a list of actions to be performed
+* on the model in sequence.
+*
+* ```rust
+* use atelier_core::action::validate::{
+*     run_validation_actions, CorrectTypeReferences
+* };
+* use atelier_core::action::Validator;
+* use atelier_core::builder::{
+*     ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+* };
+* use atelier_core::model::Model;
+* use atelier_core::Version;
+*
+* let model: Model = ModelBuilder::new(Version::V10, "smithy.example")
+*     .uses("foo.baz#Bar")
+*     .structure(
+*         StructureBuilder::new("MyStructure")
+*             .member("a", "MyString")
+*             .member("b", "smithy.example#MyString")
+*             .member("d", "foo.baz#Bar")
+*             .member("e", "foo.baz#MyString")
+*             .member("f", "String")
+*             .member("g", "MyBoolean")
+*             .apply_trait(TraitBuilder::new("documentation"))
+*             .into(),
+*     )
+*     .simple_shape(SimpleShapeBuilder::string("MyString"))
+*     .simple_shape(SimpleShapeBuilder::boolean("MyBoolean"))
+*     .into();
+* let result = run_validation_actions(&mut [
+*         Box::new(CorrectTypeReferences::default()),
+*     ], &model, false);
+* ```
+*
+* This will result in the following list of validation errors. Note that the error is denoted against
+* shape or member identifier accordingly.
+*
+* ```text
+* [
+*     ActionIssue {
+*         reporter: "CorrectTypeReferences",
+*         level: Info,
+*         message: "The simple shape (smithy.example#MyBoolean) is simply a synonym, did you mean to add any constraint traits?",
+*         locus: Some(
+*             ShapeID {
+*                 namespace: NamespaceID(
+*                     "smithy.example",
+*                 ),
+*                 shape_name: Identifier(
+*                     "MyBoolean",
+*                 ),
+*                 member_name: None,
+*             },
+*         ),
+*     },
+*     ActionIssue {
+*         reporter: "CorrectTypeReferences",
+*         level: Info,
+*         message: "The simple shape (smithy.example#MyString) is simply a synonym, did you mean to add any constraint traits?",
+*         locus: Some(
+*             ShapeID {
+*                 namespace: NamespaceID(
+*                     "smithy.example",
+*                 ),
+*                 shape_name: Identifier(
+*                     "MyString",
+*                 ),
+*                 member_name: None,
+*             },
+*         ),
+*     },
+*     ActionIssue {
+*         reporter: "CorrectTypeReferences",
+*         level: Warning,
+*         message: "Structure member's type (foo.baz#MyString) cannot be resolved to a shape in this model.",
+*         locus: Some(
+*             ShapeID {
+*                 namespace: NamespaceID(
+*                     "smithy.example",
+*                 ),
+*                 shape_name: Identifier(
+*                     "MyStructure",
+*                 ),
+*                 member_name: Some(
+*                     Identifier(
+*                         "e",
+*                     ),
+*                 ),
+*             },
+*         ),
+*     },
+* ]
+* ```
+*
 */
 
-use crate::error::Result;
-use crate::model::shapes::{
-    ListOrSet, Map, Operation, Resource, Service, ShapeBody, SimpleType, StructureOrUnion, Trait,
-};
-use crate::model::values::{Key, NodeValue};
-use crate::model::{Annotated, Model, Named, ShapeID};
+use crate::error::Result as ModelResult;
+use crate::model::{Model, ShapeID};
 use std::fmt::{Display, Formatter};
 
 // ------------------------------------------------------------------------------------------------
@@ -135,192 +142,62 @@ pub struct ActionIssue {
 }
 
 ///
-/// A trait implemented by tools that provide validation over a model.
+/// A trait required by `Linter`, `Validator`, and `Transformer`.
 ///
 pub trait Action {
     ///
     /// This is a display label to use to determine the validator that causes an error.
     ///
     fn label(&self) -> &'static str;
+
+    ///
+    /// Return all the issues reported by this action, note that the set of issues aggregates across
+    /// multiple uses of the implementation, so for a lint tool the same `Linter::check` can be
+    /// for different models and the issues are the sum of all found in all models.
+    ///
+    fn issues(&self) -> &Vec<ActionIssue>;
+
+    ///
+    /// Return all the issues reported by this action in a mutable collection.
+    ///
+    fn issues_mut(&mut self) -> &mut Vec<ActionIssue>;
 }
 
 ///
-/// A trait implemented by tools that provide validation over a model.
+/// Check the model for stylistic or other conventions that the author should be aware of. An
+/// error represents a failure in the linter itself, not the presence of any issues which
+/// should be fetched using `Action::issues` or `Action::issues_mut`.
 ///
 pub trait Linter: Action {
     ///
-    /// Validate the model returning any issue, or issues, it may contain.
+    /// Check the model adding any issues found to the `Action:issues` collection.
     ///
-    fn check(&self, model: &Model) -> Option<Vec<ActionIssue>>;
+    fn check(&mut self, model: &Model) -> ModelResult<()>;
 }
 
 ///
-/// A trait implemented by tools that provide validation over a model.
+/// Validate the model according to rules that determine whether it is complete and usable.. An
+/// error represents a failure in the validator itself, not the presence of any issues which
+/// should be fetched using `Action::issues` or `Action::issues_mut`.
 ///
 pub trait Validator: Action {
     ///
-    /// Validate the model returning any issue, or issues, it may contain.
+    /// Validate the model adding any issues found to the `Action:issues` collection.
     ///
-    fn validate(&self, model: &Model) -> Option<Vec<ActionIssue>>;
+    fn validate(&mut self, model: &Model) -> ModelResult<()>;
 }
 
 ///
-/// A trait implemented by tools that transform one model into another.
+/// Create a new model from an existing one; this might be a filter, a decorator, or generator. An
+/// error represents a failure in the transformer itself, not the presence of any issues which
+/// should be fetched using `Action::issues` or `Action::issues_mut`.
 ///
 pub trait Transformer: Action {
     ///
     /// Transform the input model into another. This _may_ consume the input and produce an entirely
     /// new model, or it _may_ simply mutate the model and return the modified input.
     ///
-    fn transform(&self, model: Model) -> Result<Model>;
-}
-
-///
-/// A trait implemented by tools that wish to visit parts of the model and may choose to ignore
-/// some In this way a simple filter to read structures for example can be applied.
-///
-/// Each method in the trait will return `Ok` by default so a particular implementation can choose
-/// which methods to override.
-///
-pub trait ModelVisitor {
-    /// The error which will be returned by this model.
-    type Error;
-
-    /// Called once for each key in the model's metadata.
-    #[allow(unused_variables)]
-    fn metadata(&self, key: &Key, value: &NodeValue) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each simple shape.
-    #[allow(unused_variables)]
-    fn simple_shape(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &SimpleType,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each list shape.
-    #[allow(unused_variables)]
-    fn list(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &ListOrSet,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each set shape.
-    #[allow(unused_variables)]
-    fn set(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &ListOrSet,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each map shape.
-    #[allow(unused_variables)]
-    fn map(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &Map,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each structure shape.
-    #[allow(unused_variables)]
-    fn structure(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &StructureOrUnion,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each union shape.
-    #[allow(unused_variables)]
-    fn union(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &StructureOrUnion,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each service shape.
-    #[allow(unused_variables)]
-    fn service(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &Service,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each operation shape.
-    #[allow(unused_variables)]
-    fn operation(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        operation: &Operation,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each resource shape.
-    #[allow(unused_variables)]
-    fn resource(
-        &self,
-        id: &ShapeID,
-        traits: &[Trait],
-        shape: &Resource,
-    ) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-    /// Called for each apply statement.
-    #[allow(unused_variables)]
-    fn apply(&self, id: &ShapeID, traits: &[Trait]) -> std::result::Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-///
-/// Walk the provided model calling out to the visitor as necessary. This is a useful tool for use
-/// cases where you do not need to cross-validate model elements but can process the model shape by
-/// shape independently.
-///
-pub fn walk_model<V>(model: &Model, visitor: &V) -> std::result::Result<(), V::Error>
-where
-    V: ModelVisitor,
-{
-    for (key, value) in model.metadata() {
-        visitor.metadata(key, value)?;
-    }
-    for shape in model.shapes() {
-        match &shape.body() {
-            ShapeBody::SimpleType(body) => {
-                visitor.simple_shape(shape.id(), &shape.traits(), body)?
-            }
-            ShapeBody::List(body) => visitor.list(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Set(body) => visitor.set(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Map(body) => visitor.map(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Structure(body) => visitor.structure(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Union(body) => visitor.union(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Service(body) => visitor.service(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Operation(body) => visitor.operation(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Resource(body) => visitor.resource(shape.id(), &shape.traits(), body)?,
-            ShapeBody::Apply => visitor.apply(shape.id(), &shape.traits())?,
-        }
-    }
-    Ok(())
+    fn transform(&mut self, model: Model) -> ModelResult<Model>;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -445,6 +322,7 @@ impl ActionIssue {
 
 pub mod lint;
 
+#[doc(hidden)]
 pub mod transform;
 
 pub mod validate;

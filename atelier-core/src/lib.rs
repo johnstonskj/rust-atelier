@@ -1,276 +1,218 @@
 /*!
-* This crate provides a Rust native core model for the AWS [Smithy](https://github.com/awslabs/smithy) Interface Definition Language.
-*
-* This crate is the foundation for the Atelier set of crates, and provides the following components:
-*
-* 1. The [model](model/index.html) elements themselves that represents a Smithy model. This API is the
-*    in-memory representation shared by all Atelier crates and tools.
-* 1. The model [builder](model/builder/index.html) API that allow for a more _fluent_ and less repetative construction of a
-*    core model.
-* 1. The [prelude](prelude/index.html) model containing the set of shapes defined in the Smithy specification.
-* 1. Model [actions](action/index.html) that are used to implement linters, validators, and transformations.
-* 1. Traits for [reading/writing](io/index.html) models in different representations.
-* 1. Trait and simple implementation for a model [registry](registry/index.html).
-* 1. A common [error](error/index.html) module to be used by all Atelier crates.
-*
-* ## Data Model
-*
-* The following is a diagrammatic representation of the core model. For the most part this is a
-* direct transformation from the ABNF in the specification, although some of the distinctions between
-* different ID types (`Identifier`, `ShapeID`) are not illustrated. It also shows all the
-* shape types as subclasses of `Shape`.
-*
-* ```text
-* ┌───────────────┐
-* │ «enumeration» │
-* │   NodeValue   │
-* ├───────────────┤                 ┌─────────┐
-* │Array          │                 ○         ○ prelude
-* │Object         │                ╱│╲        ┼
-* │Number         │               ┌─────────────┐
-* │Boolean        │metadata       │    Model    │
-* │ShapeID        │┼○─────────────├─────────────┤
-* │TextBlock      │               │namespace    │
-* │String         │control_data   │             │┼──────┐       ┌─────────────┐
-* │None           │┼○─────────────│             │       │       │   ShapeID   │
-* └───────────────┘               └─────────────┘       │       ├─────────────┤
-*   ┼     ┼     ┌───────────────┐        ┼              │      ╱│namespace?   │
-*   │     │     │     Trait     │        │              └─────○─│shape_name   │
-*   │     └─────├───────────────┤        │           references╲│member_name? │
-*   │           │id             │        │                      │             │
-*   │           └───────────────┘        │                      └─────────────┘
-*   │             ╲│╱       ╲│╱          │                             ┼ id
-*   │              ○         ○           │                             │
-*   │     ┌────────┘         └───────┐   ○                             │
-*   │     ┼                          ┼  ╱│╲ shapes                     │
-* ┌───────────────┐               ┌─────────────┐                      │
-* │    Member     │╲member┌──────┼│    Shape    │┼─────────────────────┘
-* ├───────────────┤─○─────┘       └─────────────┘   ┌─────────────────────────┐
-* │id             │╱                     △          │         Service         │
-* └───────────────┘                      │          ├─────────────────────────┤
-* ┌───────────────┐                      │          │version                  │
-* │ «enumeration» │──────────────────────┼──────────│operations: [Operation]? │
-* │    Simple     │ ┌────────────┐       │          │resources: [Resource]?   │
-* ├───────────────┤ │    List    │       │          └─────────────────────────┘
-* │Blob           │ ├────────────┤       │          ┌─────────────────────────┐
-* │Boolean        │ │member      │───────┤          │        Operation        │
-* │Document       │ └────────────┘       │          ├─────────────────────────┤
-* │String         │ ┌────────────┐       │          │input: Structure?        │
-* │Byte           │ │    Set     │       ├──────────│output: Structure?       │
-* │Short          │ ├────────────┤       │          │errors: [Structure]?     │
-* │Integer        │ │member      │───────┤          └─────────────────────────┘
-* │Long           │ └────────────┘       │          ┌─────────────────────────┐
-* │Float          │ ┌────────────┐       │          │        Resource         │
-* │Double         │ │    Map     │       │          ├─────────────────────────┤
-* │BigInteger     │ ├────────────┤       │          │identifiers?             │
-* │BigDecimal     │ │key         │       │          │create: Operation?       │
-* │Timestamp      │ │value       │───────┤          │put: Operation?          │
-* └───────────────┘ └────────────┘       │          │read: Operation?         │
-*                   ┌────────────┐       ├──────────│update: Operation?       │
-*                   │ Structure  │───────┤          │delete: Operation?       │
-*                   └────────────┘       │          │list: : Operation?       │
-*                   ┌────────────┐       │          │operations: [Operation]? │
-*                   │   Union    │───────┤          │collection_operations:   │
-*                   └────────────┘       │          │    [Operation]?         │
-*                   ┌────────────┐       │          │resources: [Resource]?   │
-*                   │   Apply    │───────┘          └─────────────────────────┘
-*                   └────────────┘
-* ```
-*
-* # Model API Example
-*
-* The following example demonstrates the core model API to create a model for a simple service. The
-* service, `MessageOfTheDay` has a single resource `Message`. The resource has an identifier for the
-* date, but the `read` operation does not make the date member required and so will return the message
-* for the current date.
-*
-* This API acts as a set of generic data objects and as such has a tendency to be verbose in the
-* construction of models. The need to create a lot of `Identifier` and `ShapeID` instances, for example,
-* does impact the readability.
-*
-* ```rust
-* use atelier_core::model::shapes::{
-*     Member, Operation, Resource, Service, Shape, ShapeBody, SimpleType, StructureOrUnion,
-*     Trait, Valued,
-* };
-* use atelier_core::model::values::NodeValue;
-* use atelier_core::model::{Annotated, Identifier, Model, Namespace, ShapeID};
-* use atelier_core::Version;
-* use std::str::FromStr;
-*
-* // ----------------------------------------------------------------------------------------
-* let mut error = StructureOrUnion::new();
-* error.add_member_value(
-*     Identifier::from_str("errorMessage").unwrap(),
-*     NodeValue::ShapeID(ShapeID::from_str("String").unwrap()),
-* );
-* let mut error = Shape::local(
-*     Identifier::from_str("BadDateValue").unwrap(),
-*     ShapeBody::Structure(error),
-* );
-* let mut error_trait = Trait::new(ShapeID::from_str("error").unwrap());
-* error_trait.set_value(NodeValue::String("client".to_string()));
-* error.add_trait(error_trait);
-*
-* // ----------------------------------------------------------------------------------------
-* let mut output = StructureOrUnion::new();
-* let mut message = Member::with_reference(
-*     Identifier::from_str("message").unwrap(),
-*     ShapeID::from_str("String").unwrap(),
-* );
-* let required = Trait::new(ShapeID::from_str("required").unwrap());
-* message.add_trait(required);
-* output.add_member(message);
-* let output = Shape::local(
-*     Identifier::from_str("GetMessageOutput").unwrap(),
-*     ShapeBody::Structure(output),
-* );
-*
-* // ----------------------------------------------------------------------------------------
-* let mut input = StructureOrUnion::new();
-* input.add_member_value(
-*     Identifier::from_str("date").unwrap(),
-*     NodeValue::ShapeID(ShapeID::from_str("Date").unwrap()),
-* );
-* let input = Shape::local(
-*     Identifier::from_str("GetMessageInput").unwrap(),
-*     ShapeBody::Structure(input),
-* );
-*
-* // ----------------------------------------------------------------------------------------
-* let mut get_message = Operation::default();
-* get_message.set_input(ShapeID::from_str("GetMessageInput").unwrap());
-* get_message.set_output(ShapeID::from_str("GetMessageOutput").unwrap());
-* get_message.add_error(ShapeID::from_str("BadDateValue").unwrap());
-* let mut get_message = Shape::local(
-*     Identifier::from_str("GetMessage").unwrap(),
-*     ShapeBody::Operation(get_message),
-* );
-* let required = Trait::new(ShapeID::from_str("readonly").unwrap());
-* get_message.add_trait(required);
-*
-* // ----------------------------------------------------------------------------------------
-* let mut date = Shape::local(
-*     Identifier::from_str("Date").unwrap(),
-*     ShapeBody::SimpleType(SimpleType::String),
-* );
-* let mut pattern_trait = Trait::new(ShapeID::from_str("pattern").unwrap());
-* pattern_trait.set_value(NodeValue::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
-* date.add_trait(pattern_trait);
-*
-* // ----------------------------------------------------------------------------------------
-* let mut message = Resource::default();
-* message.add_identifier(
-*     Identifier::from_str("date").unwrap(),
-*     ShapeID::from_str("Date").unwrap(),
-* );
-* message.set_read(ShapeID::from_str("GetMessage").unwrap());
-* let message = Shape::local(
-*     Identifier::from_str("Message").unwrap(),
-*     ShapeBody::Resource(message),
-* );
-*
-* // ----------------------------------------------------------------------------------------
-* let mut service = Service::default();
-* service.set_version("2020-06-21");
-* service.add_resource(ShapeID::from_str("Message").unwrap());
-* let mut service = Shape::local(
-*     Identifier::from_str("MessageOfTheDay").unwrap(),
-*     ShapeBody::Service(service),
-* );
-* let documentation = Trait::with_value(
-*     ShapeID::from_str("documentation").unwrap(),
-*     NodeValue::String("Provides a Message of the day.".to_string()),
-* );
-* service.add_trait(documentation);
-*
-* // ----------------------------------------------------------------------------------------
-* let mut model = Model::new(Namespace::from_str("example.motd").unwrap(), Some(Version::V10));
-* model.add_shape(message);
-* model.add_shape(date);
-* model.add_shape(get_message);
-* model.add_shape(input);
-* model.add_shape(output);
-* model.add_shape(error);
-* ```
-*
-* # Builder API Example
-*
-* The following example demonstrates the builder interface to create the same service as the example
-* above. Hopefully this is more readable as it tends to be less repetative, uses  `&str` for
-* identifiers, and includes helper functions for common traits for example. It provides this better
-* _construction experience_ (there are no read methods on builder objects) by compromising two aspects:
-*
-* 1. The API itself is very repetative; this means the same method may be on multiple objects, but
-* makes it easier to use. For example, you want to add the documentation trait to a shape, so you can:
-*    1. construct a `Trait` entity using the core model and the `Builder::add_trait` method,
-*    1. use the `TraitBuilder::documentation` method which also takes the string to use as the trait
-*       value and returns a new `TraitBuilder`, or
-*    1. use the `Builder::documentation` method that hides all the details of a trait and just takes
-*       a string.
-* 1. It hides a lot of the `Identifier` and `ShapeID` construction and so any of those calls to
-*    `from_str` may fail when the code unwraps the result. This means the builder can panic in ways
-*    the core model does not.
-*
-* ```rust
-* use atelier_core::error::ErrorSource;
-* use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
-* use atelier_core::model::builder::{
-*     ShapeBuilder, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
-*     ServiceBuilder, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
-* };
-* use atelier_core::model::{Identifier, Model, ShapeID};
-* use atelier_core::Version;
-*
-* let model: Model = ModelBuilder::new("example.motd", Some(Version::V10))
-*     .shape(
-*         ServiceBuilder::new("MessageOfTheDay")
-*             .documentation("Provides a Message of the day.")
-*             .version("2020-06-21")
-*             .resource("Message")
-*             .into(),
-*     )
-*     .shape(
-*         ResourceBuilder::new("Message")
-*             .identifier("date", "Date")
-*             .read("GetMessage")
-*             .into(),
-*     )
-*     .shape(
-*         SimpleShapeBuilder::string("Date")
-*             .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
-*             .into(),
-*     )
-*     .shape(
-*         OperationBuilder::new("GetMessage")
-*             .readonly()
-*             .input("GetMessageInput")
-*             .output("GetMessageOutput")
-*             .error("BadDateValue")
-*             .into(),
-*     )
-*     .shape(
-*         StructureBuilder::new("GetMessageInput")
-*             .add_member(
-*                 MemberBuilder::new("date")
-*                     .refers_to("Date")
-*                     .into(),
-*             )
-*             .into(),
-*     )
-*     .shape(
-*         StructureBuilder::new("GetMessageOutput")
-*             .add_member(MemberBuilder::string("message").required().into())
-*             .into(),
-*     )
-*     .shape(
-*         StructureBuilder::new("BadDateValue")
-*             .error(ErrorSource::Client)
-*             .add_member(MemberBuilder::string("errorMessage").required().into())
-*             .into(),
-*     )
-*     .into();
-* ```
+This crate provides a Rust native implementaton of the the AWS [Smithy](https://github.com/awslabs/smithy)
+semantic model and foundational capabilities..
+
+The semantic model (a component of the [Smithy framework](https://awslabs.github.io/smithy/1.0/spec/core/model.html#smithy-framework))
+is the core representation used by tools in the Smithy build process.
+This crate provides an implementation of the semantic model the for the Atelier set of crates, and
+core traits for other crates. Specifically it provides:
+
+1. The semantic [model](model/index.html) itself  that represents a Smithy model. This API is the
+   in-memory representation shared by all Atelier crates and tools.
+1. A model [builder](builder/index.html) API that allow for a more _fluent_ and less repetative construction of a
+   core model.
+1. The [prelude](prelude/index.html) module contains the set of shapes defined in the Smithy specification.
+1. Traits for model [actions](action/index.html) used to implement linters, validators, and transformations.
+1. Traits for [reading/writing](io/index.html) model files in different representations.
+1. A common [error](error/index.html) module to be used by all Atelier crates.
+
+
+# The Semantic Model API Example
+
+The following example demonstrates the core model API to create a model for a simple service. The
+service, `MessageOfTheDay` has a single resource `Message`. The resource has an identifier for the
+date, but the `read` operation does not make the date member required and so will return the message
+for the current date.
+
+This API acts as a set of generic data objects and as such has a tendency to be verbose in the
+construction of models. The need to create a lot of `Identifier` and `ShapeID` instances, for example,
+does impact the readability. It is important to note, that while there is a discussion in the Smithy
+[specification](https://awslabs.github.io/smithy/1.0/spec/core/model.html#shape-id) contains the
+notion of both _absolute_ and _relative_ shape identifiers it is important to note that relative
+identifiers **are not** supported in the semantic model. All names in the semantic model **must**
+be resolved to an absolute name.
+
+```rust
+use atelier_core::model::shapes::{
+    AppliedTrait, MemberShape, Operation, Resource, Service, Shape, ShapeKind, Simple,
+    StructureOrUnion, TopLevelShape,
+};
+use atelier_core::model::values::Value;
+use atelier_core::model::{Model, NamespaceID};
+use atelier_core::prelude::PRELUDE_NAMESPACE;
+use atelier_core::Version;
+
+let prelude: NamespaceID = PRELUDE_NAMESPACE.parse().unwrap();
+let namespace: NamespaceID = "example.motd".parse().unwrap();
+
+// ----------------------------------------------------------------------------------------
+let mut date = TopLevelShape::new(
+    namespace.make_shape("Date".parse().unwrap()),
+    ShapeKind::Simple(Simple::String),
+);
+let mut pattern_trait = AppliedTrait::new(prelude.make_shape("pattern".parse().unwrap()));
+pattern_trait.set_value(Value::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
+date.apply_trait(pattern_trait);
+
+// ----------------------------------------------------------------------------------------
+let shape_name = namespace.make_shape("BadDateValue".parse().unwrap());
+let mut body = StructureOrUnion::new();
+body.add_member(
+    shape_name.make_member("errorMessage".parse().unwrap()),
+    prelude.make_shape("String".parse().unwrap()),
+);
+let mut error = TopLevelShape::new(shape_name, ShapeKind::Structure(body));
+let error_trait = AppliedTrait::with_value(
+    prelude.make_shape("error".parse().unwrap()),
+    "client".to_string().into(),
+);
+error.apply_trait(error_trait);
+
+// ----------------------------------------------------------------------------------------
+let shape_name = namespace.make_shape("GetMessageOutput".parse().unwrap());
+let mut output = StructureOrUnion::new();
+let mut message = MemberShape::new(
+    shape_name.make_member("message".parse().unwrap()),
+    prelude.make_shape("String".parse().unwrap()),
+);
+let required = AppliedTrait::new(prelude.make_shape("required".parse().unwrap()));
+message.apply_trait(required);
+let _ = output.add_a_member(message);
+let output = TopLevelShape::new(
+    namespace.make_shape("GetMessageOutput".parse().unwrap()),
+    ShapeKind::Structure(output),
+);
+
+// ----------------------------------------------------------------------------------------
+let shape_name = namespace.make_shape("GetMessageInput".parse().unwrap());
+let mut input = StructureOrUnion::new();
+input.add_member(
+    shape_name.make_member("date".parse().unwrap()),
+    date.id().clone(),
+);
+let input = TopLevelShape::new(
+    namespace.make_shape("GetMessageInput".parse().unwrap()),
+    ShapeKind::Structure(input),
+);
+
+// ----------------------------------------------------------------------------------------
+let mut get_message = Operation::default();
+get_message.set_input_shape(&input);
+get_message.set_output_shape(&output);
+get_message.add_error_shape(&error);
+let mut get_message = TopLevelShape::new(
+    namespace.make_shape("GetMessage".parse().unwrap()),
+    ShapeKind::Operation(get_message),
+);
+let required = AppliedTrait::new(prelude.make_shape("readonly".parse().unwrap()));
+get_message.apply_trait(required);
+
+// ----------------------------------------------------------------------------------------
+let mut message = Resource::default();
+message.add_identifier("date".to_string(), Value::String(date.id().to_string()));
+message.set_read_operation_shape(&get_message);
+let message = TopLevelShape::new(
+    namespace.make_shape("Message".parse().unwrap()),
+    ShapeKind::Resource(message),
+);
+
+// ----------------------------------------------------------------------------------------
+let mut service = Service::new("2020-06-21");
+service.add_resource_shape(&message);
+let mut service = TopLevelShape::new(
+    namespace.make_shape("MessageOfTheDay".parse().unwrap()),
+    ShapeKind::Service(service),
+);
+let documentation = AppliedTrait::with_value(
+    prelude.make_shape("documentation".parse().unwrap()),
+    Value::String("Provides a Message of the day.".to_string()),
+);
+service.apply_trait(documentation);
+
+// ----------------------------------------------------------------------------------------
+let mut model = Model::new(Version::V10);
+model.add_shape(message);
+model.add_shape(date);
+model.add_shape(get_message);
+model.add_shape(input);
+model.add_shape(output);
+model.add_shape(error);
+
+println!("{:#?}", model);
+```
+
+# The Model Builder API Example
+
+The following example demonstrates the builder interface to create the same service as the example
+above. Hopefully this is more readable as it tends to be less repetative, uses  `&str` for
+identifiers, and includes helper functions for common traits for example. It provides this better
+_construction experience_ (there are no read methods on builder objects) by compromising two aspects:
+
+1. The API itself is very repetative; this means the same method may be on multiple objects, but
+makes it easier to use. For example, you want to add the documentation trait to a shape, so you can:
+   1. construct a `Trait` entity using the core model and the `Builder::add_trait` method,
+   1. use the `TraitBuilder::documentation` method which also takes the string to use as the trait
+      value and returns a new `TraitBuilder`, or
+   1. use the `Builder::documentation` method that hides all the details of a trait and just takes
+      a string.
+1. It hides a lot of the `Identifier` and `ShapeID` construction and so any of those calls to
+   `from_str` may fail when the code unwraps the result. This means the builder can panic in ways
+   the core model does not.
+
+```rust
+use atelier_core::error::ErrorSource;
+use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
+use atelier_core::builder::{
+    traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
+    ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+};
+use atelier_core::model::{Identifier, Model, ShapeID};
+use atelier_core::Version;
+
+let model: Model = ModelBuilder::new(Version::V10, "example.motd")
+    .service(
+        ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
+            .documentation("Provides a Message of the day.")
+            .resource("Message")
+            .into(),
+    )
+    .resource(
+        ResourceBuilder::new("Message")
+            .identifier("date", "Date")
+            .read("GetMessage")
+            .into(),
+    )
+    .simple_shape(
+        SimpleShapeBuilder::string("Date")
+            .apply_trait(traits::pattern(r"^\d\d\d\d\-\d\d-\d\d$"))
+            .into(),
+    )
+    .operation(
+        OperationBuilder::new("GetMessage")
+            .readonly()
+            .input("GetMessageInput")
+            .output("GetMessageOutput")
+            .error("BadDateValue")
+            .into(),
+    )
+    .structure(
+        StructureBuilder::new("GetMessageInput")
+            .member("date", "Date")
+            .into(),
+    )
+    .structure(
+        StructureBuilder::new("GetMessageOutput")
+            .add_member(MemberBuilder::string("message").required().into())
+            .into(),
+    )
+    .structure(
+        StructureBuilder::new("BadDateValue")
+            .error_source(ErrorSource::Client)
+            .add_member(MemberBuilder::string("errorMessage").required().into())
+            .into(),
+    )
+    .into();
+```
 */
 
 #![warn(
@@ -309,7 +251,7 @@ use std::str::FromStr;
 ///
 /// Versions of the Smithy specification.
 ///
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Hash, Copy)]
 pub enum Version {
     /// Version 1.0 (initial, and current)
     V10,
@@ -356,7 +298,13 @@ impl Version {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[doc(hidden)]
+#[macro_use]
+mod macros;
+
 pub mod action;
+
+pub mod builder;
 
 pub mod error;
 
@@ -365,7 +313,5 @@ pub mod io;
 pub mod model;
 
 pub mod prelude;
-
-pub mod select;
 
 pub mod syntax;

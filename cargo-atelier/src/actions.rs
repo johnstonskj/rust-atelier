@@ -1,44 +1,28 @@
-/*!
-One-line description.
-
-More detailed description, with
-
-# Example
-
-*/
-
 use crate::{FileCommand, FileFormat, TransformCommand};
 use atelier_lib::action::{standard_model_lint, standard_model_validation};
 use atelier_lib::core::action::ActionIssue;
-use atelier_lib::core::error::{Error as ModelError, ErrorKind};
-use atelier_lib::core::io::plant_uml::PlantUmlWriter;
+use atelier_lib::core::error::{Error as ModelError, ErrorKind, Result as ModelResult};
 use atelier_lib::core::io::read_model_from_string;
 use atelier_lib::core::io::ModelWriter;
-use atelier_lib::core::model::Model;
-use atelier_lib::format::json::io::{JsonReader, JsonWriter};
-use atelier_lib::format::smithy::io::{SmithyReader, SmithyWriter};
+use atelier_lib::core::model::{Model, NamespaceID};
+use atelier_lib::format::json::{JsonReader, JsonWriter};
+use atelier_lib::format::plant_uml::PlantUmlWriter;
+use atelier_lib::format::smithy::{SmithyReader, SmithyWriter};
 use std::error::Error;
 use std::fs::File;
 use std::io::{Read, Write};
-
-// ------------------------------------------------------------------------------------------------
-// Public Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-pub fn lint_file(cmd: FileCommand) -> Result<Option<Vec<ActionIssue>>, Box<dyn Error>> {
-    Ok(check_file(cmd, &standard_model_lint)?)
+pub fn lint_file(cmd: FileCommand) -> ModelResult<Vec<ActionIssue>> {
+    check_file(cmd, &standard_model_lint)
 }
 
-pub fn validate_file(cmd: FileCommand) -> Result<Option<Vec<ActionIssue>>, Box<dyn Error>> {
-    Ok(check_file(cmd, &standard_model_validation)?)
+pub fn validate_file(cmd: FileCommand) -> ModelResult<Vec<ActionIssue>> {
+    check_file(cmd, &standard_model_validation)
 }
 
 pub fn convert_file_format(cmd: TransformCommand) -> Result<(), Box<dyn Error>> {
@@ -51,8 +35,8 @@ pub fn convert_file_format(cmd: TransformCommand) -> Result<(), Box<dyn Error>> 
 
 pub fn check_file(
     cmd: FileCommand,
-    check_fn: &dyn Fn(&Model, bool) -> Option<Vec<ActionIssue>>,
-) -> Result<Option<Vec<ActionIssue>>, Box<dyn Error>> {
+    check_fn: &dyn Fn(&Model, bool) -> ModelResult<Vec<ActionIssue>>,
+) -> ModelResult<Vec<ActionIssue>> {
     fn read_json(content: Vec<u8>) -> Result<Model, ModelError> {
         read_model_from_string(&mut JsonReader::default(), content)
     }
@@ -65,7 +49,7 @@ pub fn check_file(
         FileFormat::Json => read_json,
         FileFormat::Smithy => read_smithy,
         _ => {
-            return Err(Box::new(err));
+            return Err(err);
         }
     };
     let mut file: Box<dyn Read> = match cmd.input_file.file_name {
@@ -75,7 +59,7 @@ pub fn check_file(
     let mut content: Vec<u8> = Vec::default();
     let _ = file.read_to_end(&mut content).unwrap();
 
-    Ok(check_fn(&reader(content)?, false))
+    check_fn(&reader(content)?, false)
 }
 
 pub fn transform_file(
@@ -93,8 +77,12 @@ pub fn transform_file(
         writer.write(w, &model)?;
         Ok(())
     }
-    fn write_smithy(w: &mut impl Write, model: Model) -> Result<(), Box<dyn Error>> {
-        let mut writer = SmithyWriter::default();
+    fn write_smithy(
+        w: &mut impl Write,
+        model: Model,
+        namespace: NamespaceID,
+    ) -> Result<(), Box<dyn Error>> {
+        let mut writer = SmithyWriter::new(namespace);
         writer.write(w, &model)?;
         Ok(())
     }
@@ -133,15 +121,11 @@ pub fn transform_file(
 
     match cmd.output_file.format {
         FileFormat::Json => write_json(&mut file, model),
-        FileFormat::Smithy => write_smithy(&mut file, model),
+        FileFormat::Smithy => write_smithy(
+            &mut file,
+            model,
+            NamespaceID::from_str(&cmd.namespace.unwrap()).unwrap(),
+        ),
         FileFormat::Uml => write_uml(&mut file, model),
     }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------

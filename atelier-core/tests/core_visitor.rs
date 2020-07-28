@@ -1,64 +1,12 @@
-use atelier_core::action::{walk_model, ModelVisitor};
-use atelier_core::error::ErrorSource;
-use atelier_core::model::builder::{
-    MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder, ShapeBuilder,
-    SimpleShapeBuilder, StructureBuilder, TraitBuilder,
-};
 use atelier_core::model::shapes::{
-    Operation, Resource, Service, SimpleType, StructureOrUnion, Trait,
+    AppliedTrait, Operation, Resource, Service, Simple, StructureOrUnion,
 };
-use atelier_core::model::{Model, ShapeID};
-use atelier_core::Version;
+use atelier_core::model::visitor::{walk_model, ModelVisitor};
+use atelier_core::model::ShapeID;
 use std::cell::RefCell;
 use std::collections::HashSet;
 
-fn make_example_model() -> Model {
-    let model: Model = ModelBuilder::new("example.motd", Some(Version::V10))
-        .shape(
-            ServiceBuilder::new("MessageOfTheDay")
-                .documentation("Provides a Message of the day.")
-                .version("2020-06-21")
-                .resource("Message")
-                .into(),
-        )
-        .shape(
-            ResourceBuilder::new("Message")
-                .identifier("date", "Date")
-                .read("GetMessage")
-                .into(),
-        )
-        .shape(
-            SimpleShapeBuilder::string("Date")
-                .add_trait(TraitBuilder::pattern(r"^\d\d\d\d\-\d\d-\d\d$").into())
-                .into(),
-        )
-        .shape(
-            OperationBuilder::new("GetMessage")
-                .readonly()
-                .input("GetMessageInput")
-                .output("GetMessageOutput")
-                .error("BadDateValue")
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("GetMessageInput")
-                .add_member(MemberBuilder::new("date").refers_to("Date").into())
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("GetMessageOutput")
-                .add_member(MemberBuilder::string("message").required().into())
-                .into(),
-        )
-        .shape(
-            StructureBuilder::new("BadDateValue")
-                .error(ErrorSource::Client)
-                .add_member(MemberBuilder::string("errorMessage").required().into())
-                .into(),
-        )
-        .into();
-    model
-}
+pub mod common;
 
 struct ExampleVisitor {
     expected: RefCell<HashSet<String>>,
@@ -69,13 +17,13 @@ impl Default for ExampleVisitor {
         Self {
             expected: RefCell::new(
                 [
-                    "service@MessageOfTheDay",
-                    "resource@Message",
-                    "simple@string@Date",
-                    "operation@GetMessage",
-                    "structure@GetMessageInput",
-                    "structure@GetMessageOutput",
-                    "structure@BadDateValue",
+                    "service@example.motd#MessageOfTheDay",
+                    "resource@example.motd#Message",
+                    "simple@string@example.motd#Date",
+                    "operation@example.motd#GetMessage",
+                    "structure@example.motd#GetMessageInput",
+                    "structure@example.motd#GetMessageOutput",
+                    "structure@example.motd#BadDateValue",
                 ]
                 .iter()
                 .map(|s| s.to_string())
@@ -91,8 +39,8 @@ impl ModelVisitor for ExampleVisitor {
     fn simple_shape(
         &self,
         id: &ShapeID,
-        _: &[Trait],
-        simple: &SimpleType,
+        _: &[AppliedTrait],
+        simple: &Simple,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
         if expected.remove(&format!("simple@{}@{}", simple, id)) {
@@ -105,7 +53,7 @@ impl ModelVisitor for ExampleVisitor {
     fn structure(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &StructureOrUnion,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -119,7 +67,7 @@ impl ModelVisitor for ExampleVisitor {
     fn service(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &Service,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -133,7 +81,7 @@ impl ModelVisitor for ExampleVisitor {
     fn operation(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &Operation,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -147,7 +95,7 @@ impl ModelVisitor for ExampleVisitor {
     fn resource(
         &self,
         id: &ShapeID,
-        _: &[Trait],
+        _: &[AppliedTrait],
         _: &Resource,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -161,7 +109,7 @@ impl ModelVisitor for ExampleVisitor {
 
 #[test]
 fn test_model_visitor() {
-    let model = make_example_model();
+    let model = common::make_message_of_the_day_model();
     let visitor = ExampleVisitor::default();
     let result = walk_model(&model, &visitor);
     println!("{:#?}", result);

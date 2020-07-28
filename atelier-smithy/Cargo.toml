@@ -1,7 +1,7 @@
 [package]
 name = "atelier_smithy"
 description = "Rust native Smithy language format for the AWS Smithy IDL."
-version = "0.1.5"
+version = "0.2.0"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
 documentation = "https://docs.rs/atelier_smithy/"
@@ -21,7 +21,7 @@ default = ["debug"]
 debug = ["pest_ascii_tree"]
 
 [dependencies]
-atelier_core = { version = "0.1.4", path = "../atelier-core" }
+atelier_core = { version = "0.2.0", path = "../atelier-core" }
 pest = "2.1.3"
 pest_derive = "2.1.0"
 
