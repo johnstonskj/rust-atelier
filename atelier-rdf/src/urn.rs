@@ -1,6 +1,7 @@
 use atelier_core::error::{Error, ErrorKind};
 use atelier_core::model::ShapeID;
 use atelier_core::syntax::{SHAPE_ID_ABSOLUTE_SEPARATOR, SHAPE_ID_MEMBER_SEPARATOR};
+use rdftk_iri::IRI;
 use regex::Regex;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -69,6 +70,13 @@ impl From<&ShapeID> for SmithyUrn {
 impl Into<ShapeID> for SmithyUrn {
     fn into(self) -> ShapeID {
         self.0
+    }
+}
+
+impl Into<IRI> for SmithyUrn {
+    fn into(self) -> IRI {
+        // TODO: make this better!
+        IRI::from_str(&self.to_string()).unwrap()
     }
 }
 

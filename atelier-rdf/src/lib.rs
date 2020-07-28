@@ -1,6 +1,8 @@
 /*!
 Future home of the RDF reader and writer for Smithy.
 
+For the mapping between RDF and Smithy, see the module [`model`](model/index.html).
+
 */
 
 #![warn(
@@ -25,6 +27,12 @@ Future home of the RDF reader and writer for Smithy.
 
 #[macro_use]
 extern crate lazy_static;
+
+#[macro_use]
+extern crate paste;
+
+#[macro_use]
+extern crate rdftk_names;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -54,6 +62,10 @@ extern crate lazy_static;
 pub mod urn;
 pub use urn::SmithyUrn;
 
+pub mod model;
+
 pub mod reader;
 
 pub mod writer;
+
+pub mod vocabulary;
