@@ -100,7 +100,7 @@ example.motd ..> smithy.api
 
 Which would produce an image like the following.
 
-![PlantUML](https://raw.githubusercontent.com/johnstonskj/rust-atelier/master/atelier-core/doc/motd-model.png)
+![PlantUML](https://raw.githubusercontent.com/johnstonskj/rust-atelier/master/atelier-lib/doc/motd-model.png)
 
 */
 
@@ -149,8 +149,8 @@ impl Default for PlantUmlWriter {
     }
 }
 
-impl<'a> ModelWriter<'a> for PlantUmlWriter {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> crate::core::error::Result<()> {
+impl ModelWriter for PlantUmlWriter {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> crate::core::error::Result<()> {
         writeln!(w, "@startuml")?;
         writeln!(w)?;
         writeln!(w, "hide empty members")?;

@@ -1,5 +1,5 @@
 /*!
-Future home of the OpenAPI writer for Smithy.
+Future home of the RDF reader and writer for Smithy.
 
 */
 
@@ -54,6 +54,6 @@ extern crate lazy_static;
 pub mod urn;
 pub use urn::SmithyUrn;
 
-pub mod read;
+pub mod reader;
 
-pub mod write;
+pub mod writer;

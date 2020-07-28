@@ -10,7 +10,7 @@ use crate::syntax::SHAPE_ID_ABSOLUTE_SEPARATOR;
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
-/// Builder for `Trait` model elements.
+/// Builder for `AppliedTrait` model elements.
 #[derive(Clone, Debug)]
 pub struct TraitBuilder {
     pub(crate) shape_id: String,

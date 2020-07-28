@@ -149,10 +149,12 @@ pub struct MemberBuilder {
 ///
 /// Provides all the traits for Smithy where trait selector = "*".
 pub trait ShapeTraits {
+    /// Add the provided trait builder to this shape.
     fn apply_trait(&mut self, a_trait: TraitBuilder) -> &mut Self
     where
         Self: Sized;
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn documentation(&mut self, text: &str) -> &mut Self
     where
         Self: Sized,
@@ -160,6 +162,7 @@ pub trait ShapeTraits {
         self.apply_trait(traits::documentation(text))
     }
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn external_documentation(&mut self, map: &[(&str, &str)]) -> &mut Self
     where
         Self: Sized,
@@ -167,6 +170,7 @@ pub trait ShapeTraits {
         self.apply_trait(traits::external_documentation(map))
     }
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn deprecated(&mut self, message: Option<&str>, since: Option<&str>) -> &mut Self
     where
         Self: Sized,
@@ -174,6 +178,7 @@ pub trait ShapeTraits {
         self.apply_trait(traits::deprecated(message, since))
     }
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn private(&mut self) -> &mut Self
     where
         Self: Sized,
@@ -181,6 +186,7 @@ pub trait ShapeTraits {
         self.apply_trait(traits::private())
     }
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn since(&mut self, date: &str) -> &mut Self
     where
         Self: Sized,
@@ -188,6 +194,7 @@ pub trait ShapeTraits {
         self.apply_trait(traits::since(date))
     }
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn tagged(&mut self, tags: &[&str]) -> &mut Self
     where
         Self: Sized,
@@ -195,6 +202,7 @@ pub trait ShapeTraits {
         self.apply_trait(traits::tagged(tags))
     }
 
+    /// Add the correspondingly named prelude trait, and value(s), to this model element
     fn unstable(&mut self) -> &mut Self
     where
         Self: Sized,
@@ -311,6 +319,7 @@ impl ListBuilder {
         }
     }
 
+    /// Set the target type for members in this list or set.
     pub fn target(&mut self, member: MemberBuilder) {
         self.member = member;
     }
@@ -339,15 +348,15 @@ impl MapBuilder {
         }
     }
 
+    /// Set the target type for the keys in this map.
     pub fn key(&mut self, key: MemberBuilder) {
         self.key = key;
     }
 
+    /// Set the target type for the values in this map.
     pub fn value(&mut self, value: MemberBuilder) {
         self.value = value;
     }
-
-    // --------------------------------------------------------------------------------------------
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -357,7 +366,7 @@ from_mut! { StructureBuilder }
 shape_traits_impl! { StructureBuilder }
 
 impl StructureBuilder {
-    ///Construct a new map shape builder.
+    ///Construct a new structure or union shape builder.
     pub fn new(shape_name: &str) -> Self {
         Self {
             shape_name: shape_name.to_string(),
@@ -366,66 +375,84 @@ impl StructureBuilder {
         }
     }
 
+    /// Create a new member in this structure or union with the given identifier and target type.
     pub fn member(&mut self, member_name: &str, member_target: &str) -> &mut Self {
         let _ = self.add_member(MemberBuilder::new(member_name, member_target));
         self
     }
+
+    /// Create a new member in this structure or union.
     pub fn add_member(&mut self, member: MemberBuilder) -> &mut Self {
         self.members.push(member);
         self
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Blob`.
     pub fn blob(&mut self, id: &str) -> &mut Self {
         self.member(id, "Blob")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Boolean`.
     pub fn boolean(&mut self, id: &str) -> &mut Self {
         self.member(id, "Boolean")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Document`.
     pub fn document(&mut self, id: &str) -> &mut Self {
         self.member(id, "Document")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::String`.
     pub fn string(&mut self, id: &str) -> &mut Self {
         self.member(id, "String")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Byte`.
     pub fn byte(&mut self, id: &str) -> &mut Self {
         self.member(id, "Byte")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Short`.
     pub fn short(&mut self, id: &str) -> &mut Self {
         self.member(id, "Short")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Integer`.
     pub fn integer(&mut self, id: &str) -> &mut Self {
         self.member(id, "Integer")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Long`.
     pub fn long(&mut self, id: &str) -> &mut Self {
         self.member(id, "Long")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Float`.
     pub fn float(&mut self, id: &str) -> &mut Self {
         self.member(id, "Float")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Double`.
     pub fn double(&mut self, id: &str) -> &mut Self {
         self.member(id, "Double")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::BigInteger`.
     pub fn big_integer(&mut self, id: &str) -> &mut Self {
         self.member(id, "BigInteger")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::BigDecimal`.
     pub fn big_decimal(&mut self, id: &str) -> &mut Self {
         self.member(id, "BigDecimal")
     }
 
+    /// Create a new member in this structure or union with the type `Simple::Timestamp`.
     pub fn timestamp(&mut self, id: &str) -> &mut Self {
         self.member(id, "Timestamp")
     }
+
+    // --------------------------------------------------------------------------------------------
 
     add_trait!(pub error_source(src: ErrorSource));
 
@@ -455,10 +482,13 @@ impl ServiceBuilder {
         self
     }
 
+    /// Add an operation by reference to this service
     pub fn operation(&mut self, shape_id: &str) -> &mut Self {
         self.operations.push(shape_id.to_string());
         self
     }
+
+    /// Add a list of operations by reference to this service
     pub fn operations(&mut self, shape_ids: &[&str]) -> &mut Self {
         for shape_id in shape_ids {
             let _ = self.operation(shape_id);
@@ -466,10 +496,13 @@ impl ServiceBuilder {
         self
     }
 
+    /// Add a resource by reference to this service
     pub fn resource(&mut self, shape_id: &str) -> &mut Self {
         self.resources.push(shape_id.to_string());
         self
     }
+
+    /// Add a list of resources by reference to this service
     pub fn resources(&mut self, shape_ids: &[&str]) -> &mut Self {
         for shape_id in shape_ids {
             let _ = self.resource(shape_id);
@@ -507,20 +540,25 @@ impl OperationBuilder {
         }
     }
 
+    /// Set the input type for this operation.
     pub fn input(&mut self, shape_id: &str) -> &mut Self {
         self.input = Some(shape_id.to_string());
         self
     }
 
+    /// Set the output type for this operation.
     pub fn output(&mut self, shape_id: &str) -> &mut Self {
         self.output = Some(shape_id.to_string());
         self
     }
 
+    /// Set an error type for this operation.
     pub fn error(&mut self, shape_id: &str) -> &mut Self {
         self.errors.push(shape_id.to_string());
         self
     }
+
+    /// Set a list of error types for this operation.
     pub fn errors(&mut self, shape_ids: &[&str]) -> &mut Self {
         for shape_id in shape_ids {
             let _ = self.error(shape_id);
@@ -574,40 +612,49 @@ impl ResourceBuilder {
         self
     }
 
+    /// Set the operation identifier that handles **create** actions.
     pub fn create(&mut self, shape_id: &str) -> &mut Self {
         self.create = Some(shape_id.to_string());
         self
     }
 
+    /// Set the operation identifier that handles **put** actions.
     pub fn put(&mut self, shape_id: &str) -> &mut Self {
         self.put = Some(shape_id.to_string());
         self
     }
 
+    /// Set the operation identifier that handles **read** actions.
     pub fn read(&mut self, shape_id: &str) -> &mut Self {
         self.read = Some(shape_id.to_string());
         self
     }
 
+    /// Set the operation identifier that handles **update** actions.
     pub fn update(&mut self, shape_id: &str) -> &mut Self {
         self.update = Some(shape_id.to_string());
         self
     }
 
+    /// Set the operation identifier that handles **delete** actions.
     pub fn delete(&mut self, shape_id: &str) -> &mut Self {
         self.delete = Some(shape_id.to_string());
         self
     }
 
+    /// Set the operation identifier that handles **list** actions.
     pub fn list(&mut self, shape_id: &str) -> &mut Self {
         self.list = Some(shape_id.to_string());
         self
     }
 
+    /// Add an operation by reference to this service
     pub fn operation(&mut self, shape_id: &str) -> &mut Self {
         self.operations.push(shape_id.to_string());
         self
     }
+
+    /// Add a list of operations by reference to this service
     pub fn operations(&mut self, shape_ids: &[&str]) -> &mut Self {
         for shape_id in shape_ids {
             let _ = self.operation(shape_id);
@@ -615,10 +662,13 @@ impl ResourceBuilder {
         self
     }
 
+    /// Add a collection operation by reference to this service
     pub fn collection_operation(&mut self, shape_id: &str) -> &mut Self {
         self.collection_operations.push(shape_id.to_string());
         self
     }
+
+    /// Add a list of collection operations by reference to this service
     pub fn collection_operations(&mut self, shape_ids: &[&str]) -> &mut Self {
         for shape_id in shape_ids {
             let _ = self.collection_operation(shape_id);
@@ -626,10 +676,13 @@ impl ResourceBuilder {
         self
     }
 
+    /// Add a resource by reference to this service
     pub fn resource(&mut self, shape_id: &str) -> &mut Self {
         self.resources.push(shape_id.to_string());
         self
     }
+
+    /// Add a list of resources by reference to this service
     pub fn resources(&mut self, shape_ids: &[&str]) -> &mut Self {
         for shape_id in shape_ids {
             let _ = self.resource(shape_id);
@@ -686,10 +739,12 @@ impl MemberBuilder {
         }
     }
 
+    /// Return the name of this member.
     pub fn name(&self) -> &String {
         &self.member_name
     }
 
+    /// Return the target type of this member.
     pub fn target(&self) -> &String {
         &self.target
     }

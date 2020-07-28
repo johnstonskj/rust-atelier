@@ -1,5 +1,5 @@
 use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::shapes::{Shape, AppliedTrait};
+use crate::model::shapes::{AppliedTrait, Shape};
 use crate::model::{Identifier, ShapeID};
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use std::collections::HashMap;
@@ -264,7 +264,7 @@ impl StructureOrUnion {
     }
 
     pub fn add_member(&mut self, member_name: ShapeID, target: ShapeID) {
-        let shape = MemberShape::new(member_name.clone(), target);
+        let shape = MemberShape::new(member_name, target);
         let _ = self.add_a_member(shape);
     }
 

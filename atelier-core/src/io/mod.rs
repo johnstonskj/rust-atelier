@@ -27,8 +27,8 @@ impl Default for Debugger {
     }
 }
 
-impl<'a> ModelWriter<'a> for Debugger {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> ModelResult<()> {
+impl ModelWriter for Debugger {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> ModelResult<()> {
         write!(w, "{:#?}", model)?;
         Ok(())
     }
@@ -49,11 +49,11 @@ use crate::model::Model;
 /// implementations of this trait would ensure that the model is complete unless they can
 /// specifically serialize an incomplete model (the Smithy IDL can).
 ///
-pub trait ModelWriter<'a> {
+pub trait ModelWriter {
     ///
     /// Write the `model` to given the implementation of `Write`.
     ///
-    fn write(&mut self, w: &mut impl std::io::Write, model: &'a Model) -> ModelResult<()>;
+    fn write(&mut self, w: &mut impl std::io::Write, model: &Model) -> ModelResult<()>;
 }
 
 ///
@@ -88,7 +88,7 @@ where
 /// short-cut that saves some repetitive boiler-plate.
 ///
 pub fn write_model_to_string<'a>(
-    w: &mut impl ModelWriter<'a>,
+    w: &mut impl ModelWriter,
     model: &'a Model,
 ) -> ModelResult<String> {
     use std::io::Cursor;

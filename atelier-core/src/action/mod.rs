@@ -19,7 +19,9 @@
 *     run_validation_actions, CorrectTypeReferences
 * };
 * use atelier_core::action::Validator;
-* use atelier_core::builder::{ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder};
+* use atelier_core::builder::{
+*     ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+* };
 * use atelier_core::model::Model;
 * use atelier_core::Version;
 *

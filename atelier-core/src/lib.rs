@@ -26,7 +26,11 @@ for the current date.
 
 This API acts as a set of generic data objects and as such has a tendency to be verbose in the
 construction of models. The need to create a lot of `Identifier` and `ShapeID` instances, for example,
-does impact the readability.
+does impact the readability. It is important to note, that while there is a discussion in the Smithy
+[specification](https://awslabs.github.io/smithy/1.0/spec/core/model.html#shape-id) contains the
+notion of both _absolute_ and _relative_ shape identifiers it is important to note that relative
+identifiers **are not** supported in the semantic model. All names in the semantic model **must**
+be resolved to an absolute name.
 
 ```rust
 use atelier_core::model::shapes::{

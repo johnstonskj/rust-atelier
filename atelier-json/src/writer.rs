@@ -24,7 +24,7 @@ pub struct JsonWriter {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl<'a> Default for JsonWriter {
+impl Default for JsonWriter {
     fn default() -> Self {
         Self {
             pretty_print: false,
@@ -32,8 +32,8 @@ impl<'a> Default for JsonWriter {
     }
 }
 
-impl<'a> ModelWriter<'a> for JsonWriter {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> ModelResult<()> {
+impl ModelWriter for JsonWriter {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> ModelResult<()> {
         let mut top: Map<String, Value> = Default::default();
 
         let _ = top.insert(
@@ -58,7 +58,7 @@ impl<'a> JsonWriter {
         Self { pretty_print }
     }
 
-    fn shapes(&self, model: &'a Model) -> Value {
+    fn shapes(&self, model: &Model) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
         for shape in model.shapes() {
             let _ = shape_map.insert(shape.id().to_string(), self.shape(shape));
@@ -73,7 +73,7 @@ impl<'a> JsonWriter {
         Value::Object(shape_map)
     }
 
-    fn shape(&self, shape: &'a TopLevelShape) -> Value {
+    fn shape(&self, shape: &TopLevelShape) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
         if shape.has_traits() {
             let _ = shape_map.insert(K_TRAITS.to_string(), self.traits(shape.traits()));

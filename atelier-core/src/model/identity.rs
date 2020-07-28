@@ -104,7 +104,8 @@ impl FromStr for Identifier {
 impl PartialEq for Identifier {
     ///
     /// § 2.4.2. Shape ID member names
-    /// While shape IDs used within a model are case-sensitive, no two shapes in the model can have the same case-insensitive shape ID.
+    /// While shape IDs used within a model are case-sensitive, no two shapes in the model can have
+    /// the same case-insensitive shape ID.
     ///
     fn eq(&self, other: &Self) -> bool {
         self.0.to_lowercase() == other.0.to_lowercase()
@@ -112,6 +113,7 @@ impl PartialEq for Identifier {
 }
 
 impl Identifier {
+    /// Create a new instance **without** checking that the provided string is a legal identifier.
     pub fn new_unchecked(s: &str) -> Self {
         Self(s.to_string())
     }
@@ -156,6 +158,7 @@ impl PartialEq for NamespaceID {
 }
 
 impl NamespaceID {
+    /// Create a new instance **without** checking that the provided string is a legal namespace.
     pub fn new_unchecked(s: &str) -> Self {
         Self(s.to_string())
     }
@@ -243,7 +246,7 @@ impl ShapeID {
     }
 
     ///
-    /// Construct a new `ShapeID` from the complete set of given components.
+    /// Create a new instance **without** checking that the provided string is a legal identifier.
     ///
     pub fn new(
         namespace: NamespaceID,

@@ -35,20 +35,20 @@ const STATEMENT_NAMESPACE: &str = "namespace";
 const STATEMENT_USE: &str = "use";
 const STATEMENT_METADATA: &str = "metadata";
 
-impl<'a> ModelWriter<'a> for SmithyWriter {
-    fn write(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+impl ModelWriter for SmithyWriter {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         self.write_control_section(w, model)?;
         self.write_metadata_section(w, model)?;
         self.write_shape_section(w, model)
     }
 }
 
-impl<'a> SmithyWriter {
+impl SmithyWriter {
     pub fn new(namespace: NamespaceID) -> Self {
         Self { namespace }
     }
 
-    fn write_control_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write_control_section(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         writeln!(
             w,
             "{}{}: \"{}\"",
@@ -60,7 +60,7 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_metadata_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write_metadata_section(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         if model.has_metadata() {
             for (key, value) in model.metadata() {
                 writeln!(w, "{} \"{}\" = {}", STATEMENT_METADATA, key, value)?;
@@ -70,18 +70,18 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_shape_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write_shape_section(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         self.write_namespace_statement(w, model)?;
         self.write_use_section(w, model)?;
         self.write_shape_statements(w, model)
     }
-    fn write_namespace_statement(&mut self, w: &mut impl Write, _: &'a Model) -> Result<()> {
+    fn write_namespace_statement(&mut self, w: &mut impl Write, _: &Model) -> Result<()> {
         writeln!(w, "{} {}", STATEMENT_NAMESPACE, self.namespace)?;
         writeln!(w)?;
         Ok(())
     }
 
-    fn write_use_section(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write_use_section(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         for use_shape in model
             .shapes()
             .filter(|shape| shape.is_unresolved() && !shape.has_traits())
@@ -92,7 +92,7 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_shape_statements(&mut self, w: &mut impl Write, model: &'a Model) -> Result<()> {
+    fn write_shape_statements(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         let from_namespace = self.namespace.clone();
         for shape in model
             .shapes()
@@ -266,7 +266,7 @@ impl<'a> SmithyWriter {
     fn write_trait(
         &mut self,
         w: &mut impl Write,
-        a_trait: &'a AppliedTrait,
+        a_trait: &AppliedTrait,
         prefix: &str,
     ) -> Result<()> {
         write!(w, "{}{}{}", prefix, TRAIT_PREFIX, a_trait.id())?;
@@ -285,8 +285,8 @@ impl<'a> SmithyWriter {
         Ok(())
     }
 
-    fn write_members(
-        &mut self,
+    fn write_members<'a>(
+        &'a mut self,
         w: &mut impl Write,
         members: impl Iterator<Item = &'a MemberShape>,
         prefix: &str,
@@ -300,7 +300,7 @@ impl<'a> SmithyWriter {
     fn write_member(
         &mut self,
         w: &mut impl Write,
-        member: &'a MemberShape,
+        member: &MemberShape,
         prefix: &str,
     ) -> Result<()> {
         for a_trait in member.traits() {

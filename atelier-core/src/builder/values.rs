@@ -6,7 +6,7 @@ use std::collections::HashMap;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Builder for `NodeValue::Array` values.  This implements `From<T>` to provide the node value itself.
+/// Builder for `Value::Array` values.  This implements `From<T>` to provide the node value itself.
 ///
 #[derive(Debug)]
 pub struct ArrayBuilder {
@@ -14,7 +14,7 @@ pub struct ArrayBuilder {
 }
 
 ///
-/// Builder for `NodeValue::Object` values.  This implements `From<T>` to provide the node value itself.
+/// Builder for `Value::Object` values.  This implements `From<T>` to provide the node value itself.
 ///
 #[derive(Debug)]
 pub struct ObjectBuilder {
@@ -22,20 +22,11 @@ pub struct ObjectBuilder {
 }
 
 ///
-/// Builder for individual `NodeValue` values.  This implements `From<T>` to provide the node value itself.
+/// Builder for individual `Value` values.  This implements `From<T>` to provide the node value itself.
 ///
 #[derive(Debug)]
 pub struct ValueBuilder {
     inner: Value,
-}
-
-// TODO: wire this in so that we can reference check strings in the model builder.
-
-#[allow(dead_code)]
-#[derive(Debug)]
-enum ValueOrReference {
-    Value(Value),
-    Reference(String),
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 /*!
-This module provides functions that wrap common actions into single entry points.
+This module provides functions that wrap common actions into single entry points. The two entry
+points ensure that standard lint and validation actions are always easily accessible to the user.
 */
 
 use atelier_core::action::lint::{run_linter_actions, NamingConventions, UnwelcomeTerms};

@@ -63,7 +63,7 @@ enum TopLevelShapeBuilder {
 
 impl From<&mut ModelBuilder> for Model {
     fn from(builder: &mut ModelBuilder) -> Self {
-        let mut model = Model::new(builder.smithy_version.clone());
+        let mut model = Model::new(builder.smithy_version);
         for (k, v) in builder.metadata.drain() {
             let _ = model.add_metadata(k, v);
         }
