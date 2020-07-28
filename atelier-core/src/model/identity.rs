@@ -63,6 +63,7 @@ pub struct ShapeID {
 }
 
 // TODO: Investigate making all ShapeID components `RC<>` to reduce memory size due to duplication.
+// (https://github.com/johnstonskj/rust-atelier/issues/4)
 
 // ------------------------------------------------------------------------------------------------
 // Implementations

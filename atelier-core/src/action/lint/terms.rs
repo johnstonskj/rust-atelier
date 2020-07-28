@@ -91,6 +91,7 @@ lazy_static! {
 // ------------------------------------------------------------------------------------------------
 
 // TODO: check synonyms in linters.
+// (https://github.com/johnstonskj/rust-atelier/issues/6)
 
 #[inline]
 pub(crate) fn is_unwelcome_term(term: &str) -> bool {

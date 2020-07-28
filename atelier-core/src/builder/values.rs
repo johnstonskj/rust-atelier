@@ -152,7 +152,6 @@ impl ObjectBuilder {
 
     /// Insert the key and string-valued pair into this object.
     pub fn reference(&mut self, k: &str, v: &str) -> &mut Self {
-        // TODO: This should use the new value or ref enum!
         let _ = self.insert(k, Value::String(v.to_string()));
         self
     }
