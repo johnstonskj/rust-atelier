@@ -31,56 +31,61 @@ use atelier_core::model::builder::{
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
 
-let model: Model = ModelBuilder::new(Version::V10, "example.motd")
-    .service(
-        ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
-            .documentation("Provides a Message of the day.")
-            .resource("Message")
-            .into(),
-    )
-    .resource(
-        ResourceBuilder::new("Message")
-            .identifier("date", "Date")
-            .read("GetMessage")
-            .into(),
-    )
-    .simple_shape(
-        SimpleShapeBuilder::string("Date")
-            .apply_trait(traits::pattern(r"^\d\d\d\d\-\d\d-\d\d$"))
-            .into(),
-    )
-    .operation(
-        OperationBuilder::new("GetMessage")
-            .readonly()
-            .input("GetMessageInput")
-            .output("GetMessageOutput")
-            .error("BadDateValue")
-            .into(),
-    )
-    .structure(
-        StructureBuilder::new("GetMessageInput")
-            .member("date", "Date")
-            .into(),
-    )
-    .structure(
-        StructureBuilder::new("GetMessageOutput")
-            .add_member(MemberBuilder::string("message").required().into())
-            .into(),
-    )
-    .structure(
-        StructureBuilder::new("BadDateValue")
-            .error_source(ErrorSource::Client)
-            .add_member(MemberBuilder::string("errorMessage").required().into())
-            .into(),
-    )
-    .into();
+fn make_model() -> Model {
+    ModelBuilder::new(Version::V10, "example.motd")
+        .service(
+            ServiceBuilder::new("MessageOfTheDay", "2020-06-21")
+                .documentation("Provides a Message of the day.")
+                .resource("Message")
+                .into(),
+        )
+        .resource(
+            ResourceBuilder::new("Message")
+                .identifier("date", "Date")
+                .read("GetMessage")
+                .into(),
+        )
+        .simple_shape(
+            SimpleShapeBuilder::string("Date")
+                .apply_trait(traits::pattern(r"^\d\d\d\d\-\d\d-\d\d$"))
+                .into(),
+        )
+        .operation(
+            OperationBuilder::new("GetMessage")
+                .readonly()
+                .input("GetMessageInput")
+                .output("GetMessageOutput")
+                .error("BadDateValue")
+                .into(),
+        )
+        .structure(
+            StructureBuilder::new("GetMessageInput")
+                .member("date", "Date")
+                .into(),
+        )
+        .structure(
+            StructureBuilder::new("GetMessageOutput")
+                .add_member(MemberBuilder::string("message").required().into())
+                .into(),
+        )
+        .structure(
+            StructureBuilder::new("BadDateValue")
+                .error_source(ErrorSource::Client)
+                .add_member(MemberBuilder::string("errorMessage").required().into())
+                .into(),
+        )
+        .into()
+}
 ```
 */
 
 ## Runnable Examples
 
-The example `weather.rs` in the `examples` directory uses the complete example from the Smithy quick start guide. 
-As usual this is executed via cargo in the following manner. 
+The example `weather.rs` in the `examples` directory uses the complete example from the Smithy quick start guide. The
+_message of the day_ service shown in the example above is included as a pair of stand-alone examples using the 
+semantic model and builder APIs.
+
+As usual these can be executed via cargo in the following manner. 
 
 ```bash
 $ cargo run --example weather
@@ -91,6 +96,10 @@ $ cargo run --example weather
 **Version 0.2.0**
 
 * Major refactor after agreement on the separation of semantic model with Smithy team.
+  * Only included the semantic model elements
+  * Reworked trait module
+  * Made all shape IDs absolute
+* Made Builder API create and validate shape IDs.
 * Moved UML writer to lib.
 
 **Version 0.1.5**
@@ -144,8 +153,5 @@ $ cargo run --example weather
 
 1. Complete the prelude model.
 1. Complete the selector expression types
-1. Complete the builder types
-1. Validation!
-2. Complete macro-ize APIs for less code
-3. More documentation
-4. More tests
+1. More documentation
+1. More tests
