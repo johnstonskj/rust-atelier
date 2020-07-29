@@ -43,7 +43,24 @@ _:shapes rdf:li <urn:smithy:example.motd:Shape> .
 <urn:smithy:example.motd:Shape> a smithy:String .
 ```
 
-TBD
+1. Simple shapes;
+   1. no additional rules.
+1. List and Set shapes;
+   1. An additional statement for the shape MUST be present with the predicate `smithy:member`
+      and the object being a URN for the target shape.
+   1. This member MAY have traits (see below).
+1. Map shapes;
+   1. An additional statement for the shape MUST be present with the predicate `smithy:key`
+      and the object being a URN for the target shape.
+   1. An additional statement for the shape MUST be present with the predicate `smithy:value`
+      and the object being a URN for the target shape.
+   1. These members MAY have traits (see below).
+1. Structure and Union shapes;
+1. Service shapes;
+1. Operation shapes;
+1. Resource Shapes;
+
+Members.
 
 ## Traits
 
