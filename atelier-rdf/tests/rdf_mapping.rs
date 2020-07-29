@@ -8,4 +8,12 @@ fn test_smithy_to_rdf() {
     let result = model::model_to_rdf(&model, None);
     assert!(result.is_ok());
     let rdf = result.unwrap();
+    for statement in rdf.statements() {
+        println!(
+            "{} ---{}---> {}",
+            statement.subject(),
+            statement.predicate(),
+            statement.object()
+        );
+    }
 }

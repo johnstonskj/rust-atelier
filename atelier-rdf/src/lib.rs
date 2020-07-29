@@ -28,6 +28,7 @@ For the mapping between RDF and Smithy, see the module [`model`](model/index.htm
 #[macro_use]
 extern crate lazy_static;
 
+#[allow(unused_imports)]
 #[macro_use]
 extern crate paste;
 
