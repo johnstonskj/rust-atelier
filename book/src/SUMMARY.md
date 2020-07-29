@@ -17,3 +17,4 @@
    1. [Adding a Model Transformation](extending/transformer.md)
 
 [Appendix: Java/Rust Differences](reference/java_to_rust.md)
+[Appendix: RDF Mapping](reference/rdf.md)
