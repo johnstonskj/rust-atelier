@@ -1,7 +1,11 @@
 /*!
-Future home of the RDF reader and writer for Smithy.
+This crate provides a mapping to allow for the mapping of Smithy semantic models to and from
+the W3C's [Resource Description Framework (RDF)](https://www.w3.org/RDF/). This allows for tools
+to integrate Smithy models into other knowledge frameworks and to enrich the model with additional
+facts from other tools. It also allows for inferencing over Smithy models using ontology languages
+such as the W3C [Web Ontology Language (OWL)](https://www.w3.org/OWL/).
 
-For the mapping between RDF and Smithy, see the module [`model`](model/index.html).
+For the specifics of the mapping between RDF and Smithy, see the module [`model`](model/index.html).
 
 */
 
@@ -36,32 +40,11 @@ extern crate paste;
 extern crate rdftk_names;
 
 // ------------------------------------------------------------------------------------------------
-// Public Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Private Types
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Implementations
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
-// Private Functions
-// ------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
 
 #[doc(hidden)]
 pub mod urn;
-pub use urn::SmithyUrn;
 
 pub mod model;
 

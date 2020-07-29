@@ -3,6 +3,8 @@ Future home of the Smithy RDF `ModelWriter` implementation.
 
 # Example
 
+TBD
+
 */
 
 // use ...

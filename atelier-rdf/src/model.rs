@@ -1,10 +1,23 @@
 /*!
-Implements the mapping between Smithy and RDF.
+Implements the mapping between the Smithy semantic model and an RDF graph. The functions
+`model_to_rdf` and `rdf_to_model` perform the mapping itself.
+
+# Mapping
+
+This provides a brief description of the Model to RDF mapping.
+
+## Model
+
+## Shape
+
+## Traits
+
+## Values
 
 */
 
+use crate::urn::SmithyUrn;
 use crate::vocabulary;
-use crate::SmithyUrn;
 use atelier_core::error::{Error as ModelError, Result as ModelResult};
 use atelier_core::model::shapes::{
     AppliedTrait, ListOrSet, Map, MemberShape, Operation, Resource, Service, Shape, Simple,
@@ -36,6 +49,8 @@ struct RdfModelVisitor {
 
 ///
 /// Convert a Smithy semantic model into a canonical RDF graph representation.
+///
+/// See [module documentation](index.html) for an explanation of the mapping itself.
 ///
 pub fn model_to_rdf(model: &Model, model_iri: Option<&IRI>) -> ModelResult<Box<dyn Graph>> {
     let model_iri = match model_iri {
@@ -73,6 +88,8 @@ pub fn model_to_rdf(model: &Model, model_iri: Option<&IRI>) -> ModelResult<Box<d
 
 ///
 /// Convert an RDF graph into a Smithy semantic model.
+///
+/// See [module documentation](index.html) for an explanation of the mapping itself.
 ///
 pub fn rdf_to_model(_rdf_graph: &impl Graph, _model_iri: Option<&IRI>) -> ModelResult<Model> {
     unimplemented!()

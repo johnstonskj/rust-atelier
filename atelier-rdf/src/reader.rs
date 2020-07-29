@@ -3,6 +3,8 @@ Future home of the Smithy RDF `ModelReader` implementation.
 
 # Example
 
+TBD
+
 */
 
 // use ...
