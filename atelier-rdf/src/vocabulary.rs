@@ -47,7 +47,7 @@ namespace! {
         member, "member",
         key, "key",
         value, "value",
-        identifier, "identifier",
+        identifiers, "identifiers",
         operation, "operation",
         collection_operation, "collectionOperation",
         resource, "resource",

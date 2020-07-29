@@ -4,15 +4,65 @@ Implements the mapping between the Smithy semantic model and an RDF graph. The f
 
 # Mapping
 
-This provides a brief description of the Model to RDF mapping.
+This provides a brief description of the Model to RDF mapping; the qualified names in the examples
+below use the prefix "smithy" which is defined in [`vocabulary::PREFIX`](../vocabulary/constant.PREFIX.html)
+and which maps to the namespace IRI in [`vocabulary::NAMESPACE`](../vocabulary/constant.NAMESPACE.html).
+
+These values are set in the examples below in [Turtle](https://www.w3.org/TR/turtle/) syntax as a
+common preamble:
+
+```turtle
+@prefix smithy: <https://awslabs.github.io/smithy/vocab/1.0#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+```
 
 ## Model
 
+1. Each model MUST have a subject, either a provided IRI or a blank node will be created.
+1. This subject MUST have an `rdf:type` of `smithy:Model`.
+1. This subject MAY have a relationship, typed as `smithy:shapes` to a node with  `rdf:type` of
+   `rdf:Bag`. This relationship may be ommitted if the model contains no shapes.
+
+```turtle
+_:subject a smithy:Model ;
+            smithy:shapes _:shapes .
+
+_:shapes a rdf:Bag .
+```
+
 ## Shape
+
+1. Each shape MUST be present as a member of the `smithy:shapes` bag introduced above.
+1. The identifier is the URN form of the shapes **shape ID**.
+1. The shape MUST include an `rdf:type` statement that denotes it's Smithy type.
+1. Additional requirements are type specific and introduced below.
+
+```turtle
+_:shapes rdf:li <urn:smithy:example.motd:Shape> .
+
+<urn:smithy:example.motd:Shape> a smithy:String .
+```
+
+TBD
 
 ## Traits
 
+```turtle
+<urn:smithy:example.motd:Shape> a smithy:String ;
+            smithy:traits _:shape_traits .
+
+_:shape_traits a rdf:Bag ;
+            rdf:li _:a_trait .
+
+_:a_trait smithy:trait <urn:smithy:smithy.api:required> .
+```
+
 ## Values
+
+```turtle
+_:a_trait smithy:trait <urn:smithy:smithy.api:documentation> ;
+            smithy:value "Here is some documentation".
+```
 
 */
 
@@ -331,6 +381,38 @@ impl ModelVisitor for RdfModelVisitor {
             rdf::a_type(),
             ObjectNode::named(vocabulary::resource_shape()),
         ));
+        if shape.has_identifiers() {
+            let identifier_bag = SubjectNode::blank();
+            graph.insert(Statement::new(
+                SubjectNode::named(subject.clone()),
+                vocabulary::identifiers(),
+                ObjectNode::from(identifier_bag.clone()),
+            ));
+            graph.insert(Statement::new(
+                identifier_bag.clone(),
+                rdf::a_type(),
+                ObjectNode::named(rdf::bag()),
+            ));
+            for (name, target) in shape.identifiers() {
+                let name_target_pair = SubjectNode::blank();
+                graph.insert(Statement::new(
+                    identifier_bag.clone(),
+                    rdf::li(),
+                    ObjectNode::from(name_target_pair.clone()),
+                ));
+                graph.insert(Statement::new(
+                    name_target_pair.clone(),
+                    vocabulary::key(),
+                    ObjectNode::from(Literal::new(name)),
+                ));
+                from_value(
+                    &mut graph,
+                    name_target_pair.clone(),
+                    vocabulary::value(),
+                    target,
+                )?;
+            }
+        }
         if let Some(create) = shape.create() {
             graph.insert(Statement::new(
                 SubjectNode::named(subject.clone()),
