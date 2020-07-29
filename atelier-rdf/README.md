@@ -1,6 +1,7 @@
 # Atelier: crate atelier_rdf
 
-Provides the ability to read and write [Smithy](https://github.com/awslabs/smithy) models to and from RDF.
+Provides the ability to read and write [Smithy](https://github.com/awslabs/smithy) models to and from the W3C's 
+[Resource Description Framework (RDF)](https://www.w3.org/RDF/).
 
 [![crates.io](https://img.shields.io/crates/v/atelier_rdf.svg)](https://crates.io/crates/atelier_rdf)
 [![docs.rs](https://docs.rs/atelier_rdf/badge.svg)](https://docs.rs/atelier_rdf)
@@ -14,7 +15,7 @@ RDF form.
 
 **Version 0.1.1**
 
-* Provide a common `Model` to RDF mapping.
+* Provide a common `Model` to RDF mapping; document this in the `model` module, and implement `model::model_to_rdf`.
 
 **Version 0.1.0**
 
