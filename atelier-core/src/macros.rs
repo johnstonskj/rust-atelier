@@ -115,7 +115,7 @@ macro_rules! array_member {
             self.$collection.iter()
         }
 
-        /// Add all these elements to this member's collection.
+        /// Add an element to this member's collection.
         pub fn $add_fn(&mut self, $member_name: $member_type) {
             self.$collection.push($member_name);
         }
@@ -130,69 +130,6 @@ macro_rules! array_member {
         /// Remove any element, equal to the provided value, from this member's collection.
         pub fn $remove_fn(&mut self, $member_name: &$member_type) {
             self.$collection.retain(|item| item != $member_name)
-        }
-    };
-}
-
-macro_rules! object_member {
-    ($collection:ident, $member_name:ident, $key_type:ty => $member_type:ty,
-        $has_any_fn:ident, $has_fn:ident, $add_fn:ident, $remove_fn:ident) => {
-        object_member! {
-            $collection, $member_name, $key_type, $member_type,
-            $has_any_fn, $has_fn, $add_fn, $remove_fn
-        }
-
-        /// Add an element to this member's collection.
-        pub fn $add_fn(
-            &mut self,
-            key: $key_type,
-            $member_name: $member_type,
-        ) -> Option<$member_type> {
-            self.$collection.insert(key, $member_name)
-        }
-
-        /// Return an iterator over all elements in this member's collection.
-        pub fn $collection(&self) -> impl Iterator<Item = (&$key_type, &$member_type)> {
-            self.$collection.iter()
-        }
-    };
-    ($collection:ident, $member_name:ident, $key_type:ty, $member_type:ty,
-        $has_any_fn:ident, $has_fn:ident, $add_fn:ident = $real_add_fn:ident, $remove_fn:ident) => {
-        object_member! {
-            $collection, $member_name, $key_type, $member_type,
-            $has_any_fn, $has_fn, $add_fn, $remove_fn
-        }
-
-        /// Add an element to this member's collection.
-        pub fn $add_fn(&mut self, $member_name: $member_type) -> Option<$member_type> {
-            self.$real_add_fn($member_name).unwrap()
-        }
-
-        /// Return an iterator over all elements in this member's collection.
-        pub fn $collection(&self) -> impl Iterator<Item = &$member_type> {
-            self.$collection.values()
-        }
-    };
-    ($collection:ident, $member_name:ident, $key_type:ty, $member_type:ty,
-        $has_any_fn:ident, $has_fn:ident, $add_fn:ident, $remove_fn:ident) => {
-        /// Returns `true` if this member's collection has _any_ elements, else `false`.
-        pub fn $has_any_fn(&self) -> bool {
-            !self.$collection.is_empty()
-        }
-
-        /// Returns `true` if this member's collection has an element that matches `key`, else `false`.
-        pub fn $has_fn(&self, key: &$key_type) -> bool {
-            !self.$collection.contains_key(key)
-        }
-
-        /// Returns the element in the collection with the provided key.
-        pub fn $member_name(&self, key: &$key_type) -> Option<&$member_type> {
-            self.$collection.get(key)
-        }
-
-        /// Remove any element, equal to the provided value, from this member's collection.
-        pub fn $remove_fn(&mut self, key: &$key_type) -> Option<$member_type> {
-            self.$collection.remove(key)
         }
     };
 }

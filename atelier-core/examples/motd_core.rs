@@ -75,7 +75,7 @@ pub fn main() {
 
     // ----------------------------------------------------------------------------------------
     let mut message = Resource::default();
-    message.add_identifier("date".to_string(), Value::String(date.id().to_string()));
+    message.add_identifier("date", &date.id().to_string());
     message.set_read_operation_shape(&get_message);
     let message = TopLevelShape::new(
         namespace.make_shape("Message".parse().unwrap()),

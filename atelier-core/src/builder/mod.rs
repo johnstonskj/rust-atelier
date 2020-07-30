@@ -375,7 +375,7 @@ impl ModelBuilder {
         let mut resource = Resource::default();
         for (name, shape_ref) in &builder.identifiers {
             let shape = self.resolve_shape_name(&shape_ref);
-            let _ = resource.add_identifier(name.clone(), Value::String(shape.to_string()));
+            let _ = resource.add_identifier(name, &shape.to_string());
         }
         if let Some(shape_id) = &builder.create {
             resource.set_create(self.resolve_shape_name(shape_id));
