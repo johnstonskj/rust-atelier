@@ -13,7 +13,8 @@ necessary to compile to HTML.
 2020-07-30 08:40:23 [INFO] (mdbook::book): Running the html backend
 ```
 
-The following will start a local server to host the built content.
+The following will start a local server to host the built content. This command also watches the source file system for
+changes and performs a build on any updates.
 
 ```bash
 ❯ mdbook serve
