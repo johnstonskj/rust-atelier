@@ -7,7 +7,6 @@ Language.
 [![crates.io](https://img.shields.io/crates/v/atelier_lib.svg)](https://crates.io/crates/atelier_lib)
 [![docs.rs](https://docs.rs/atelier_lib/badge.svg)](https://docs.rs/atelier_lib)
 
-
 The aim of this crate is to provide a single client interface over a set of crates that provide
 different Atelier capabilities. The following table shows the mapping from individual crate to the 
 combined module path in this library. The column _Default_ indicates those that are included in the 
@@ -18,7 +17,12 @@ default feature, although the core will be included regardless of any feature se
 | N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)        | `atelier_lib::core`               | Core models only.                                     |
 | "json"       | No      | [atelier_json](https://docs.rs/atelier_json)        | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
 | "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
+| "rdf"        | No      | [atelier_rdf](https://docs.rs/atelier_rdf)          | `atelier_lib::format::rdf`        | Reading and Writing RDF representations.              |
 | "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
+| "uml"        | No      | Included in lib code                                | `atelier_lib::format::uml`        | Writing PlantUML source.                              |
+
+As shown in the table, the feature "uml" is implemented in this crate, as is the _model assembler_ feature. Model
+assembly is a step often required by tools to build a single semantic model from a set of file representations.
 
 ## Changes
 

@@ -6,7 +6,7 @@ Provides the ability to read and write [Smithy](https://github.com/awslabs/smith
 [![crates.io](https://img.shields.io/crates/v/atelier_rdf.svg)](https://crates.io/crates/atelier_rdf)
 [![docs.rs](https://docs.rs/atelier_rdf/badge.svg)](https://docs.rs/atelier_rdf)
 
-This crate provides a common mapping between RDF and the Smithy semantic model. This mapping can be used to 
+This crate provides a common mapping between the Smithy semantic model, and an RDF vocabulary. This mapping can be used to 
 serialize the resulting RDF graph to one of the standard RDF representations, or store in a graph store. The mapping
 allows for models to be augmented by additional facts in the RDF graph and allows for inference over the model in it's
 RDF form.

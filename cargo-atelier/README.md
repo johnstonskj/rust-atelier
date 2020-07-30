@@ -34,7 +34,7 @@ has determined the error.
 
 # Example Lint
 
-For the following badly formatted Smithy file,
+For the following badly formatted Smithy file, in `test-models/lint-test.smithy`.
 
 ```text
 namespace org.example.smithy
@@ -46,9 +46,14 @@ structure thisIsMyStructure {
     someJSONThing: someUnknownShape,
     OK: Boolean
 }
+
+string someUnknownShape
+
+@trait
+structure ThisIsNotAGoodName {}
 ```
 
-The following issues will be output when the linter is run.
+The following issues will be output when the linter runs.
 
 ```bash
 > cargo atelier lint -i test-models/lint-test.smithy -r smithy
@@ -80,15 +85,13 @@ The following issues will be output when the linter is run.
 
 # Example Validate
 
-For the following erroneous Smithy file,
+For the following erroneous Smithy file, in `test-models/validation-test.smithy`.
 
 ```text
 namespace org.example.smithy
 
-@unknownTrait
 structure MyStructure {
     known: String,
-    unknown: NotString,
     wrongType: SomeOperation,
 }
 
@@ -97,19 +100,15 @@ operation SomeOperation {
 }
 
 service SomeService {
+    version: "1.0",
     operations: [MyStructure]
+}
 ```
 
-The following issues will be output when the validation is run.
+The following issues will be output when the validation runs.
 
 ```bash
 > cargo atelier validate -i test-models/validation-test.smithy -r smithy
-
-[error] Shape, or member, has a trait that refers to an unknown identifier: unknownTrait
-	Reported by NoOrphanedReferences on/for element `MyStructure`.
-
-[error] Shape, or member, refers to an unknown identifier: NotString
-	Reported by NoOrphanedReferences on/for element `MyStructure$unknown`.
 
 [error] Structure member may not refer to a service, operation, resource or apply.
 	Reported by CorrectTypeReferences on/for element `MyStructure$wrongType`.

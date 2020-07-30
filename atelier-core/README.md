@@ -81,14 +81,16 @@ fn make_model() -> Model {
 
 ## Runnable Examples
 
-The example `weather.rs` in the `examples` directory uses the complete example from the Smithy quick start guide. The
-_message of the day_ service shown in the example above is included as a pair of stand-alone examples using the 
-semantic model and builder APIs.
+The example `weather_builder.rs` in the `examples` directory uses the complete example from the Smithy quick start guide. The
+`examples` directory also includes a pair of stand-alone examples, using the semantic model and builder APIs, for the
+_message of the day_ service shown in the example above.
 
 As usual these can be executed via cargo in the following manner. 
 
 ```bash
-$ cargo run --example weather
+$ cargo run --example weather_builder
+$ cargo run --example motd_core
+$ cargo run --example motd_builder
 ```
 
 ## Changes
