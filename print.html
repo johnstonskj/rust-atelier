@@ -85,7 +85,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="using/io.html"><strong aria-hidden="true">3.</strong> Reading and Writing Models</a></li><li class="chapter-item expanded "><a href="using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="using/assembly.html"><strong aria-hidden="true">5.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="using/cargo.html"><strong aria-hidden="true">6.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="extending/extending.html"><strong aria-hidden="true">7.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="extending/file_io.html"><strong aria-hidden="true">7.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="extending/linter.html"><strong aria-hidden="true">7.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="extending/validator.html"><strong aria-hidden="true">7.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="extending/transformer.html"><strong aria-hidden="true">7.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="reference/rdf.html">Appendix: RDF Mapping</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="reference/rdf.html">Appendix: RDF Mapping</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -163,7 +163,7 @@
 <p>Figures in this section use a combined ER notation to denote cardinality alongside UML inheritance relationships as needed.</p>
 <h2><a class="header" href="#framework" id="framework">Framework</a></h2>
 <p>The following figure demonstrates the framework elements and their relations.</p>
-<p><a name="fig_1_1"></a><img src="introduction/../img/smithy-model-concept.svg" alt="Smithy Conceptual Model" /></p>
+<p><a name="fig_1_1"></a><img src="introduction/img/smithy-model-concept.svg" alt="Smithy Conceptual Model" /></p>
 <div class="caption figure">1.1: Smithy Conceptual Model</div>
 <ul>
 <li><strong>Semantic Model</strong>; is the in-memory model used by tool. The semantic model has no file or format details associated with it, it may be serialized using a representation into a model file.</li>
@@ -181,11 +181,11 @@
 <li><em>artifact-to-model</em>; the act of creating a model from one or more model files or other artifacts such as an OpenAPI file.</li>
 </ul>
 <p>The following figure shows that a transform has to have one or more models and may have zero or more artifacts.</p>
-<p><a name="fig_1_2"></a><img src="introduction/../img/smithy-model-transforms.svg" alt="Transformations" /></p>
+<p><a name="fig_1_2"></a><img src="introduction/img/smithy-model-transforms.svg" alt="Transformations" /></p>
 <div class="caption figure">1.2: Transformations</div>
 <h2><a class="header" href="#the-semantic-model" id="the-semantic-model">The Semantic Model</a></h2>
 <p>The semantic model is a specified in-memory model used by tools. It is separate from potential serialization representations. Most tools will only ever deal with the semantic model interfaces with serialization and deserialization simply handled by representation mappings.</p>
-<p><a name="fig_1_3"></a><img src="introduction/../img/smithy-model-model.svg" alt="The Semantic Model" /></p>
+<p><a name="fig_1_3"></a><img src="introduction/img/smithy-model-model.svg" alt="The Semantic Model" /></p>
 <div class="caption figure">1.3: The Semantic Model</div>
 <ul>
 <li><strong>Semantic Model</strong>; a container of shapes and optional <a href="introduction/smithy.html#values">metadata</a>.</li>
@@ -198,12 +198,12 @@
 <blockquote>
 <p><em>A shape identifier is used to identify and connect shapes. Every shape in the model is assigned a shape ID which can be referenced by other parts of the model like member targets, resource bindings, operation bindings, and traits. All shape identifiers in the semantic model must be absolute identifiers (that is, they include a shape name and namespace)</em>.</p>
 </blockquote>
-<p><a name="fig_1_4"></a><img src="introduction/../img/smithy-model-shapeid.svg" alt="Shape IDs" /></p>
+<p><a name="fig_1_4"></a><img src="introduction/img/smithy-model-shapeid.svg" alt="Shape IDs" /></p>
 <div class="caption figure">1.4: Shape IDs</div>
 <p>Shape ID has three query methods, <code>is_absolute</code> is true if the id has a namespace; <code>is_relative</code> is true if the id <em>does not</em> have a namespace; and <code>is_member</code> returns true if the id has a member name. It also has four conversion methods, <code>to_absolute</code> returns a new id with the shape name and any member name intact but with the provided namespace; <code>to_relative</code> returns a new id with the shape name and any member name intact but any previous namespace is removed; <code>to_member</code> returns a new id with the namespace and any shape name intact but with the provided member name; and <code>to_shape</code> returns a new id with the namespace and any shape name intact but any previous member name is removed.</p>
 <h2><a class="header" href="#shapes" id="shapes">Shapes</a></h2>
 <p>Shapes come in three kinds; <em>simple</em>, <em>aggregate</em>, and <em>service</em>. A simple shape is the typpe for an atomic or primitive value such as <code>integer</code> or <code>string</code>. Aggregate shapes have members such as a <code>list</code> of <code>string</code>s or an address <code>structure</code>. Service shapes have specific semantics, unlike the very generic simple and aggregate shapes, as they represent either a <em>service</em>, a <em>resource</em> managed by a service, or <em>operations</em> on services and resources.</p>
-<p><a name="fig_1_5"></a><img src="introduction/../img/smithy-model-shapes.svg" alt="Shapes" /></p>
+<p><a name="fig_1_5"></a><img src="introduction/img/smithy-model-shapes.svg" alt="Shapes" /></p>
 <div class="caption figure">1.5: Shapes</div>
 <p>Note that the inheritance relationships in this model are not necessary to implement the semantic model semantics but do make it more understandable.</p>
 <h3><a class="header" href="#traits" id="traits">Traits</a></h3>
@@ -211,7 +211,7 @@
 <p>The term <em>applied trait</em> refers to the usage of a trait either directly or indirectly applied to a shape or member. A <em>trait declaration</em> is simply a simple or aggregate shape declaration with the meta-trait <code>trait</code> applied to it.</p>
 <h2><a class="header" href="#values" id="values">Values</a></h2>
 <p>There are a few places in the semantic model where data values are used and the following demonstrates the values supported by the model. </p>
-<p><a name="fig_1_6"></a><img src="introduction/../img/smithy-model-values.svg" alt="Data" /></p>
+<p><a name="fig_1_6"></a><img src="introduction/img/smithy-model-values.svg" alt="Data" /></p>
 <div class="caption figure">1.6: Data</div>
 <ul>
 <li><strong>metadata</strong>; every Model has an optional metadata <code>Object</code> which is often used to store tool or process specific values.</li>
@@ -221,15 +221,441 @@
 <p>Note that there is no value type for <code>ShapeID</code>, these are stored in the semantic model as simply strings, their validation happens before the creation of the model and are treated only as opaque values by the model itself.</p>
 <h1><a class="header" href="#crate-structure" id="crate-structure">Crate structure</a></h1>
 <p>The following figure shows the current set of crates and their dependencies. For most tools it is easiest to simply rely on the <code>lib</code> crate in the same way the <code>cargo</code> crate does in the figure below.</p>
-<p><a name="fig_1_7"></a><img src="introduction/../img/atelier-crates.svg" alt="Crates" /></p>
+<p><a name="fig_1_7"></a><img src="introduction/img/atelier-crates.svg" alt="Crates" /></p>
 <div class="caption figure">1.7: Crates</div>
 <h1><a class="header" href="#creating-models" id="creating-models">Creating Models</a></h1>
 <h1><a class="header" href="#using-the-model-api" id="using-the-model-api">Using the Model API</a></h1>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use atelier_core::model::shapes::{
+    AppliedTrait, MemberShape, Operation, Resource, Service, Shape, ShapeKind, Simple,
+    StructureOrUnion, TopLevelShape,
+};
+use atelier_core::model::values::Value;
+use atelier_core::model::{Model, NamespaceID};
+use atelier_core::prelude::PRELUDE_NAMESPACE;
+use atelier_core::Version;
+use std::string::ToString;
+
+fn message_of_the_day_model() -&gt; Model {
+    let prelude: NamespaceID = PRELUDE_NAMESPACE.parse().unwrap();
+    let namespace: NamespaceID = &quot;example.motd&quot;.parse().unwrap();
+    
+    // ----------------------------------------------------------------------------------------
+    let mut date = TopLevelShape::new(
+        namespace.make_shape(&quot;Date&quot;.parse().unwrap()),
+        ShapeKind::Simple(Simple::String),
+    );
+    let mut pattern_trait = AppliedTrait::new(prelude.make_shape(&quot;pattern&quot;.parse().unwrap()));
+    pattern_trait.set_value(Value::String(r&quot;^\d\d\d\d\-\d\d-\d\d$&quot;.to_string()));
+    date.apply_trait(pattern_trait);
+    
+    // ----------------------------------------------------------------------------------------
+    let shape_name = namespace.make_shape(&quot;BadDateValue&quot;.parse().unwrap());
+    let mut body = StructureOrUnion::new();
+    body.add_member(
+        shape_name.make_member(&quot;errorMessage&quot;.parse().unwrap()),
+        prelude.make_shape(&quot;String&quot;.parse().unwrap()),
+    );
+    let mut error = TopLevelShape::new(shape_name, ShapeKind::Structure(body));
+    let error_trait = AppliedTrait::with_value(
+        prelude.make_shape(&quot;error&quot;.parse().unwrap()),
+        &quot;client&quot;.to_string().into(),
+    );
+    error.apply_trait(error_trait);
+    
+    // ----------------------------------------------------------------------------------------
+    let shape_name = namespace.make_shape(&quot;GetMessageOutput&quot;.parse().unwrap());
+    let mut output = StructureOrUnion::new();
+    let mut message = MemberShape::new(
+        shape_name.make_member(&quot;message&quot;.parse().unwrap()),
+        prelude.make_shape(&quot;String&quot;.parse().unwrap()),
+    );
+    let required = AppliedTrait::new(prelude.make_shape(&quot;required&quot;.parse().unwrap()));
+    message.apply_trait(required);
+    let _ = output.add_a_member(message);
+    let output = TopLevelShape::new(
+        namespace.make_shape(&quot;GetMessageOutput&quot;.parse().unwrap()),
+        ShapeKind::Structure(output),
+    );
+    
+    // ----------------------------------------------------------------------------------------
+    let shape_name = namespace.make_shape(&quot;GetMessageInput&quot;.parse().unwrap());
+    let mut input = StructureOrUnion::new();
+    input.add_member(
+        shape_name.make_member(&quot;date&quot;.parse().unwrap()),
+        date.id().clone(),
+    );
+    let input = TopLevelShape::new(
+        namespace.make_shape(&quot;GetMessageInput&quot;.parse().unwrap()),
+        ShapeKind::Structure(input),
+    );
+    
+    // ----------------------------------------------------------------------------------------
+    let mut get_message = Operation::default();
+    get_message.set_input_shape(&amp;input);
+    get_message.set_output_shape(&amp;output);
+    get_message.add_error_shape(&amp;error);
+    let mut get_message = TopLevelShape::new(
+        namespace.make_shape(&quot;GetMessage&quot;.parse().unwrap()),
+        ShapeKind::Operation(get_message),
+    );
+    let required = AppliedTrait::new(prelude.make_shape(&quot;readonly&quot;.parse().unwrap()));
+    get_message.apply_trait(required);
+    
+    // ----------------------------------------------------------------------------------------
+    let mut message = Resource::default();
+    message.add_identifier(&quot;date&quot;, &amp;date.id().to_string());
+    message.set_read_operation_shape(&amp;get_message);
+    let message = TopLevelShape::new(
+        namespace.make_shape(&quot;Message&quot;.parse().unwrap()),
+        ShapeKind::Resource(message),
+    );
+    
+    // ----------------------------------------------------------------------------------------
+    let mut service = Service::new(&quot;2020-06-21&quot;);
+    service.add_resource_shape(&amp;message);
+    let mut service = TopLevelShape::new(
+        namespace.make_shape(&quot;MessageOfTheDay&quot;.parse().unwrap()),
+        ShapeKind::Service(service),
+    );
+    let documentation = AppliedTrait::with_value(
+        prelude.make_shape(&quot;documentation&quot;.parse().unwrap()),
+        Value::String(&quot;Provides a Message of the day.&quot;.to_string()),
+    );
+    service.apply_trait(documentation);
+    
+    // ----------------------------------------------------------------------------------------
+    let mut model = Model::new(Version::V10);
+    model.add_shape(message);
+    model.add_shape(date);
+    model.add_shape(get_message);
+    model.add_shape(input);
+    model.add_shape(output);
+    model.add_shape(error);
+    
+    model
+}
+<span class="boring">}
+</span></code></pre></pre>
 <h1><a class="header" href="#using-the-builder-api" id="using-the-builder-api">Using the Builder API</a></h1>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use atelier_core::error::ErrorSource;
+use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
+use atelier_core::builder::{
+    traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
+    ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
+};
+use atelier_core::model::{Identifier, Model, ShapeID};
+use atelier_core::Version;
+
+fn message_of_the_day_model() -&gt; Model {
+    ModelBuilder::new(Version::V10, &quot;example.motd&quot;)
+        .service(
+            ServiceBuilder::new(&quot;MessageOfTheDay&quot;, &quot;2020-06-21&quot;)
+                .documentation(&quot;Provides a Message of the day.&quot;)
+                .resource(&quot;Message&quot;)
+                .into(),
+        )
+        .resource(
+            ResourceBuilder::new(&quot;Message&quot;)
+                .identifier(&quot;date&quot;, &quot;Date&quot;)
+                .read(&quot;GetMessage&quot;)
+                .into(),
+        )
+        .simple_shape(
+            SimpleShapeBuilder::string(&quot;Date&quot;)
+                .apply_trait(traits::pattern(r&quot;^\d\d\d\d\-\d\d-\d\d$&quot;))
+                .into(),
+        )
+        .operation(
+            OperationBuilder::new(&quot;GetMessage&quot;)
+                .readonly()
+                .input(&quot;GetMessageInput&quot;)
+                .output(&quot;GetMessageOutput&quot;)
+                .error(&quot;BadDateValue&quot;)
+                .into(),
+        )
+        .structure(
+            StructureBuilder::new(&quot;GetMessageInput&quot;)
+                .member(&quot;date&quot;, &quot;Date&quot;)
+                .into(),
+        )
+        .structure(
+            StructureBuilder::new(&quot;GetMessageOutput&quot;)
+                .add_member(MemberBuilder::string(&quot;message&quot;).required().into())
+                .into(),
+        )
+        .structure(
+            StructureBuilder::new(&quot;BadDateValue&quot;)
+                .error_source(ErrorSource::Client)
+                .add_member(MemberBuilder::string(&quot;errorMessage&quot;).required().into())
+                .into(),
+        )
+        .into()
+}
+<span class="boring">}
+</span></code></pre></pre>
 <h1><a class="header" href="#reading-and-writing-models" id="reading-and-writing-models">Reading and Writing Models</a></h1>
-<h1><a class="header" href="#checking-models" id="checking-models">Checking Models</a></h1>
+<h2><a class="header" href="#model-files" id="model-files">Model Files</a></h2>
+<h2><a class="header" href="#smithy-representation" id="smithy-representation">Smithy Representation</a></h2>
+<h2><a class="header" href="#json-representation" id="json-representation">JSON Representation</a></h2>
+<h2><a class="header" href="#rdf-representation" id="rdf-representation">RDF Representation</a></h2>
+<h1><a class="header" href="#model-reader" id="model-reader">Model Reader</a></h1>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>const MANIFEST_DIR: &amp;str = env!(&quot;CARGO_MANIFEST_DIR&quot;);
+
+fn test_file_parses(file_name: &amp;str) {
+    let mut path = PathBuf::from_str(MANIFEST_DIR).unwrap();
+    path.push(format!(&quot;tests/good/{}.smithy&quot;, file_name));
+    println!(&quot;{:?}&quot;, path);
+    let mut file = File::open(path).unwrap();
+    let mut content: Vec&lt;u8&gt; = Vec::default();
+    let _ = file.read_to_end(&amp;mut content).unwrap();
+
+    let mut reader = SmithyReader::default();
+    let result = read_model_from_string(&amp;mut reader, content);
+    let trait_trait = ShapeID::from_str(&quot;smithy.api#trait&quot;).unwrap();
+    match result {
+        Ok(parsed) =&gt; {
+            let mut names = parsed
+                .shapes()
+                .map(|shape| {
+                    format!(
+                        &quot;{:&lt;32} -&gt; {}{}&quot;,
+                        shape.id(),
+                        if shape.has_trait(&amp;trait_trait) {
+                            &quot;trait &quot;
+                        } else {
+                            &quot;&quot;
+                        },
+                        match shape.body() {
+                            ShapeKind::Simple(v) =&gt; v.to_string(),
+                            ShapeKind::List(_) =&gt; SHAPE_LIST.to_string(),
+                            ShapeKind::Set(_) =&gt; SHAPE_SET.to_string(),
+                            ShapeKind::Map(_) =&gt; SHAPE_MAP.to_string(),
+                            ShapeKind::Structure(_) =&gt; SHAPE_STRUCTURE.to_string(),
+                            ShapeKind::Union(_) =&gt; SHAPE_UNION.to_string(),
+                            ShapeKind::Service(_) =&gt; SHAPE_SERVICE.to_string(),
+                            ShapeKind::Operation(_) =&gt; SHAPE_OPERATION.to_string(),
+                            ShapeKind::Resource(_) =&gt; SHAPE_RESOURCE.to_string(),
+                            ShapeKind::Unresolved =&gt; SHAPE_APPLY.to_string(),
+                        }
+                    )
+                })
+                .collect::&lt;Vec&lt;String&gt;&gt;();
+            names.sort();
+            print!(&quot;{:#?}&quot;, names)
+        }
+        Err(err) =&gt; panic!(err.to_string()),
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h1><a class="header" href="#model-writer" id="model-writer">Model Writer</a></h1>
 <h1><a class="header" href="#model-assembly" id="model-assembly">Model Assembly</a></h1>
+<h1><a class="header" href="#model-visitor" id="model-visitor">Model Visitor</a></h1>
+<h1><a class="header" href="#checking-models" id="checking-models">Checking Models</a></h1>
+<p>The following example is taken from the Smithy specification discussing
+<a href="https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution">relative name resolution</a>.
+The <code>run_validation_actions</code> function is commonly used to take a list of actions to be performed
+on the model in sequence.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use atelier_core::action::validate::{
+    run_validation_actions, CorrectTypeReferences
+};
+use atelier_core::action::Validator;
+use atelier_core::builder::{
+    ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+};
+use atelier_core::model::Model;
+use atelier_core::Version;
+
+let model: Model = ModelBuilder::new(Version::V10, &quot;smithy.example&quot;)
+    .uses(&quot;foo.baz#Bar&quot;)
+    .structure(
+        StructureBuilder::new(&quot;MyStructure&quot;)
+            .member(&quot;a&quot;, &quot;MyString&quot;)
+            .member(&quot;b&quot;, &quot;smithy.example#MyString&quot;)
+            .member(&quot;d&quot;, &quot;foo.baz#Bar&quot;)
+            .member(&quot;e&quot;, &quot;foo.baz#MyString&quot;)
+            .member(&quot;f&quot;, &quot;String&quot;)
+            .member(&quot;g&quot;, &quot;MyBoolean&quot;)
+            .apply_trait(TraitBuilder::new(&quot;documentation&quot;))
+            .into(),
+    )
+    .simple_shape(SimpleShapeBuilder::string(&quot;MyString&quot;))
+    .simple_shape(SimpleShapeBuilder::boolean(&quot;MyBoolean&quot;))
+    .into();
+let result = run_validation_actions(&amp;mut [
+        Box::new(CorrectTypeReferences::default()),
+    ], &amp;model, false);
+<span class="boring">}
+</span></code></pre></pre>
+<p>This will result in the following list of validation errors. Note that the error is denoted against
+shape or member identifier accordingly.</p>
+<pre><code class="language-text">[
+    ActionIssue {
+        reporter: &quot;CorrectTypeReferences&quot;,
+        level: Info,
+        message: &quot;The simple shape (smithy.example#MyBoolean) is simply a synonym, did you mean to add any constraint traits?&quot;,
+        locus: Some(
+            ShapeID {
+                namespace: NamespaceID(
+                    &quot;smithy.example&quot;,
+                ),
+                shape_name: Identifier(
+                    &quot;MyBoolean&quot;,
+                ),
+                member_name: None,
+            },
+        ),
+    },
+    ActionIssue {
+        reporter: &quot;CorrectTypeReferences&quot;,
+        level: Info,
+        message: &quot;The simple shape (smithy.example#MyString) is simply a synonym, did you mean to add any constraint traits?&quot;,
+        locus: Some(
+            ShapeID {
+                namespace: NamespaceID(
+                    &quot;smithy.example&quot;,
+                ),
+                shape_name: Identifier(
+                    &quot;MyString&quot;,
+                ),
+                member_name: None,
+            },
+        ),
+    },
+    ActionIssue {
+        reporter: &quot;CorrectTypeReferences&quot;,
+        level: Warning,
+        message: &quot;Structure member's type (foo.baz#MyString) cannot be resolved to a shape in this model.&quot;,
+        locus: Some(
+            ShapeID {
+                namespace: NamespaceID(
+                    &quot;smithy.example&quot;,
+                ),
+                shape_name: Identifier(
+                    &quot;MyStructure&quot;,
+                ),
+                member_name: Some(
+                    Identifier(
+                        &quot;e&quot;,
+                    ),
+                ),
+            },
+        ),
+    },
+]
+</code></pre>
 <h1><a class="header" href="#cargo-integration" id="cargo-integration">Cargo Integration</a></h1>
+<pre><code class="language-text">&gt; cargo atelier --help
+cargo-atelier 0.1.2
+Tools for the Smithy IDL.
+
+USAGE:
+    cargo-atelier [FLAGS] &lt;SUBCOMMAND&gt;
+
+FLAGS:
+    -h, --help        Prints help information
+    -n, --no-color    Turn off color in the output
+    -V, --version     Prints version information
+    -v, --verbose     The level of logging to perform; from off to trace
+
+SUBCOMMANDS:
+    convert     Convert model from one representation to another
+    help        Prints this message or the help of the given subcommand(s)
+    lint        Run standard linter rules on a model file
+    validate    Run standard validators on a model file
+</code></pre>
+<p>Both the lint and validate commands use a common mechanism for printing results and will by default print using a 
+colorized output. As different linter and validation rules can be used the <em>reported by</em> row informs you which rule-set
+has determined the error.</p>
+<h1><a class="header" href="#example-lint" id="example-lint">Example Lint</a></h1>
+<p>For the following badly formatted Smithy file, in <code>test-models/lint-test.smithy</code>.</p>
+<pre><code class="language-smithy">namespace org.example.smithy
+
+@ThisIsNotAGoodName
+structure thisIsMyStructure {
+    lower: String,
+    Upper: String,
+    someJSONThing: someUnknownShape,
+    OK: Boolean
+}
+
+string someUnknownShape
+
+@trait
+structure ThisIsNotAGoodName {}
+</code></pre>
+<p>The following issues will be output when the linter runs.</p>
+<pre><code class="language-text">&gt; cargo atelier lint -i test-models/lint-test.smithy -r smithy
+
+[info] Shape names should conform to UpperCamelCase, i.e. ThisIsMyStructure
+	Reported by NamingConventions on/for element `thisIsMyStructure`.
+
+[info] Trait names should conform to lowerCamelCase, i.e. thisIsNotAGoodName
+	Reported by NamingConventions on/for element `ThisIsNotAGoodName`.
+
+[info] Member names should conform to lowerCamelCase, i.e. ok
+	Reported by NamingConventions on/for element `thisIsMyStructure$OK`.
+
+[info] Member name 'OK' appears to contain a known acronym, consider renaming i.e. ok
+	Reported by NamingConventions on/for element `thisIsMyStructure`.
+
+[info] Member names should conform to lowerCamelCase, i.e. someJsonThing
+	Reported by NamingConventions on/for element `thisIsMyStructure$someJSONThing`.
+
+[info] Member name 'someJSONThing' appears to contain a known acronym, consider renaming i.e. Json
+	Reported by NamingConventions on/for element `thisIsMyStructure`.
+
+[info] Shape names should conform to UpperCamelCase, i.e. SomeUnknownShape
+	Reported by NamingConventions on/for element `someUnknownShape`.
+
+[info] Member names should conform to lowerCamelCase, i.e. upper
+	Reported by NamingConventions on/for element `thisIsMyStructure$Upper`.
+</code></pre>
+<h1><a class="header" href="#example-validate" id="example-validate">Example Validate</a></h1>
+<p>For the following erroneous Smithy file, in <code>test-models/validation-test.smithy</code>.</p>
+<pre><code class="language-smithy">namespace org.example.smithy
+
+structure MyStructure {
+    known: String,
+    wrongType: SomeOperation,
+}
+
+operation SomeOperation {
+    input: SomeService
+}
+
+service SomeService {
+    version: &quot;1.0&quot;,
+    operations: [MyStructure]
+}
+</code></pre>
+<p>The following issues will be output when the validation runs.</p>
+<pre><code class="language-text">&gt; cargo atelier validate -i test-models/validation-test.smithy -r smithy
+
+[error] Structure member may not refer to a service, operation, resource or apply.
+	Reported by CorrectTypeReferences on/for element `MyStructure$wrongType`.
+
+[warning] Structure member's type (smithy.api#NotString) cannot be resolved to a shape in this model.
+	Reported by CorrectTypeReferences on/for element `MyStructure$unknown`.
+
+[error] Service operation must be an operation.
+	Reported by CorrectTypeReferences on/for element `SomeService`.
+
+[error] Operation input may not refer to a service, operation, resource or apply.
+	Reported by CorrectTypeReferences on/for element `SomeOperation`.
+</code></pre>
 <h1><a class="header" href="#extending-atelier" id="extending-atelier">Extending Atelier</a></h1>
 <h1><a class="header" href="#adding-an-artifact-representation" id="adding-an-artifact-representation">Adding an Artifact Representation</a></h1>
 <h1><a class="header" href="#adding-a-linter" id="adding-a-linter">Adding a Linter</a></h1>
@@ -246,6 +672,156 @@
 <p>TBD</p>
 <h3><a class="header" href="#unresolved-shapes" id="unresolved-shapes">Unresolved Shapes</a></h3>
 <h1><a class="header" href="#appendix-rdf-mapping" id="appendix-rdf-mapping">Appendix: RDF Mapping</a></h1>
+<p>This provides a brief description of the Model to RDF mapping; the qualified names in the examples
+below use the prefix “smithy” which is defined in <a href="reference/../vocabulary/constant.PREFIX.html"><code>vocabulary::PREFIX</code></a>
+and which maps to the namespace IRI in <a href="reference/../vocabulary/constant.NAMESPACE.html"><code>vocabulary::NAMESPACE</code></a>.</p>
+<p>These values are set in the examples below in <a href="https://www.w3.org/TR/turtle/">Turtle</a> syntax as a
+common preamble:</p>
+<pre><code class="language-turtle">@prefix smithy: &lt;https://awslabs.github.io/smithy/vocab/1.0#&gt; .
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+</code></pre>
+<p>Note the inclusion of the <code>xsd</code> namespace for literals.</p>
+<h2><a class="header" href="#model" id="model">Model</a></h2>
+<ol>
+<li>Each model MUST have a subject, either a provided IRI or a blank node will be created.</li>
+<li>This subject MUST have an <code>rdf:type</code> of <code>smithy:Model</code>.</li>
+<li>This subject MAY have a relationship, typed as <code>smithy:shapes</code> to a node with <code>rdf:type</code> of
+<code>rdf:Bag</code>. This relationship may be omitted if the model contains no shapes.</li>
+</ol>
+<pre><code class="language-turtle">_:subject a smithy:Model ;
+            smithy:shapes _:shapes .
+
+_:shapes a rdf:Bag .
+</code></pre>
+<h2><a class="header" href="#shape" id="shape">Shape</a></h2>
+<ol>
+<li>Each shape MUST be present as a member of the <code>smithy:shapes</code> bag introduced above.</li>
+<li>The identifier is the URN form of the shapes <strong>shape ID</strong>.</li>
+<li>The shape MUST include an <code>rdf:type</code> statement that denotes it’s Smithy type.</li>
+<li>Additional requirements are type specific and introduced below.</li>
+</ol>
+<pre><code class="language-turtle">_:shapes rdf:li &lt;urn:smithy:example.motd:Shape&gt; .
+
+&lt;urn:smithy:example.motd:Shape&gt; a smithy:String .
+</code></pre>
+<ol>
+<li>Simple shapes;
+<ol>
+<li>no additional rules.</li>
+</ol>
+</li>
+<li>List and Set shapes;
+<ol>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:member</code>
+and the object being the URN of the target shape.</li>
+<li>This member MAY have traits (see below).</li>
+</ol>
+</li>
+<li>Map shapes;
+<ol>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:key</code>
+and the object being the URN of the target shape.</li>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:value</code>
+and the object being the URN of the target shape.</li>
+<li>These members MAY have traits (see below).</li>
+</ol>
+</li>
+<li>Structure and Union shapes;
+<ol>
+<li>Each member of the shape becomes a statement with the shape ID as predicate and the object
+being a URN for the target shape.</li>
+<li>These members MAY have traits (see below).</li>
+</ol>
+</li>
+<li>Service shapes;
+<ol>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:version</code> and
+the object being a literal, non-empty, string.</li>
+<li>Each member of the shape becomes a statement with the corresponding predicate <code>smithy:*</code>
+and the object being the URN of the target shape.</li>
+<li>For the multi-valued members <code>operations</code>, and <code>resources</code>, the statement SHALL be repeated
+once for each value.</li>
+</ol>
+</li>
+<li>Operation shapes;
+<ol>
+<li>Each member of the shape becomes a statement with the corresponding predicate <code>smithy:*</code>
+and the object being the URN of the target shape.</li>
+<li>For the multi-valued member <code>errors</code> the statement SHALL be repeated once for each value.</li>
+</ol>
+</li>
+<li>Resource Shapes;
+<ol>
+<li>The resource subject MAY have a relationship, typed as <code>smithy:identifiers</code> to a node with
+<code>rdf:type</code> of <code>rdf:Bag</code>. This relationship may be omitted if the model contains no identifier
+pairs.
+<ol>
+<li>Each identifier pair consists of a blank node in the bag with two statements;
+<ol>
+<li>one with the predicate <code>smithy:key</code> and the object being a literal string for the identifier name,</li>
+<li>one with the predicate <code>smithy:value</code> and the object being the URN of the target shape.</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>Each member of the shape becomes a statement with the corresponding predicate <code>smithy:*</code>
+and the object being the URN of the target shape.</li>
+<li>For the multi-valued members <code>operations</code>, <code>collectionOperations</code>, and <code>resources</code>, the
+statement SHALL be repeated once for each value.</li>
+</ol>
+</li>
+</ol>
+<h2><a class="header" href="#traits-1" id="traits-1">Traits</a></h2>
+<p>Any shape, either a top-level shape, or a member, may have traits applied, these are represented as
+follows:</p>
+<ol>
+<li>This shape MAY have a relationship, typed as <code>smithy:traits</code> to a node with <code>rdf:type</code> of
+<code>rdf:Bag</code>. This relationship may be omitted if the shape has no applied traits.</li>
+<li>Each applied trait is represented as a blank node, with predicate <code>rdf:li</code> in the trait bag.</li>
+<li>This new node MUST include a statement with the predicate <code>smithy:trait</code> and object being the
+URN of the trait shape.</li>
+<li>The new node MAY include a statement with the predicate <code>smithy:value</code> and object being the
+value applied with this shape (see production below).</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:Shape&gt; a smithy:String ;
+            smithy:traits _:shape_traits .
+
+_:shape_traits a rdf:Bag ;
+            rdf:li _:a_trait .
+
+_:a_trait smithy:trait &lt;urn:smithy:smithy.api:required&gt; .
+</code></pre>
+<h2><a class="header" href="#values-1" id="values-1">Values</a></h2>
+<p>Values are attached to a node with the predicate <code>smithy:value</code> and the value represented as follows:</p>
+<ol>
+<li>string values MUST be represented as unqualified string literals,</li>
+<li>boolean values MUST be represented as string literals with the type <code>xsd:boolean</code>,</li>
+<li>numeric values MUST be represented as string literals with either the type <code>xsd:signedLong</code> or
+<code>xsd:double</code>.</li>
+<li>null values MUST be represented as <code>rdf:nil</code>,</li>
+<li>array values MUST be represented as a new blank node,
+<ol>
+<li>this node MUST have a statement with <code>rdf:type</code> of <code>rdf:List</code>,</li>
+<li>each element in the array occurs in this list with the predicate <code>rdf:li</code> and object being
+the value represented using these same production rules,</li>
+</ol>
+</li>
+<li>object values MUST be represented as a new blank node,
+<ol>
+<li>this node MUST have a statement with <code>rdf:type</code> of <code>rdf:Bag</code>,</li>
+<li>each element in the object occurs in this list with the predicate <code>rdf:li</code> and object being
+a new node blank node,</li>
+<li>this node MUST have a statement with <code>smithy:key</code> and the object being a string literal
+for the identifier name,</li>
+<li>this node MUST have a statement with <code>smithy:value</code> and the object being the URN of the
+target shape.</li>
+</ol>
+</li>
+</ol>
+<pre><code class="language-turtle">_:a_trait smithy:trait &lt;urn:smithy:smithy.api:documentation&gt; ;
+            smithy:value &quot;Here is some documentation&quot;.
+</code></pre>
 
                     </main>
 

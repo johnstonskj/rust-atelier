@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Reading and Writing Models</a></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">5.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">6.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">7.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">7.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">7.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">7.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">7.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="../reference/rdf.html" class="active">Appendix: RDF Mapping</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="../reference/rdf.html" class="active">Appendix: RDF Mapping</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -154,6 +154,156 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#appendix-rdf-mapping" id="appendix-rdf-mapping">Appendix: RDF Mapping</a></h1>
+<p>This provides a brief description of the Model to RDF mapping; the qualified names in the examples
+below use the prefix “smithy” which is defined in <a href="../vocabulary/constant.PREFIX.html"><code>vocabulary::PREFIX</code></a>
+and which maps to the namespace IRI in <a href="../vocabulary/constant.NAMESPACE.html"><code>vocabulary::NAMESPACE</code></a>.</p>
+<p>These values are set in the examples below in <a href="https://www.w3.org/TR/turtle/">Turtle</a> syntax as a
+common preamble:</p>
+<pre><code class="language-turtle">@prefix smithy: &lt;https://awslabs.github.io/smithy/vocab/1.0#&gt; .
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+</code></pre>
+<p>Note the inclusion of the <code>xsd</code> namespace for literals.</p>
+<h2><a class="header" href="#model" id="model">Model</a></h2>
+<ol>
+<li>Each model MUST have a subject, either a provided IRI or a blank node will be created.</li>
+<li>This subject MUST have an <code>rdf:type</code> of <code>smithy:Model</code>.</li>
+<li>This subject MAY have a relationship, typed as <code>smithy:shapes</code> to a node with <code>rdf:type</code> of
+<code>rdf:Bag</code>. This relationship may be omitted if the model contains no shapes.</li>
+</ol>
+<pre><code class="language-turtle">_:subject a smithy:Model ;
+            smithy:shapes _:shapes .
+
+_:shapes a rdf:Bag .
+</code></pre>
+<h2><a class="header" href="#shape" id="shape">Shape</a></h2>
+<ol>
+<li>Each shape MUST be present as a member of the <code>smithy:shapes</code> bag introduced above.</li>
+<li>The identifier is the URN form of the shapes <strong>shape ID</strong>.</li>
+<li>The shape MUST include an <code>rdf:type</code> statement that denotes it’s Smithy type.</li>
+<li>Additional requirements are type specific and introduced below.</li>
+</ol>
+<pre><code class="language-turtle">_:shapes rdf:li &lt;urn:smithy:example.motd:Shape&gt; .
+
+&lt;urn:smithy:example.motd:Shape&gt; a smithy:String .
+</code></pre>
+<ol>
+<li>Simple shapes;
+<ol>
+<li>no additional rules.</li>
+</ol>
+</li>
+<li>List and Set shapes;
+<ol>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:member</code>
+and the object being the URN of the target shape.</li>
+<li>This member MAY have traits (see below).</li>
+</ol>
+</li>
+<li>Map shapes;
+<ol>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:key</code>
+and the object being the URN of the target shape.</li>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:value</code>
+and the object being the URN of the target shape.</li>
+<li>These members MAY have traits (see below).</li>
+</ol>
+</li>
+<li>Structure and Union shapes;
+<ol>
+<li>Each member of the shape becomes a statement with the shape ID as predicate and the object
+being a URN for the target shape.</li>
+<li>These members MAY have traits (see below).</li>
+</ol>
+</li>
+<li>Service shapes;
+<ol>
+<li>An additional statement for the shape MUST be present with the predicate <code>smithy:version</code> and
+the object being a literal, non-empty, string.</li>
+<li>Each member of the shape becomes a statement with the corresponding predicate <code>smithy:*</code>
+and the object being the URN of the target shape.</li>
+<li>For the multi-valued members <code>operations</code>, and <code>resources</code>, the statement SHALL be repeated
+once for each value.</li>
+</ol>
+</li>
+<li>Operation shapes;
+<ol>
+<li>Each member of the shape becomes a statement with the corresponding predicate <code>smithy:*</code>
+and the object being the URN of the target shape.</li>
+<li>For the multi-valued member <code>errors</code> the statement SHALL be repeated once for each value.</li>
+</ol>
+</li>
+<li>Resource Shapes;
+<ol>
+<li>The resource subject MAY have a relationship, typed as <code>smithy:identifiers</code> to a node with
+<code>rdf:type</code> of <code>rdf:Bag</code>. This relationship may be omitted if the model contains no identifier
+pairs.
+<ol>
+<li>Each identifier pair consists of a blank node in the bag with two statements;
+<ol>
+<li>one with the predicate <code>smithy:key</code> and the object being a literal string for the identifier name,</li>
+<li>one with the predicate <code>smithy:value</code> and the object being the URN of the target shape.</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>Each member of the shape becomes a statement with the corresponding predicate <code>smithy:*</code>
+and the object being the URN of the target shape.</li>
+<li>For the multi-valued members <code>operations</code>, <code>collectionOperations</code>, and <code>resources</code>, the
+statement SHALL be repeated once for each value.</li>
+</ol>
+</li>
+</ol>
+<h2><a class="header" href="#traits" id="traits">Traits</a></h2>
+<p>Any shape, either a top-level shape, or a member, may have traits applied, these are represented as
+follows:</p>
+<ol>
+<li>This shape MAY have a relationship, typed as <code>smithy:traits</code> to a node with <code>rdf:type</code> of
+<code>rdf:Bag</code>. This relationship may be omitted if the shape has no applied traits.</li>
+<li>Each applied trait is represented as a blank node, with predicate <code>rdf:li</code> in the trait bag.</li>
+<li>This new node MUST include a statement with the predicate <code>smithy:trait</code> and object being the
+URN of the trait shape.</li>
+<li>The new node MAY include a statement with the predicate <code>smithy:value</code> and object being the
+value applied with this shape (see production below).</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:Shape&gt; a smithy:String ;
+            smithy:traits _:shape_traits .
+
+_:shape_traits a rdf:Bag ;
+            rdf:li _:a_trait .
+
+_:a_trait smithy:trait &lt;urn:smithy:smithy.api:required&gt; .
+</code></pre>
+<h2><a class="header" href="#values" id="values">Values</a></h2>
+<p>Values are attached to a node with the predicate <code>smithy:value</code> and the value represented as follows:</p>
+<ol>
+<li>string values MUST be represented as unqualified string literals,</li>
+<li>boolean values MUST be represented as string literals with the type <code>xsd:boolean</code>,</li>
+<li>numeric values MUST be represented as string literals with either the type <code>xsd:signedLong</code> or
+<code>xsd:double</code>.</li>
+<li>null values MUST be represented as <code>rdf:nil</code>,</li>
+<li>array values MUST be represented as a new blank node,
+<ol>
+<li>this node MUST have a statement with <code>rdf:type</code> of <code>rdf:List</code>,</li>
+<li>each element in the array occurs in this list with the predicate <code>rdf:li</code> and object being
+the value represented using these same production rules,</li>
+</ol>
+</li>
+<li>object values MUST be represented as a new blank node,
+<ol>
+<li>this node MUST have a statement with <code>rdf:type</code> of <code>rdf:Bag</code>,</li>
+<li>each element in the object occurs in this list with the predicate <code>rdf:li</code> and object being
+a new node blank node,</li>
+<li>this node MUST have a statement with <code>smithy:key</code> and the object being a string literal
+for the identifier name,</li>
+<li>this node MUST have a statement with <code>smithy:value</code> and the object being the URN of the
+target shape.</li>
+</ol>
+</li>
+</ol>
+<pre><code class="language-turtle">_:a_trait smithy:trait &lt;urn:smithy:smithy.api:documentation&gt; ;
+            smithy:value &quot;Here is some documentation&quot;.
+</code></pre>
 
                     </main>
 

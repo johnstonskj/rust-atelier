@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Reading and Writing Models</a></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">5.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/cargo.html" class="active"><strong aria-hidden="true">6.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">7.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">7.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">7.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">7.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">7.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="../reference/rdf.html">Appendix: RDF Mapping</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html" class="active"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="../reference/rdf.html">Appendix: RDF Mapping</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -154,13 +154,112 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#cargo-integration" id="cargo-integration">Cargo Integration</a></h1>
+<pre><code class="language-text">&gt; cargo atelier --help
+cargo-atelier 0.1.2
+Tools for the Smithy IDL.
+
+USAGE:
+    cargo-atelier [FLAGS] &lt;SUBCOMMAND&gt;
+
+FLAGS:
+    -h, --help        Prints help information
+    -n, --no-color    Turn off color in the output
+    -V, --version     Prints version information
+    -v, --verbose     The level of logging to perform; from off to trace
+
+SUBCOMMANDS:
+    convert     Convert model from one representation to another
+    help        Prints this message or the help of the given subcommand(s)
+    lint        Run standard linter rules on a model file
+    validate    Run standard validators on a model file
+</code></pre>
+<p>Both the lint and validate commands use a common mechanism for printing results and will by default print using a 
+colorized output. As different linter and validation rules can be used the <em>reported by</em> row informs you which rule-set
+has determined the error.</p>
+<h1><a class="header" href="#example-lint" id="example-lint">Example Lint</a></h1>
+<p>For the following badly formatted Smithy file, in <code>test-models/lint-test.smithy</code>.</p>
+<pre><code class="language-smithy">namespace org.example.smithy
+
+@ThisIsNotAGoodName
+structure thisIsMyStructure {
+    lower: String,
+    Upper: String,
+    someJSONThing: someUnknownShape,
+    OK: Boolean
+}
+
+string someUnknownShape
+
+@trait
+structure ThisIsNotAGoodName {}
+</code></pre>
+<p>The following issues will be output when the linter runs.</p>
+<pre><code class="language-text">&gt; cargo atelier lint -i test-models/lint-test.smithy -r smithy
+
+[info] Shape names should conform to UpperCamelCase, i.e. ThisIsMyStructure
+	Reported by NamingConventions on/for element `thisIsMyStructure`.
+
+[info] Trait names should conform to lowerCamelCase, i.e. thisIsNotAGoodName
+	Reported by NamingConventions on/for element `ThisIsNotAGoodName`.
+
+[info] Member names should conform to lowerCamelCase, i.e. ok
+	Reported by NamingConventions on/for element `thisIsMyStructure$OK`.
+
+[info] Member name 'OK' appears to contain a known acronym, consider renaming i.e. ok
+	Reported by NamingConventions on/for element `thisIsMyStructure`.
+
+[info] Member names should conform to lowerCamelCase, i.e. someJsonThing
+	Reported by NamingConventions on/for element `thisIsMyStructure$someJSONThing`.
+
+[info] Member name 'someJSONThing' appears to contain a known acronym, consider renaming i.e. Json
+	Reported by NamingConventions on/for element `thisIsMyStructure`.
+
+[info] Shape names should conform to UpperCamelCase, i.e. SomeUnknownShape
+	Reported by NamingConventions on/for element `someUnknownShape`.
+
+[info] Member names should conform to lowerCamelCase, i.e. upper
+	Reported by NamingConventions on/for element `thisIsMyStructure$Upper`.
+</code></pre>
+<h1><a class="header" href="#example-validate" id="example-validate">Example Validate</a></h1>
+<p>For the following erroneous Smithy file, in <code>test-models/validation-test.smithy</code>.</p>
+<pre><code class="language-smithy">namespace org.example.smithy
+
+structure MyStructure {
+    known: String,
+    wrongType: SomeOperation,
+}
+
+operation SomeOperation {
+    input: SomeService
+}
+
+service SomeService {
+    version: &quot;1.0&quot;,
+    operations: [MyStructure]
+}
+</code></pre>
+<p>The following issues will be output when the validation runs.</p>
+<pre><code class="language-text">&gt; cargo atelier validate -i test-models/validation-test.smithy -r smithy
+
+[error] Structure member may not refer to a service, operation, resource or apply.
+	Reported by CorrectTypeReferences on/for element `MyStructure$wrongType`.
+
+[warning] Structure member's type (smithy.api#NotString) cannot be resolved to a shape in this model.
+	Reported by CorrectTypeReferences on/for element `MyStructure$unknown`.
+
+[error] Service operation must be an operation.
+	Reported by CorrectTypeReferences on/for element `SomeService`.
+
+[error] Operation input may not refer to a service, operation, resource or apply.
+	Reported by CorrectTypeReferences on/for element `SomeOperation`.
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../using/assembly.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../using/checking.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
@@ -178,7 +277,7 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../using/assembly.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../using/checking.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 

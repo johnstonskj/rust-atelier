@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Reading and Writing Models</a></li><li class="chapter-item expanded "><a href="../using/checking.html" class="active"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">5.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">6.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">7.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">7.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">7.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">7.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">7.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="../reference/rdf.html">Appendix: RDF Mapping</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html" class="active"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html">Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded affix "><a href="../reference/rdf.html">Appendix: RDF Mapping</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -154,19 +154,114 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#checking-models" id="checking-models">Checking Models</a></h1>
+<p>The following example is taken from the Smithy specification discussing
+<a href="https://awslabs.github.io/smithy/1.0/spec/core/shapes.html#relative-shape-id-resolution">relative name resolution</a>.
+The <code>run_validation_actions</code> function is commonly used to take a list of actions to be performed
+on the model in sequence.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use atelier_core::action::validate::{
+    run_validation_actions, CorrectTypeReferences
+};
+use atelier_core::action::Validator;
+use atelier_core::builder::{
+    ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder
+};
+use atelier_core::model::Model;
+use atelier_core::Version;
+
+let model: Model = ModelBuilder::new(Version::V10, &quot;smithy.example&quot;)
+    .uses(&quot;foo.baz#Bar&quot;)
+    .structure(
+        StructureBuilder::new(&quot;MyStructure&quot;)
+            .member(&quot;a&quot;, &quot;MyString&quot;)
+            .member(&quot;b&quot;, &quot;smithy.example#MyString&quot;)
+            .member(&quot;d&quot;, &quot;foo.baz#Bar&quot;)
+            .member(&quot;e&quot;, &quot;foo.baz#MyString&quot;)
+            .member(&quot;f&quot;, &quot;String&quot;)
+            .member(&quot;g&quot;, &quot;MyBoolean&quot;)
+            .apply_trait(TraitBuilder::new(&quot;documentation&quot;))
+            .into(),
+    )
+    .simple_shape(SimpleShapeBuilder::string(&quot;MyString&quot;))
+    .simple_shape(SimpleShapeBuilder::boolean(&quot;MyBoolean&quot;))
+    .into();
+let result = run_validation_actions(&amp;mut [
+        Box::new(CorrectTypeReferences::default()),
+    ], &amp;model, false);
+<span class="boring">}
+</span></code></pre></pre>
+<p>This will result in the following list of validation errors. Note that the error is denoted against
+shape or member identifier accordingly.</p>
+<pre><code class="language-text">[
+    ActionIssue {
+        reporter: &quot;CorrectTypeReferences&quot;,
+        level: Info,
+        message: &quot;The simple shape (smithy.example#MyBoolean) is simply a synonym, did you mean to add any constraint traits?&quot;,
+        locus: Some(
+            ShapeID {
+                namespace: NamespaceID(
+                    &quot;smithy.example&quot;,
+                ),
+                shape_name: Identifier(
+                    &quot;MyBoolean&quot;,
+                ),
+                member_name: None,
+            },
+        ),
+    },
+    ActionIssue {
+        reporter: &quot;CorrectTypeReferences&quot;,
+        level: Info,
+        message: &quot;The simple shape (smithy.example#MyString) is simply a synonym, did you mean to add any constraint traits?&quot;,
+        locus: Some(
+            ShapeID {
+                namespace: NamespaceID(
+                    &quot;smithy.example&quot;,
+                ),
+                shape_name: Identifier(
+                    &quot;MyString&quot;,
+                ),
+                member_name: None,
+            },
+        ),
+    },
+    ActionIssue {
+        reporter: &quot;CorrectTypeReferences&quot;,
+        level: Warning,
+        message: &quot;Structure member's type (foo.baz#MyString) cannot be resolved to a shape in this model.&quot;,
+        locus: Some(
+            ShapeID {
+                namespace: NamespaceID(
+                    &quot;smithy.example&quot;,
+                ),
+                shape_name: Identifier(
+                    &quot;MyStructure&quot;,
+                ),
+                member_name: Some(
+                    Identifier(
+                        &quot;e&quot;,
+                    ),
+                ),
+            },
+        ),
+    },
+]
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../using/io.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../using/visitor.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../using/assembly.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../using/cargo.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -178,13 +273,13 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../using/io.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../using/visitor.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../using/assembly.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../using/cargo.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
