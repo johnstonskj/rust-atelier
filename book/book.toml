@@ -11,5 +11,5 @@ edition = "2018"
 [output.html]
 git-repository-url = "https://github.com/johnstonskj/rust-atelier"
 additional-css = ["atelier.css"]
-additional-js = ["smithy.js", "atelier.js"]
+additional-js = ["smithy.js", "turtle.js", "atelier.js"]
 curly-quotes = true

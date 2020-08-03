@@ -1,8 +1,8 @@
 # Appendix: RDF Mapping
 
 This provides a brief description of the Model to RDF mapping; the qualified names in the examples
-below use the prefix "smithy" which is defined in [`vocabulary::PREFIX`](../vocabulary/constant.PREFIX.html)
-and which maps to the namespace IRI in [`vocabulary::NAMESPACE`](../vocabulary/constant.NAMESPACE.html).
+below use the prefix "smithy" which is defined in `vocabulary::PREFIX`
+and which maps to the namespace IRI in `vocabulary::NAMESPACE`.
 
 These values are set in the examples below in [Turtle](https://www.w3.org/TR/turtle/) syntax as a
 common preamble:
