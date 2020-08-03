@@ -38,7 +38,7 @@ crate incorporates all, except the cargo command, using features to select the d
 ## Book
 
 This repo also contains the source (using [mdbook](https://rust-lang.github.io/mdBook/)) of a more complete documentation
-set. This is built using GitHub pages and accessible [here](https://simonkjohnston.life/rust-atelier/).
+set. This is built using GitHub pages and accessible at [rust-atelier.dev](https://rust-atelier.dev/).
 
 ## Changes
 
