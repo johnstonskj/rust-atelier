@@ -9,40 +9,44 @@ hljsTurtle = function(hljs) {
   return {
     name: 'Turtle',
     keywords: {
-      keyword: '@prefix PREFIX @base BASE',
+      keyword: 'PREFIX BASE', // SPARQL style
       literal: 'a true false',
     },
     contains: [
       {
-        className: 'title',
+        className: 'keyword', // N3 style
+        begin: /@[^\t \r\n\(]+/
+      },
+      {
+        className: 'title',   // IRIs
         begin: '<',
         end: '>',
         illegal: '\\n'
       },
       {
-        className: 'meta',
+        className: 'meta',    // only valid in PREFIX/BASE
         begin: '\\w*:[\t \r\n$]'
       },
       {
-        className: 'function',
+        className: 'function', // QName
         begin: '(\\w+:\\w+)|(:\\w+)|(_:\\w+)'
       },
       {
-        className: 'string',
+        className: 'string',  // RDFString literals
         begin: '"',
         end: '"(\\^\\^|@\\w+(\\-\\w+)*)?',
         illegal: '\\n',
         contains: [hljs.BACKSLASH_ESCAPE]
       },
       {
-        className: 'number',
+        className: 'number',  // numeric literals
         variants: [
           { begin: '\\b([+-]?\\d[\\d]*(\\.[0-9]+)?([eE][+-]?[0-9]+)?)' }
         ],
         relevance: 0
       },
       {
-        className: 'comment',
+        className: 'comment', // N3 style
         begin: '#',
         end: '$'
       }
