@@ -8,7 +8,7 @@ Figures in this section use a combined ER notation to denote cardinality alongsi
 
 The following figure demonstrates the framework elements and their relations.
 
-<a name="fig_1_1"></a>![Smithy Conceptual Model](../img/smithy-model-concept.svg)
+<a name="fig_1_1"></a>![Smithy Conceptual Model](img/smithy-model-concept.svg)
 <div class="caption figure">1.1: Smithy Conceptual Model</div>
 
 * **Semantic Model**; is the in-memory model used by tool. The semantic model has no file or format details associated with it, it may be serialized using a representation into a model file.
@@ -30,7 +30,7 @@ The build process mentioned above takes advantage of a number of transformations
 
 The following figure shows that a transform has to have one or more models and may have zero or more artifacts.
 
-<a name="fig_1_2"></a>![Transformations](../img/smithy-model-transforms.svg)
+<a name="fig_1_2"></a>![Transformations](img/smithy-model-transforms.svg)
 <div class="caption figure">1.2: Transformations</div>
 
 
@@ -38,7 +38,7 @@ The following figure shows that a transform has to have one or more models and m
 
 The semantic model is a specified in-memory model used by tools. It is separate from potential serialization representations. Most tools will only ever deal with the semantic model interfaces with serialization and deserialization simply handled by representation mappings.
 
-<a name="fig_1_3"></a>![The Semantic Model](../img/smithy-model-model.svg)
+<a name="fig_1_3"></a>![The Semantic Model](img/smithy-model-model.svg)
 <div class="caption figure">1.3: The Semantic Model</div>
 
 * **Semantic Model**; a container of shapes and optional [metadata](#values).
@@ -52,7 +52,7 @@ The shape identifier is a key element of the semantic model and representations.
 
 > _A shape identifier is used to identify and connect shapes. Every shape in the model is assigned a shape ID which can be referenced by other parts of the model like member targets, resource bindings, operation bindings, and traits. All shape identifiers in the semantic model must be absolute identifiers (that is, they include a shape name and namespace)_.
 
-<a name="fig_1_4"></a>![Shape IDs](../img/smithy-model-shapeid.svg)
+<a name="fig_1_4"></a>![Shape IDs](img/smithy-model-shapeid.svg)
 <div class="caption figure">1.4: Shape IDs</div>
 
 Shape ID has three query methods, `is_absolute` is true if the id has a namespace; `is_relative` is true if the id _does not_ have a namespace; and `is_member` returns true if the id has a member name. It also has four conversion methods, `to_absolute` returns a new id with the shape name and any member name intact but with the provided namespace; `to_relative` returns a new id with the shape name and any member name intact but any previous namespace is removed; `to_member` returns a new id with the namespace and any shape name intact but with the provided member name; and `to_shape` returns a new id with the namespace and any shape name intact but any previous member name is removed.
@@ -61,7 +61,7 @@ Shape ID has three query methods, `is_absolute` is true if the id has a namespac
 
 Shapes come in three kinds; _simple_, _aggregate_, and _service_. A simple shape is the typpe for an atomic or primitive value such as `integer` or `string`. Aggregate shapes have members such as a `list` of `string`s or an address `structure`. Service shapes have specific semantics, unlike the very generic simple and aggregate shapes, as they represent either a _service_, a _resource_ managed by a service, or _operations_ on services and resources.
 
-<a name="fig_1_5"></a>![Shapes](../img/smithy-model-shapes.svg)
+<a name="fig_1_5"></a>![Shapes](img/smithy-model-shapes.svg)
 <div class="caption figure">1.5: Shapes</div>
 
 Note that the inheritance relationships in this model are not necessary to implement the semantic model semantics but do make it more understandable.
@@ -76,7 +76,7 @@ The term _applied trait_ refers to the usage of a trait either directly or indir
 
 There are a few places in the semantic model where data values are used and the following demonstrates the values supported by the model. 
 
-<a name="fig_1_6"></a>![Data](../img/smithy-model-values.svg)
+<a name="fig_1_6"></a>![Data](img/smithy-model-values.svg)
 <div class="caption figure">1.6: Data</div>
 
 * **metadata**; every Model has an optional metadata `Object` which is often used to store tool or process specific values.
