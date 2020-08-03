@@ -32,6 +32,8 @@ notion of both _absolute_ and _relative_ shape identifiers it is important to no
 identifiers **are not** supported in the semantic model. All names in the semantic model **must**
 be resolved to an absolute name.
 
+For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/model_api.html).
+
 ```rust
 use atelier_core::model::shapes::{
     AppliedTrait, MemberShape, Operation, Resource, Service, Shape, ShapeKind, Simple,
@@ -158,6 +160,8 @@ makes it easier to use. For example, you want to add the documentation trait to 
 1. It hides a lot of the `Identifier` and `ShapeID` construction and so any of those calls to
    `from_str` may fail when the code unwraps the result. This means the builder can panic in ways
    the core model does not.
+
+For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/builder_api.html).
 
 ```rust
 use atelier_core::error::ErrorSource;
