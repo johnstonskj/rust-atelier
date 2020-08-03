@@ -1,5 +1,7 @@
 /*!
 The Smithy semantic model itself, consisting of shapes, members, values, and model statements.
+
+For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/model_api.html).
 */
 
 use crate::error::{ErrorKind, Result as ModelResult};

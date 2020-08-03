@@ -12,6 +12,9 @@ Note that the builder API does not do any model consistency checking, other than
 syntax of strings used to construct `Namespace`, `Identifier`, and `ShapeID` values, 2) ensuring
 that all unqualified names can be resolved to absolute shape identifiers as required by the semantic
 model. In these cases the model builder does not currently return `Result` values, but will panic.
+
+
+For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/builder_api.html).
 */
 
 use crate::error::ErrorKind;

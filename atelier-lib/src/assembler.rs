@@ -4,6 +4,8 @@ add files one-by-one, or from a directory, and then process them all into a sing
 implementation understands the different registered file extensions so that it can read files
 in different representations and assemble them seamlessly.
 
+For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/assembly.html).
+
 # Example
 
 TBD

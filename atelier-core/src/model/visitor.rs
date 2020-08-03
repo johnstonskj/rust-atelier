@@ -1,6 +1,8 @@
 /*!
 This module provides a trait and public function to help implement model visitors.
 
+For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/visitor.html).
+
 */
 
 use crate::model::shapes::{
