@@ -30,6 +30,15 @@ changes and performs a build on any updates.
 
 TBD
 
+## Logo & Type
+
+| Usage       | Family           | Weight      |
+|-------------|------------------|-------------|
+| Logo        | Helvetica Neue   | Bold        |
+| Secondary   | Futura STD       | Bold        |
+| Screen Text | Fira Sans        | Extra Light | 
+| Print Text  | Garamond         | Regular     | 
+
 ## Publishing
 
 The content of this book will be published using a GitHub action on every push to the `master` branch. The live 

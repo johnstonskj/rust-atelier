@@ -1,5 +1,8 @@
 use atelier_core::model::identity::{Identifier, NamespaceID, ShapeID};
+use pretty_assertions::assert_eq;
 use std::str::FromStr;
+
+// ------------------------------------------------------------------------------------------------
 
 const ID_GOOD: &[&str] = &["a", "aBc", "_aBc", "___aBc", "a1", "a1c", "a_c", "a_"];
 const ID_BAD: &[&str] = &["", "_", "1", "1a", "_1", "a!"];

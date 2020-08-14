@@ -4,6 +4,7 @@ use atelier_core::builder::{
 };
 use atelier_core::model::Model;
 use atelier_core::Version;
+use pretty_assertions::assert_eq;
 
 fn make_model() -> Model {
     ModelBuilder::new(Version::V10, "smithy.example")

@@ -18,5 +18,8 @@ pub use atelier_rdf as rdf;
 #[cfg(feature = "smithy")]
 pub use atelier_smithy as smithy;
 
+#[cfg(feature = "graphml")]
+pub mod graphml;
+
 #[cfg(feature = "uml")]
 pub mod plant_uml;
