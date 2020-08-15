@@ -1,6 +1,8 @@
 /*!
 Writer to produce [PlantUML](https://plantuml.com/) text files for diagramming.
 
+# Mapping
+
 The mapping is reasonably simple, but also effective.
 
 1. The namespace for the model becomes the name of a package enclosing all model elements.

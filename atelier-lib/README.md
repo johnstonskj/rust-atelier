@@ -19,12 +19,21 @@ default feature, although the core will be included regardless of any feature se
 | "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
 | "rdf"        | No      | [atelier_rdf](https://docs.rs/atelier_rdf)          | `atelier_lib::format::rdf`        | Reading and Writing RDF representations.              |
 | "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
+| "graphxml"   | No      | Included in lib code                                | `atelier_lib::format::graphml`    | Writing GraphML XML.                                  |
 | "uml"        | No      | Included in lib code                                | `atelier_lib::format::uml`        | Writing PlantUML source.                              |
 
 As shown in the table, the feature "uml" is implemented in this crate, as is the _model assembler_ feature. Model
 assembly is a step often required by tools to build a single semantic model from a set of file representations.
 
 ## Changes
+
+**Version 0.2.1**
+
+* Support for GraphML writer.
+
+**Version 0.2.0**
+
+* Major refactoring
 
 **Version 0.1.6**
 

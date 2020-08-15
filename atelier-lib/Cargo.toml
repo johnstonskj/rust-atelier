@@ -22,6 +22,7 @@ json = ["atelier_json"]
 openapi = ["atelier_openapi"]
 rdf = ["atelier_rdf"]
 smithy = ["atelier_smithy"]
+graphml = []
 uml = []
 
 [dependencies]

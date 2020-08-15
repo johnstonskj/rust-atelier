@@ -19,6 +19,7 @@ default feature, although the core will be included regardless of any feature se
 | "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `::format::openapi`    | Reading and Writing OpenAPI representations.          |
 | "rdf"        | No      | [atelier_rdf](https://docs.rs/atelier_rdf)          | `::format::rdf`        | Reading and Writing RDF representations.              |
 | "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `::format::smithy`     | Reading and Writing the Smithy native representation. |
+| "graphml"    | No      | In this crate                                       | `::format::graphml`    | Writing models in a diagram/XML form.                 |
 | "uml"        | No      | In this crate                                       | `::format::plant_uml`  | Writing models in a diagram form.                     |
 
 # Additions
@@ -53,6 +54,7 @@ pub mod assembler;
     feature = "openapi",
     feature = "rdf",
     feature = "smithy",
+    feature = "graphml",
     feature = "uml"
 ))]
 pub mod format;
