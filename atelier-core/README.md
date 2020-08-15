@@ -95,6 +95,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.1**
+
+* Added `MutableModelVisitor` trait.
+
 **Version 0.2.0**
 
 * Major refactor after agreement on the separation of semantic model with Smithy team.
