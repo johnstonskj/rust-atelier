@@ -5,6 +5,7 @@ Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/sm
 ![MIT License](https://img.shields.io/badge/license-mit-118811.svg)
 ![Minimum Rust Version](https://img.shields.io/badge/Min%20Rust-1.40-green.svg)
 ![Rust](https://github.com/johnstonskj/rust-atelier/workflows/Rust/badge.svg)
+![Audit](https://github.com/johnstonskj/rust-atelier/workflows/Security%20audit/badge.svg)
 [![GitHub stars](https://img.shields.io/github/stars/johnstonskj/rust-atelier.svg)](https://github.com/johnstonskj/rust-atelier/stargazers)
 
 Smithy is a framework around a language and runtime neutral IDL for service definition. It consists of a semantic model,
