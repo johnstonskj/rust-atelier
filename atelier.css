@@ -6,6 +6,11 @@ main img {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    filter: var(--img-filter);
+}
+
+.navy, .ayu, .coal {
+    --img-filter: invert(90%);
 }
 
 main .caption {
