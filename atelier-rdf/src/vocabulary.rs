@@ -3,6 +3,8 @@ This module provides the RDF vocabulary used to describe Smithy semantic models 
 possible existing RDF semantics, predicates, and idioms are used.
 */
 
+#![allow(missing_docs)]
+
 // ------------------------------------------------------------------------------------------------
 // Public Values
 // ------------------------------------------------------------------------------------------------

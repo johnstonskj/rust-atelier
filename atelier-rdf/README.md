@@ -13,6 +13,11 @@ RDF form.
 
 ## Changes
 
+**Version 0.1.2**
+
+* Using latest `rdftk_iri`, which involved changes. 
+* Also, removed `SmithUrn` type and use `IRIRef` directly instead.
+
 **Version 0.1.1**
 
 * Provide a common `Model` to RDF mapping; document this in the `model` module, and implement `model::model_to_rdf`.

@@ -137,7 +137,7 @@ _:a_trait smithy:trait <urn:smithy:smithy.api:documentation> ;
 
 */
 
-use crate::urn::SmithyUrn;
+use crate::urn::shape_to_iri;
 use crate::vocabulary;
 use atelier_core::error::{Error as ModelError, Result as ModelResult};
 use atelier_core::model::shapes::{
@@ -148,9 +148,8 @@ use atelier_core::model::values::Number;
 use atelier_core::model::values::Value;
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
 use atelier_core::model::{Model, ShapeID};
-use rdftk_core::{DataType, Literal, ObjectNode, Statement, SubjectNode};
-use rdftk_graph::Graph;
-use rdftk_iri::IRI;
+use rdftk_core::{DataType, Graph, Literal, ObjectNode, Statement, SubjectNode};
+use rdftk_iri::IRIRef;
 use rdftk_memgraph::MemGraph;
 use rdftk_names::rdf;
 use std::cell::{RefCell, RefMut};
@@ -173,29 +172,29 @@ struct RdfModelVisitor {
 ///
 /// See [module documentation](index.html) for an explanation of the mapping itself.
 ///
-pub fn model_to_rdf(model: &Model, model_iri: Option<&IRI>) -> ModelResult<Box<dyn Graph>> {
+pub fn model_to_rdf(model: &Model, model_iri: Option<IRIRef>) -> ModelResult<Box<dyn Graph>> {
     let model_iri = match model_iri {
         None => SubjectNode::blank(),
-        Some(iri) => SubjectNode::named(iri.clone()),
+        Some(iri) => SubjectNode::named(iri),
     };
     let mut graph = MemGraph::default();
 
     graph.insert(Statement::new(
         model_iri.clone(),
-        rdf::a_type(),
-        ObjectNode::named(vocabulary::model()),
+        rdf::a_type().clone(),
+        ObjectNode::named(vocabulary::model().clone()),
     ));
 
     let shape_bag = SubjectNode::blank();
     graph.insert(Statement::new(
         model_iri,
-        vocabulary::shapes(),
+        vocabulary::shapes().clone(),
         ObjectNode::from(shape_bag.clone()),
     ));
     graph.insert(Statement::new(
         shape_bag.clone(),
-        rdf::a_type(),
-        ObjectNode::named(rdf::bag()),
+        rdf::a_type().clone(),
+        ObjectNode::named(rdf::bag().clone()),
     ));
 
     let visitor = RdfModelVisitor {
@@ -212,7 +211,7 @@ pub fn model_to_rdf(model: &Model, model_iri: Option<&IRI>) -> ModelResult<Box<d
 ///
 /// See [module documentation](index.html) for an explanation of the mapping itself.
 ///
-pub fn rdf_to_model(_rdf_graph: &impl Graph, _model_iri: Option<&IRI>) -> ModelResult<Model> {
+pub fn rdf_to_model(_rdf_graph: &impl Graph, _model_iri: Option<IRIRef>) -> ModelResult<Model> {
     unimplemented!()
 }
 
@@ -233,13 +232,13 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &Simple,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(match shape {
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            match shape {
                 Simple::Blob => vocabulary::blob_shape(),
                 Simple::Boolean => vocabulary::boolean_shape(),
                 Simple::Document => vocabulary::document_shape(),
@@ -253,7 +252,8 @@ impl ModelVisitor for RdfModelVisitor {
                 Simple::BigInteger => vocabulary::big_integer_shape(),
                 Simple::BigDecimal => vocabulary::big_decimal_shape(),
                 Simple::Timestamp => vocabulary::timestamp_shape(),
-            }),
+            }
+            .into(),
         ));
         from_traits(&mut graph, subject, traits)
     }
@@ -264,18 +264,18 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &ListOrSet,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::list_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::list_shape().into(),
         ));
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            vocabulary::member(),
-            ObjectNode::named(SmithyUrn::from(shape.member().target()).into()),
+            subject.clone().into(),
+            vocabulary::member().clone(),
+            shape_to_iri(shape.member().target()).into(),
         ));
         from_traits(&mut graph, subject, traits)
     }
@@ -286,40 +286,40 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &ListOrSet,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id).into();
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::set_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::set_shape().into(),
         ));
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            vocabulary::member(),
-            ObjectNode::named(SmithyUrn::from(shape.member().target()).into()),
+            subject.clone().into(),
+            vocabulary::member().clone(),
+            shape_to_iri(shape.member().target()).into(),
         ));
         from_traits(&mut graph, subject, traits)
     }
 
     fn map(&self, id: &ShapeID, traits: &[AppliedTrait], shape: &Map) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::map_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::map_shape().into(),
         ));
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            vocabulary::key(),
-            ObjectNode::named(SmithyUrn::from(shape.key().target()).into()),
+            subject.clone().into(),
+            vocabulary::key().clone(),
+            shape_to_iri(shape.key().target()).into(),
         ));
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            vocabulary::key(),
-            ObjectNode::named(SmithyUrn::from(shape.value().target()).into()),
+            subject.clone().into(),
+            vocabulary::key().clone(),
+            shape_to_iri(shape.value().target()).into(),
         ));
         from_traits(&mut graph, subject, traits)
     }
@@ -330,13 +330,13 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &StructureOrUnion,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::structure_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::structure_shape().into(),
         ));
         for member in shape.members() {
             from_member(&mut graph, subject.clone(), member)?;
@@ -350,13 +350,13 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &StructureOrUnion,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::union_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::union_shape().into(),
         ));
         for member in shape.members() {
             from_member(&mut graph, subject.clone(), member)?;
@@ -370,31 +370,31 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &Service,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::service_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::service_shape().into(),
         ));
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            vocabulary::version(),
-            ObjectNode::from(Literal::new(shape.version())),
+            subject.clone().into(),
+            vocabulary::version().clone(),
+            Literal::new(shape.version()).into(),
         ));
         for operation in shape.operations() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::operation(),
-                ObjectNode::named(SmithyUrn::from(operation).into()),
+                subject.clone().into(),
+                vocabulary::operation().clone(),
+                shape_to_iri(operation).into(),
             ));
         }
         for resource in shape.resources() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::resource(),
-                ObjectNode::named(SmithyUrn::from(resource).into()),
+                subject.clone().into(),
+                vocabulary::resource().clone(),
+                shape_to_iri(resource).into(),
             ));
         }
         from_traits(&mut graph, subject, traits)
@@ -406,33 +406,33 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &Operation,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id).into();
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::operation_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::operation_shape().into(),
         ));
         if let Some(input) = shape.input() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::input(),
-                ObjectNode::named(SmithyUrn::from(input).into()),
+                subject.clone().into(),
+                vocabulary::input().clone(),
+                shape_to_iri(input).into(),
             ));
         }
         if let Some(output) = shape.output() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::output(),
-                ObjectNode::named(SmithyUrn::from(output).into()),
+                subject.clone().into(),
+                vocabulary::output().clone(),
+                shape_to_iri(output).into(),
             ));
         }
         for error in shape.errors() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::error(),
-                ObjectNode::named(SmithyUrn::from(error).into()),
+                subject.clone().into(),
+                vocabulary::error().clone(),
+                shape_to_iri(error).into(),
             ));
         }
         from_traits(&mut graph, subject, traits)
@@ -444,107 +444,107 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &Resource,
     ) -> Result<(), Self::Error> {
-        let subject: IRI = SmithyUrn::from(id).into();
+        let subject: IRIRef = shape_to_iri(id).into();
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
-            SubjectNode::named(subject.clone()),
-            rdf::a_type(),
-            ObjectNode::named(vocabulary::resource_shape()),
+            subject.clone().into(),
+            rdf::a_type().clone(),
+            vocabulary::resource_shape().into(),
         ));
         if shape.has_identifiers() {
             let identifier_bag = SubjectNode::blank();
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::identifiers(),
-                ObjectNode::from(identifier_bag.clone()),
+                subject.clone().into(),
+                vocabulary::identifiers().clone(),
+                identifier_bag.clone().into(),
             ));
             graph.insert(Statement::new(
-                identifier_bag.clone(),
-                rdf::a_type(),
-                ObjectNode::named(rdf::bag()),
+                identifier_bag.clone().into(),
+                rdf::a_type().clone(),
+                rdf::bag().into(),
             ));
             for (name, target) in shape.identifiers() {
                 let name_target_pair = SubjectNode::blank();
                 graph.insert(Statement::new(
                     identifier_bag.clone(),
-                    rdf::li(),
-                    ObjectNode::from(name_target_pair.clone()),
+                    rdf::li().clone(),
+                    name_target_pair.clone().into(),
                 ));
                 graph.insert(Statement::new(
                     name_target_pair.clone(),
-                    vocabulary::key(),
-                    ObjectNode::from(Literal::new(name)),
+                    vocabulary::key().clone(),
+                    Literal::new(name).into(),
                 ));
                 from_value(
                     &mut graph,
                     name_target_pair.clone(),
-                    vocabulary::value(),
+                    vocabulary::value().clone(),
                     target,
                 )?;
             }
         }
         if let Some(create) = shape.create() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::create(),
-                ObjectNode::named(SmithyUrn::from(create).into()),
+                subject.clone().clone().into(),
+                vocabulary::create().clone(),
+                shape_to_iri(create).into(),
             ));
         }
         if let Some(put) = shape.put() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::put(),
-                ObjectNode::named(SmithyUrn::from(put).into()),
+                subject.clone().clone().into(),
+                vocabulary::put().clone(),
+                shape_to_iri(put).into(),
             ));
         }
         if let Some(update) = shape.update() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::update(),
-                ObjectNode::named(SmithyUrn::from(update).into()),
+                subject.clone().clone().into(),
+                vocabulary::update().clone(),
+                shape_to_iri(update).into(),
             ));
         }
         if let Some(delete) = shape.delete() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::delete(),
-                ObjectNode::named(SmithyUrn::from(delete).into()),
+                subject.clone().clone().into(),
+                vocabulary::delete().clone(),
+                shape_to_iri(delete).into(),
             ));
         }
         if let Some(read) = shape.read() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::read(),
-                ObjectNode::named(SmithyUrn::from(read).into()),
+                subject.clone().clone().into(),
+                vocabulary::read().clone(),
+                shape_to_iri(read).into(),
             ));
         }
         if let Some(list) = shape.list() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::list(),
-                ObjectNode::named(SmithyUrn::from(list).into()),
+                subject.clone().clone().into(),
+                vocabulary::list().clone(),
+                shape_to_iri(list).into(),
             ));
         }
         for operation in shape.operations() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::operation(),
-                ObjectNode::named(SmithyUrn::from(operation).into()),
+                subject.clone().clone().into(),
+                vocabulary::operation().clone(),
+                shape_to_iri(operation).into(),
             ));
         }
         for operation in shape.collection_operations() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::collection_operation(),
-                ObjectNode::named(SmithyUrn::from(operation).into()),
+                subject.clone().clone().into(),
+                vocabulary::collection_operation().clone(),
+                shape_to_iri(operation).into(),
             ));
         }
         for resource in shape.resources() {
             graph.insert(Statement::new(
-                SubjectNode::named(subject.clone()),
-                vocabulary::resource(),
-                ObjectNode::named(SmithyUrn::from(resource).into()),
+                subject.clone().into(),
+                vocabulary::resource().clone(),
+                shape_to_iri(resource).into(),
             ));
         }
         from_traits(&mut graph, subject, traits)
@@ -562,61 +562,57 @@ impl ModelVisitor for RdfModelVisitor {
 fn add_shape(
     graph: &mut RefMut<'_, MemGraph>,
     shape_bag: SubjectNode,
-    subject: IRI,
+    subject: IRIRef,
 ) -> Result<(), ModelError> {
-    graph.insert(Statement::new(
-        shape_bag,
-        rdf::li(),
-        ObjectNode::from(subject),
-    ));
+    graph.insert(Statement::new(shape_bag, rdf::li().clone(), subject.into()));
     Ok(())
 }
 
 fn from_member(
     graph: &mut RefMut<'_, MemGraph>,
-    subject: IRI,
+    subject: IRIRef,
     member: &MemberShape,
 ) -> Result<(), ModelError> {
     graph.insert(Statement::new(
-        SubjectNode::named(subject.clone()),
-        SmithyUrn::from(member.id().clone()).into(),
-        ObjectNode::named(SmithyUrn::from(member.target().clone()).into()),
+        subject.clone().into(),
+        shape_to_iri(member.id()).into(),
+        shape_to_iri(member.target()).into(),
     ));
     from_traits(graph, subject, member.traits())
 }
 
 fn from_traits(
     graph: &mut RefMut<'_, MemGraph>,
-    subject: IRI,
+    subject: IRIRef,
     traits: &[AppliedTrait],
 ) -> Result<(), ModelError> {
     if !traits.is_empty() {
         let trait_bag = SubjectNode::blank();
         graph.insert(Statement::new(
-            SubjectNode::named(subject),
-            vocabulary::traits(),
-            ObjectNode::from(trait_bag.clone()),
+            subject.into(),
+            vocabulary::traits().clone(),
+            trait_bag.clone().into(),
         ));
         graph.insert(Statement::new(
             trait_bag.clone(),
-            rdf::a_type(),
-            ObjectNode::named(rdf::bag()),
+            rdf::a_type().clone(),
+            rdf::bag().into(),
         ));
 
         for a_trait in traits {
             let the_trait = SubjectNode::blank();
             graph.insert(Statement::new(
                 trait_bag.clone(),
-                rdf::li(),
-                ObjectNode::from(the_trait.clone()),
+                rdf::li().clone(),
+                the_trait.clone().into(),
             ));
             graph.insert(Statement::new(
                 the_trait.clone(),
-                vocabulary::trait_name(),
-                ObjectNode::named(SmithyUrn::from(a_trait.id()).into()),
+                vocabulary::trait_name().clone(),
+                shape_to_iri(a_trait.id()).into(),
             ));
             if let Some(value) = a_trait.value() {
-                from_value(graph, the_trait.clone(), vocabulary::value(), value)?;
+                from_value(graph, the_trait.clone(), vocabulary::value().clone(), value)?;
             }
         }
     }
@@ -626,30 +622,26 @@ fn from_traits(
 fn from_value(
     graph: &mut RefMut<'_, MemGraph>,
     subject: SubjectNode,
-    predicate: IRI,
+    predicate: IRIRef,
     value: &Value,
 ) -> Result<(), ModelError> {
     match value {
         Value::String(v) => {
-            graph.insert(Statement::new(
-                subject,
-                predicate,
-                ObjectNode::from(Literal::new(v)),
-            ));
+            graph.insert(Statement::new(subject, predicate, Literal::new(v).into()));
         }
         Value::Number(v) => match v {
             Number::Integer(v) => {
                 graph.insert(Statement::new(
                     subject,
                     predicate,
-                    ObjectNode::from(Literal::with_type(&v.to_string(), DataType::UnsignedLong)),
+                    Literal::with_type(&v.to_string(), DataType::UnsignedLong).into(),
                 ));
             }
             Number::Float(v) => {
                 graph.insert(Statement::new(
                     subject,
                     predicate,
-                    ObjectNode::from(Literal::with_type(&v.to_string(), DataType::Double)),
+                    Literal::with_type(&v.to_string(), DataType::Double).into(),
                 ));
             }
         },
@@ -657,58 +649,46 @@ fn from_value(
             graph.insert(Statement::new(
                 subject,
                 predicate,
-                ObjectNode::from(Literal::with_type(&v.to_string(), DataType::Boolean)),
+                Literal::with_type(&v.to_string(), DataType::Boolean).into(),
             ));
         }
         Value::Array(v) => {
             let the_value = SubjectNode::blank();
-            graph.insert(Statement::new(
-                subject,
-                predicate,
-                ObjectNode::from(the_value.clone()),
-            ));
+            graph.insert(Statement::new(subject, predicate, the_value.clone().into()));
             graph.insert(Statement::new(
                 the_value.clone(),
-                rdf::a_type(),
-                ObjectNode::from(rdf::list()),
+                rdf::a_type().clone(),
+                rdf::list().into(),
             ));
             for value in v {
-                from_value(graph, the_value.clone(), rdf::li(), value)?;
+                from_value(graph, the_value.clone(), rdf::li().clone(), value)?;
             }
         }
         Value::Object(v) => {
             let the_value = SubjectNode::blank();
-            graph.insert(Statement::new(
-                subject,
-                predicate,
-                ObjectNode::from(the_value.clone()),
-            ));
+            graph.insert(Statement::new(subject, predicate, the_value.clone().into()));
             graph.insert(Statement::new(
                 the_value.clone(),
-                rdf::a_type(),
-                ObjectNode::from(rdf::bag()),
+                rdf::a_type().clone(),
+                rdf::bag().into(),
             ));
             for (k, v) in v {
                 let kv_pair = SubjectNode::blank();
                 graph.insert(Statement::new(
                     the_value.clone(),
-                    rdf::li(),
-                    ObjectNode::from(kv_pair.clone()),
+                    rdf::li().clone(),
+                    kv_pair.clone().into(),
                 ));
                 graph.insert(Statement::new(
                     kv_pair.clone(),
-                    vocabulary::key(),
-                    ObjectNode::from(Literal::new(k)),
+                    vocabulary::key().clone(),
+                    Literal::new(k).into(),
                 ));
-                from_value(graph, kv_pair, vocabulary::value(), v)?;
+                from_value(graph, kv_pair, vocabulary::value().clone(), v)?;
             }
         }
         Value::None => {
-            graph.insert(Statement::new(
-                subject,
-                predicate,
-                ObjectNode::named(rdf::nil()),
-            ));
+            graph.insert(Statement::new(subject, predicate, rdf::nil().into()));
         }
     }
     Ok(())
