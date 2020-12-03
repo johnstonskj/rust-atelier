@@ -140,6 +140,7 @@ _:a_trait smithy:trait <urn:smithy:smithy.api:documentation> ;
 use crate::urn::shape_to_iri;
 use crate::vocabulary;
 use atelier_core::error::{Error as ModelError, Result as ModelResult};
+use rdftk_core::graph::MutableGraph;
 use atelier_core::model::shapes::{
     AppliedTrait, ListOrSet, Map, MemberShape, Operation, Resource, Service, Shape, Simple,
     StructureOrUnion,
