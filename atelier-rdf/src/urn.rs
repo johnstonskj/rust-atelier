@@ -142,12 +142,7 @@ mod tests {
     #[test]
     fn test_invalid_formatted_urn() {
         let tests = [
-<<<<<<< HEAD
-             "urn:Smithy:example.namespace:shape/member",
-=======
-            //"Urn:smithy:example.namespace:shape/member",
             "urn:Smithy:example.namespace:shape/member",
->>>>>>> 6e59c7c32d7462970118798d2a4a08557c88a6b0
             "smithy:example.namespace:shape/member",
             "urn:example.namespace:shape/member",
             "urn:smithy:shape/member",
