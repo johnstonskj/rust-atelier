@@ -287,7 +287,7 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &ListOrSet,
     ) -> Result<(), Self::Error> {
-        let subject: IRIRef = shape_to_iri(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
@@ -407,7 +407,7 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &Operation,
     ) -> Result<(), Self::Error> {
-        let subject: IRIRef = shape_to_iri(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
@@ -445,7 +445,7 @@ impl ModelVisitor for RdfModelVisitor {
         traits: &[AppliedTrait],
         shape: &Resource,
     ) -> Result<(), Self::Error> {
-        let subject: IRIRef = shape_to_iri(id).into();
+        let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.shape_bag.clone(), subject.clone())?;
         graph.insert(Statement::new(
@@ -461,7 +461,7 @@ impl ModelVisitor for RdfModelVisitor {
                 identifier_bag.clone().into(),
             ));
             graph.insert(Statement::new(
-                identifier_bag.clone().into(),
+                identifier_bag.clone(),
                 rdf::a_type().clone(),
                 rdf::bag().into(),
             ));
@@ -487,42 +487,42 @@ impl ModelVisitor for RdfModelVisitor {
         }
         if let Some(create) = shape.create() {
             graph.insert(Statement::new(
-                subject.clone().clone().into(),
+                subject.clone().into(),
                 vocabulary::create().clone(),
                 shape_to_iri(create).into(),
             ));
         }
         if let Some(put) = shape.put() {
             graph.insert(Statement::new(
-                subject.clone().clone().into(),
+                subject.clone().into(),
                 vocabulary::put().clone(),
                 shape_to_iri(put).into(),
             ));
         }
         if let Some(update) = shape.update() {
             graph.insert(Statement::new(
-                subject.clone().clone().into(),
+                subject.clone().into(),
                 vocabulary::update().clone(),
                 shape_to_iri(update).into(),
             ));
         }
         if let Some(delete) = shape.delete() {
             graph.insert(Statement::new(
-                subject.clone().clone().into(),
+                subject.clone().into(),
                 vocabulary::delete().clone(),
                 shape_to_iri(delete).into(),
             ));
         }
         if let Some(read) = shape.read() {
             graph.insert(Statement::new(
-                subject.clone().clone().into(),
+                subject.clone().into(),
                 vocabulary::read().clone(),
                 shape_to_iri(read).into(),
             ));
         }
         if let Some(list) = shape.list() {
             graph.insert(Statement::new(
-                subject.clone().clone().into(),
+                subject.clone().into(),
                 vocabulary::list().clone(),
                 shape_to_iri(list).into(),
             ));
@@ -576,7 +576,7 @@ fn from_member(
 ) -> Result<(), ModelError> {
     graph.insert(Statement::new(
         subject.clone().into(),
-        shape_to_iri(member.id()).into(),
+        shape_to_iri(member.id()),
         shape_to_iri(member.target()).into(),
     ));
     from_traits(graph, subject, member.traits())
