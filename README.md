@@ -1,3 +1,5 @@
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/johnstonskj/rust-atelier)
+
 # The _Atelier_ Project
 
 Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/smithy) Interface Definition Language.

@@ -148,6 +148,7 @@ use atelier_core::model::values::Number;
 use atelier_core::model::values::Value;
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
 use atelier_core::model::{Model, ShapeID};
+use rdftk_core::graph::MutableGraph;
 use rdftk_core::{DataType, Graph, Literal, ObjectNode, Statement, SubjectNode};
 use rdftk_iri::IRIRef;
 use rdftk_memgraph::MemGraph;
