@@ -1,5 +1,3 @@
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/johnstonskj/rust-atelier)
-
 # The _Atelier_ Project
 
 Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/smithy) Interface Definition Language.
@@ -9,6 +7,7 @@ Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/sm
 ![Rust](https://github.com/johnstonskj/rust-atelier/workflows/Rust/badge.svg)
 ![Audit](https://github.com/johnstonskj/rust-atelier/workflows/Security%20audit/badge.svg)
 [![GitHub stars](https://img.shields.io/github/stars/johnstonskj/rust-atelier.svg)](https://github.com/johnstonskj/rust-atelier/stargazers)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/johnstonskj/rust-atelier)
 
 Smithy is a framework around a language and runtime neutral IDL for service definition. It consists of a semantic model,
 a native IDL representation, and a mapping to JSON. The goal of this work is to replicate these core components of 
