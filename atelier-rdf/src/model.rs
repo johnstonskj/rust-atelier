@@ -140,7 +140,6 @@ _:a_trait smithy:trait <urn:smithy:smithy.api:documentation> ;
 use crate::urn::shape_to_iri;
 use crate::vocabulary;
 use atelier_core::error::{Error as ModelError, Result as ModelResult};
-use rdftk_core::graph::MutableGraph;
 use atelier_core::model::shapes::{
     AppliedTrait, ListOrSet, Map, MemberShape, Operation, Resource, Service, Shape, Simple,
     StructureOrUnion,
@@ -149,6 +148,7 @@ use atelier_core::model::values::Number;
 use atelier_core::model::values::Value;
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
 use atelier_core::model::{Model, ShapeID};
+use rdftk_core::graph::MutableGraph;
 use rdftk_core::{DataType, Graph, Literal, ObjectNode, Statement, SubjectNode};
 use rdftk_iri::IRIRef;
 use rdftk_memgraph::MemGraph;
