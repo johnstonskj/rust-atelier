@@ -125,6 +125,11 @@ The following issues will be output when the validation runs.
 
 ## Changes
 
+**Version 0.2.0**
+
+* Changes based on new core traits `HasIdentity` and `HasTraits`.
+* Added documentation writer.
+
 **Version 0.1.3**
 
 * Supporting colorized output.

@@ -24,6 +24,7 @@ pub enum FileFormat {
     Json,
     Smithy,
     Uml,
+    Documentation,
 }
 
 #[derive(Debug)]
@@ -62,6 +63,7 @@ impl Display for FileFormat {
                 FileFormat::Json => "json",
                 FileFormat::Smithy => "smithy",
                 FileFormat::Uml => "uml",
+                FileFormat::Documentation => "doc",
             }
         )
     }
@@ -75,6 +77,7 @@ impl FromStr for FileFormat {
             "json" => Ok(FileFormat::Json),
             "smithy" => Ok(FileFormat::Smithy),
             "uml" => Ok(FileFormat::Uml),
+            "doc" => Ok(FileFormat::Documentation),
             _ => Err(FormatStringError::new(s)),
         }
     }

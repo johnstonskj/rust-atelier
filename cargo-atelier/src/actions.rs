@@ -5,6 +5,7 @@ use atelier_lib::core::error::{Error as ModelError, ErrorKind, Result as ModelRe
 use atelier_lib::core::io::read_model_from_string;
 use atelier_lib::core::io::ModelWriter;
 use atelier_lib::core::model::{Model, NamespaceID};
+use atelier_lib::format::describe::DocumentationWriter;
 use atelier_lib::format::json::{JsonReader, JsonWriter};
 use atelier_lib::format::plant_uml::PlantUmlWriter;
 use atelier_lib::format::smithy::{SmithyReader, SmithyWriter};
@@ -77,6 +78,11 @@ pub fn transform_file(
         writer.write(w, &model)?;
         Ok(())
     }
+    fn write_documentation(w: &mut impl Write, model: Model) -> Result<(), Box<dyn Error>> {
+        let mut writer = DocumentationWriter::default();
+        writer.write(w, &model)?;
+        Ok(())
+    }
     fn write_smithy(
         w: &mut impl Write,
         model: Model,
@@ -127,5 +133,6 @@ pub fn transform_file(
             NamespaceID::from_str(&cmd.namespace.unwrap()).unwrap(),
         ),
         FileFormat::Uml => write_uml(&mut file, model),
+        FileFormat::Documentation => write_documentation(&mut file, model),
     }
 }
