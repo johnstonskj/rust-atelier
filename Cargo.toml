@@ -2,6 +2,7 @@
 
 members = [
     "atelier-core",
+    "atelier-describe",
     "atelier-json",
     "atelier-lib",
     "atelier-openapi",
