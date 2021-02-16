@@ -1,7 +1,7 @@
 [package]
 name = "atelier_describe"
 description = "Rust native documentation generator for the AWS Smithy IDL."
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
 documentation = "https://docs.rs/atelier_openapi/"
@@ -18,4 +18,4 @@ all-features = true
 
 [dependencies]
 atelier_core = { version = "0.2.0", path = "../atelier-core" }
-somedoc = { version = "0.2.4", path = "../../rust-somedoc" }
+somedoc = "0.2.4"
