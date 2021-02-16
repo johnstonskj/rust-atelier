@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.2.1**
+
+* Changes based on new core traits `HasIdentity` and `HasTraits`.
+
 **Version 0.2.0**
 
 * Major refactor after agreement on the separation of semantic model with Smithy team.

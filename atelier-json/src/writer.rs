@@ -2,9 +2,9 @@ use crate::syntax::*;
 use crate::FILE_EXTENSION;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, MemberShape, Shape, ShapeKind, TopLevelShape};
+use atelier_core::model::shapes::{AppliedTrait, HasTraits, MemberShape, ShapeKind, TopLevelShape};
 use atelier_core::model::values::{Number, Value as NodeValue};
-use atelier_core::model::{Model, ShapeID};
+use atelier_core::model::{HasIdentity, Model, ShapeID};
 use serde_json::{to_writer, to_writer_pretty, Map, Number as JsonNumber, Value};
 use std::io::Write;
 

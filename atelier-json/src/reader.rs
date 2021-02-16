@@ -3,7 +3,7 @@ use crate::FILE_EXTENSION;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelReader;
 use atelier_core::model::shapes::{
-    AppliedTrait, ListOrSet, Map as MapShape, MemberShape, Shape, ShapeKind, Simple,
+    AppliedTrait, HasTraits, ListOrSet, Map as MapShape, MemberShape, ShapeKind, Simple,
     StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::{Value as NodeValue, ValueMap};
