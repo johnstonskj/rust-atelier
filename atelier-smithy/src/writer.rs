@@ -1,8 +1,8 @@
 use atelier_core::error::Result;
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, MemberShape, Shape, ShapeKind};
+use atelier_core::model::shapes::{AppliedTrait, HasTraits, MemberShape, ShapeKind};
 use atelier_core::model::values::Value;
-use atelier_core::model::{Model, NamespaceID};
+use atelier_core::model::{HasIdentity, Model, NamespaceID};
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
     MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
