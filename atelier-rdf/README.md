@@ -13,6 +13,10 @@ RDF form.
 
 ## Changes
 
+**Version 0.1.3**
+
+* Changes based on new core traits `HasIdentity` and `HasTraits`.
+
 **Version 0.1.2**
 
 * Using latest `rdftk_iri`, which involved changes. 
