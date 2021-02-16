@@ -26,16 +26,17 @@ This repo contains a number of crates that provide different aspects, or capabil
 clients that wish to use a number of features but don't want to track individual version compatibility the `atelier_lib` 
 crate incorporates all, except the cargo command, using features to select the different capabilities.
 
-| crate                                  | Content                                                | Status                              |
-|----------------------------------------|--------------------------------------------------------|-------------------------------------|
-| [`atelier_core`](./atelier-core)       | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: 5% |
-| [`atelier_select`](./atelier-select)   | Parser for Smithy select expressions.                  | Not Started                         |
-| [`atelier_smithy`](./atelier-smithy)   | The serializer/de-serializer for native Smithy.        | Writer: 95%, Reader: 95%, Tests: 5% |
-| [`atelier_json`](./atelier-json)       | The serializer/de-serializer for the JSON AST          | Writer: 95%, Reader: 95%, Tests: 5% |
-| [`atelier_openapi`](./atelier-openapi) | A Serializer only to OpenAPI                           | Not Started                         |
-| [`atelier_rdf`](./atelier-rdf)         | The serializer/de-serializer to RDF                    | Not Started                         |
-| [`atelier_lib`](./atelier-lib)         | Re-export structures from previous crates.             | Done.                               |
-| [`cargo_atelier`](./cargo-atelier)     | Cargo command to lint, validate, and convert models.   | Commands working correctly.         |
+| crate                                    | Content                                                | Status                              |
+|------------------------------------------|--------------------------------------------------------|-------------------------------------|
+| [`atelier_core`](./atelier-core)         | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: 5% |
+| [`atelier_describe`](./atelier-describe) | Model documentation writer, uses `somedoc` crate.      | Writer: 75%, Tests: 5%              |
+| [`atelier_select`](./atelier-select)     | Parser for Smithy select expressions.                  | Not Started                         |
+| [`atelier_smithy`](./atelier-smithy)     | The serializer/de-serializer for native Smithy.        | Writer: 95%, Reader: 95%, Tests: 5% |
+| [`atelier_json`](./atelier-json)         | The serializer/de-serializer for the JSON AST          | Writer: 95%, Reader: 95%, Tests: 5% |
+| [`atelier_openapi`](./atelier-openapi)   | A Serializer only to OpenAPI                           | Not Started                         |
+| [`atelier_rdf`](./atelier-rdf)           | The serializer/de-serializer to RDF                    | Not Started                         |
+| [`atelier_lib`](./atelier-lib)           | Re-export structures from previous crates.             | Done.                               |
+| [`cargo_atelier`](./cargo-atelier)       | Cargo command to lint, validate, and convert models.   | Commands working correctly.         |
 
 ## Book
 
@@ -43,6 +44,13 @@ This repo also contains the source (using [mdbook](https://rust-lang.github.io/m
 set. This is built using GitHub pages and accessible at [rust-atelier.dev](https://rust-atelier.dev/).
 
 ## Changes
+
+**Version 0.2.1**
+
+* Changed API in core; extracted to new traits, `HasIdentity` and `HasTraits` which made handling of different
+  member shapes easier when writing documentation.
+* Added new documentation crate (`atelier_describe`) to write documentation for a given model.
+* Added support in `cargo-atelier` for writing documentation.
 
 **Version 0.2.0**
 
