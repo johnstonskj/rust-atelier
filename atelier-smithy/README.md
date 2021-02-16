@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.2.2**
+
+* Fixed: test case compile error.
+
 **Version 0.2.1**
 
 * Changes based on new core traits `HasIdentity` and `HasTraits`.

@@ -1,6 +1,6 @@
 use atelier_core::io::read_model_from_string;
-use atelier_core::model::shapes::{Shape, ShapeKind};
-use atelier_core::model::ShapeID;
+use atelier_core::model::shapes::{HasTraits, ShapeKind};
+use atelier_core::model::{HasIdentity, ShapeID};
 use atelier_core::syntax::{
     SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET,
     SHAPE_STRUCTURE, SHAPE_UNION,
