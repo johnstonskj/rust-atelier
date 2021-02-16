@@ -6,6 +6,9 @@ Child modules that implement `ModelReader` and `ModelWriter` for specific repres
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+#[cfg(feature = "describe")]
+pub use atelier_describe as describe;
+
 #[cfg(feature = "json")]
 pub use atelier_json as json;
 

@@ -50,6 +50,7 @@ pub mod action;
 pub mod assembler;
 
 #[cfg(any(
+    feature = "describe",
     feature = "json",
     feature = "openapi",
     feature = "rdf",

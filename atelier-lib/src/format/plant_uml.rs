@@ -117,6 +117,8 @@ use crate::core::syntax::{
     SHAPE_FLOAT, SHAPE_INTEGER, SHAPE_LONG, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SHORT,
     SHAPE_STRING, SHAPE_TIMESTAMP, SHAPE_UNION,
 };
+use atelier_core::model::shapes::HasTraits;
+use atelier_core::model::HasIdentity;
 use std::collections::HashSet;
 use std::io::Write;
 use std::str::FromStr;

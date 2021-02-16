@@ -111,7 +111,7 @@ For the _message of the day_ model, this writer will generate the following XML.
 use crate::core::error::{Error as ModelError, Result as ModelResult};
 use crate::core::io::ModelWriter;
 use crate::core::model::shapes::{
-    AppliedTrait, ListOrSet, Map, Operation, Resource, Service, Shape, Simple, StructureOrUnion,
+    AppliedTrait, ListOrSet, Map, Operation, Resource, Service, Simple, StructureOrUnion,
 };
 use crate::core::model::visitor::{walk_model_mut, MutableModelVisitor};
 use crate::core::model::{Model, ShapeID};
@@ -121,6 +121,7 @@ use crate::core::syntax::{
     MEMBER_READ, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE, SHAPE_LIST, SHAPE_MAP,
     SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET, SHAPE_STRUCTURE, SHAPE_UNION,
 };
+use atelier_core::model::HasIdentity;
 use std::io::Write;
 
 // ------------------------------------------------------------------------------------------------
