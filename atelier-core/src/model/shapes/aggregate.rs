@@ -1,5 +1,6 @@
 use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::shapes::{AppliedTrait, Shape};
+use crate::model::identity::HasIdentity;
+use crate::model::shapes::{AppliedTrait, HasTraits, Shape};
 use crate::model::{Identifier, ShapeID};
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use std::collections::HashMap;
@@ -51,7 +52,7 @@ pub struct StructureOrUnion {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl Shape for MemberShape {
+impl HasIdentity for MemberShape {
     fn id(&self) -> &ShapeID {
         &self.id
     }
@@ -59,7 +60,9 @@ impl Shape for MemberShape {
     fn set_id(&mut self, id: ShapeID) {
         self.id = id
     }
+}
 
+impl HasTraits for MemberShape {
     fn has_traits(&self) -> bool {
         !self.traits.is_empty()
     }
@@ -87,7 +90,9 @@ impl Shape for MemberShape {
     fn remove_trait(&mut self, id: &ShapeID) {
         self.traits.retain(|t| t.id() != id);
     }
+}
 
+impl Shape for MemberShape {
     fn is_member(&self) -> bool {
         true
     }

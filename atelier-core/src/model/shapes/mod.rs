@@ -8,26 +8,29 @@ enumeration, `ShapeBody`, to represent each of the productions referenced by `sh
 
 */
 
+use crate::model::identity::HasIdentity;
 use crate::model::{values::Value, ShapeID};
+use crate::prelude::{
+    PRELUDE_NAMESPACE, TRAIT_BOX, TRAIT_DEPRECATED, TRAIT_DOCUMENTATION, TRAIT_ERROR,
+    TRAIT_EXTERNALDOCUMENTATION, TRAIT_IDEMPOTENT, TRAIT_LENGTH, TRAIT_NOREPLACE, TRAIT_PAGINATED,
+    TRAIT_PATTERN, TRAIT_PRIVATE, TRAIT_READONLY, TRAIT_REFERENCES, TRAIT_REQUIRED,
+    TRAIT_REQUIRESLENGTH, TRAIT_SENSITIVE, TRAIT_SINCE, TRAIT_STREAMING, TRAIT_TAGS, TRAIT_TITLE,
+    TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
+};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// A common trait shared by `TopLevelShape` and `MemberShape`.
+/// This trait is implemented by model elements that may have Smithy traits applied.
 ///
-pub trait Shape {
-    /// The absolute ShapeID of this shape.
-    fn id(&self) -> &ShapeID;
-
-    /// Set the absolute ShapeID of this shape.
-    fn set_id(&mut self, id: ShapeID);
-
+pub trait HasTraits {
     /// Returns `true` if the model element has any applied traits, else `false`.
     fn has_traits(&self) -> bool;
 
-    /// Returns `true` if the model element has any applied traits with the associated id, else `false`.
+    /// Returns `true` if the model element has any applied traits with the associated id,
+    /// else `false`.
     fn has_trait(&self, id: &ShapeID) -> bool;
 
     /// Return an iterator over all traits applied to this model element
@@ -36,20 +39,157 @@ pub trait Shape {
     /// Apply a trait to this model element.
     fn apply_trait(&mut self, a_trait: AppliedTrait);
 
+    /// Apply a trait with the provided identifier to this model element.
+    fn apply(&mut self, a_trait: ShapeID) {
+        self.apply_trait(AppliedTrait::new(a_trait));
+    }
+
+    /// Apply a trait with the provided identifier and value to this model element.
+    fn apply_with_value(&mut self, a_trait: ShapeID, value: Value) {
+        self.apply_trait(AppliedTrait::with_value(a_trait, value));
+    }
+
     /// Add all these elements to this member's collection.
     fn append_traits(&mut self, traits: &[AppliedTrait]);
 
     /// Add all the traits to this model element.
     fn remove_trait(&mut self, id: &ShapeID);
 
+    // --------------------------------------------------------------------------------------------
+
+    /// Returns `true` if the model element has the prelude trait `boxed` applied.
+    fn is_boxed(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_BOX))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `deprecated` applied.
+    fn is_deprecated(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_DEPRECATED))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `documentation` applied.
+    fn is_documentation(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_DOCUMENTATION))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `error` applied.
+    fn is_error(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_ERROR))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `external_documentation` applied.
+    fn is_external_documentation(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_EXTERNALDOCUMENTATION))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `idempotent` applied.
+    fn is_idempotent(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_IDEMPOTENT))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `length` applied.
+    fn has_length(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_LENGTH))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `no_replace` applied.
+    fn is_no_replace(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_NOREPLACE))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `paginated` applied.
+    fn is_paginated(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_PAGINATED))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `pattern` applied.
+    fn has_pattern(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_PATTERN))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `private` applied.
+    fn is_private(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_PRIVATE))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `readonly` applied.
+    fn is_readonly(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_READONLY))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `references` applied.
+    fn is_references(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_REFERENCES))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `required` applied.
+    fn is_required(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_REQUIRED))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `requiresLength` applied.
+    fn has_required_length(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_REQUIRESLENGTH))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `sensitive` applied.
+    fn is_sensitive(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_SENSITIVE))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `streaming` applied.
+    fn is_streaming(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_STREAMING))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `since` applied.
+    fn is_since(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_SINCE))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `tagged` applied.
+    fn is_tagged(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_TAGS))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `title` applied.
+    fn is_titled(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_TITLE))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `trait` applied.
+    fn is_trait(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_TRAIT))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `uniqueItems` applied.
+    fn has_unique_items(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_UNIQUEITEMS))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `unstable` applied.
+    fn is_unstable(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_UNSTABLE))
+    }
+}
+
+///
+/// A common trait shared by `TopLevelShape` and `MemberShape`.
+///
+pub trait Shape: HasIdentity + HasTraits {
+    /// Returns `true` if this shape is defined in the prelude.
+    fn is_prelude_shape(&self) -> bool {
+        self.id().namespace().to_string() == *PRELUDE_NAMESPACE
+    }
+
     /// Is this instance a member (or top-level) shape?
     fn is_member(&self) -> bool;
 }
 
 ///
-/// This structure represents a top-level shape within a model. The shape-specific data is within the
-/// `ShapeKind` enumeration. Aggregate shapes may have members of type `MemberShape`, but a model only
-/// directly contains top-level shapes.
+/// This structure represents a top-level shape within a model. The shape-specific data is within
+/// the `ShapeKind` enumeration. Aggregate shapes may have members of type `MemberShape`, but a
+/// model only directly contains top-level shapes.
 ///
 #[derive(Clone, Debug)]
 pub struct TopLevelShape {
@@ -142,7 +282,7 @@ impl ShapeKind {
 
 // ------------------------------------------------------------------------------------------------
 
-impl Shape for TopLevelShape {
+impl HasIdentity for TopLevelShape {
     fn id(&self) -> &ShapeID {
         &self.id
     }
@@ -150,7 +290,9 @@ impl Shape for TopLevelShape {
     fn set_id(&mut self, id: ShapeID) {
         self.id = id
     }
+}
 
+impl HasTraits for TopLevelShape {
     fn has_traits(&self) -> bool {
         !self.traits.is_empty()
     }
@@ -178,7 +320,9 @@ impl Shape for TopLevelShape {
     fn remove_trait(&mut self, id: &ShapeID) {
         self.traits.retain(|t| t.id() != id);
     }
+}
 
+impl Shape for TopLevelShape {
     fn is_member(&self) -> bool {
         false
     }
@@ -258,6 +402,11 @@ impl AppliedTrait {
         }
     }
 
+    /// Returns `true` if this trait is defined in the prelude.
+    pub fn is_prelude_trait(&self) -> bool {
+        self.id().namespace().to_string() == *PRELUDE_NAMESPACE
+    }
+
     /// Returns the identifier of the shape that this trait refers to.
     pub fn id(&self) -> &ShapeID {
         &self.id
@@ -287,6 +436,11 @@ impl AppliedTrait {
     pub fn unset_value(&mut self) {
         self.value = None;
     }
+}
+
+#[inline]
+fn prelude_name(name: &str) -> ShapeID {
+    ShapeID::new_unchecked(PRELUDE_NAMESPACE, name, None)
 }
 
 // ------------------------------------------------------------------------------------------------

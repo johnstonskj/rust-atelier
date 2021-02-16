@@ -65,6 +65,17 @@ pub struct ShapeID {
 // TODO: Investigate making all ShapeID components `RC<>` to reduce memory size due to duplication.
 // (https://github.com/johnstonskj/rust-atelier/issues/4)
 
+///
+/// A Trait that is implemented by model elements that have a shape identifier.
+///
+pub trait HasIdentity {
+    /// The absolute ShapeID of this shape.
+    fn id(&self) -> &ShapeID;
+
+    /// Set the absolute ShapeID of this shape.
+    fn set_id(&mut self, id: ShapeID);
+}
+
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------

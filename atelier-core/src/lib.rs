@@ -35,9 +35,10 @@ be resolved to an absolute name.
 For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/model_api.html).
 
 ```rust
+use atelier_core::model::identity::HasIdentity;
 use atelier_core::model::shapes::{
-    AppliedTrait, MemberShape, Operation, Resource, Service, Shape, ShapeKind, Simple,
-    StructureOrUnion, TopLevelShape,
+    AppliedTrait, HasTraits, MemberShape, Operation, Resource, Service, Shape,
+    ShapeKind, Simple, StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::Value;
 use atelier_core::model::{Model, NamespaceID};

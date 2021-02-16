@@ -6,11 +6,11 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 */
 
 use crate::model::shapes::{
-    AppliedTrait, ListOrSet, Map, Operation, Resource, Service, Shape, ShapeKind, Simple,
+    AppliedTrait, HasTraits, ListOrSet, Map, Operation, Resource, Service, ShapeKind, Simple,
     StructureOrUnion,
 };
 use crate::model::values::Value;
-use crate::model::{Model, ShapeID};
+use crate::model::{HasIdentity, Model, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
 // Macros

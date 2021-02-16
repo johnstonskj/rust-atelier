@@ -2,7 +2,11 @@ use crate::builder::{traits, TraitBuilder};
 use crate::error::ErrorSource;
 use crate::model::shapes::Simple;
 use crate::model::ShapeID;
-use crate::prelude::PRELUDE_NAMESPACE;
+use crate::prelude::{
+    PRELUDE_NAMESPACE, SHAPE_BIGDECIMAL, SHAPE_BIGINTEGER, SHAPE_BLOB, SHAPE_BOOLEAN, SHAPE_BYTE,
+    SHAPE_DOCUMENT, SHAPE_DOUBLE, SHAPE_FLOAT, SHAPE_INTEGER, SHAPE_LONG, SHAPE_SHORT,
+    SHAPE_STRING, SHAPE_TIMESTAMP,
+};
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -389,67 +393,67 @@ impl StructureBuilder {
 
     /// Create a new member in this structure or union with the type `Simple::Blob`.
     pub fn blob(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Blob")
+        self.member(id, SHAPE_BLOB)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Boolean`.
     pub fn boolean(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Boolean")
+        self.member(id, SHAPE_BOOLEAN)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Document`.
     pub fn document(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Document")
+        self.member(id, SHAPE_DOCUMENT)
     }
 
     /// Create a new member in this structure or union with the type `Simple::String`.
     pub fn string(&mut self, id: &str) -> &mut Self {
-        self.member(id, "String")
+        self.member(id, SHAPE_STRING)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Byte`.
     pub fn byte(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Byte")
+        self.member(id, SHAPE_BYTE)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Short`.
     pub fn short(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Short")
+        self.member(id, SHAPE_SHORT)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Integer`.
     pub fn integer(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Integer")
+        self.member(id, SHAPE_INTEGER)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Long`.
     pub fn long(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Long")
+        self.member(id, SHAPE_LONG)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Float`.
     pub fn float(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Float")
+        self.member(id, SHAPE_FLOAT)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Double`.
     pub fn double(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Double")
+        self.member(id, SHAPE_DOUBLE)
     }
 
     /// Create a new member in this structure or union with the type `Simple::BigInteger`.
     pub fn big_integer(&mut self, id: &str) -> &mut Self {
-        self.member(id, "BigInteger")
+        self.member(id, SHAPE_BIGINTEGER)
     }
 
     /// Create a new member in this structure or union with the type `Simple::BigDecimal`.
     pub fn big_decimal(&mut self, id: &str) -> &mut Self {
-        self.member(id, "BigDecimal")
+        self.member(id, SHAPE_BIGDECIMAL)
     }
 
     /// Create a new member in this structure or union with the type `Simple::Timestamp`.
     pub fn timestamp(&mut self, id: &str) -> &mut Self {
-        self.member(id, "Timestamp")
+        self.member(id, SHAPE_TIMESTAMP)
     }
 
     // --------------------------------------------------------------------------------------------
@@ -751,67 +755,67 @@ impl MemberBuilder {
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Blob`.
     pub fn blob(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Blob")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_BLOB)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Boolean`.
     pub fn boolean(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Boolean")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_BOOLEAN)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Document`.
     pub fn document(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Document")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_DOCUMENT)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::String`.
     pub fn string(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "String")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_STRING)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Byte`.
     pub fn byte(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Byte")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_BYTE)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Short`.
     pub fn short(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Short")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_SHORT)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Integer`.
     pub fn integer(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Integer")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_INTEGER)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Long`.
     pub fn long(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Long")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_LONG)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Float`.
     pub fn float(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Float")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_FLOAT)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Double`.
     pub fn double(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Double")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_DOUBLE)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::BigInteger`.
     pub fn big_integer(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "BigInteger")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_BIGINTEGER)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::BigDecimal`.
     pub fn big_decimal(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "BigDecimal")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_BIGDECIMAL)
     }
 
     /// Constructs a new member with a target `PRELUDE_NAMESPACE::Timestamp`.
     pub fn timestamp(member_name: &str) -> Self {
-        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, "Timestamp")
+        Self::new_unchecked(member_name, PRELUDE_NAMESPACE, SHAPE_TIMESTAMP)
     }
 
     // --------------------------------------------------------------------------------------------

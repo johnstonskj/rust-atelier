@@ -95,6 +95,11 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.2**
+
+* Refactor: added `HasIdentity` and `HasTraits` traits to allow doc writer to be polymorphic.
+* Added: used prelude constants in trait builder.
+
 **Version 0.2.1**
 
 * Added `MutableModelVisitor` trait.

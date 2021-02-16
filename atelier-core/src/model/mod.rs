@@ -5,7 +5,7 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 */
 
 use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::shapes::{Shape, TopLevelShape};
+use crate::model::shapes::TopLevelShape;
 use crate::model::values::{Value, ValueMap};
 use crate::Version;
 use std::collections::HashMap;
@@ -168,6 +168,13 @@ impl Model {
             .map(|shape| shape.id())
     }
 
+    /// Return a vector containing all the namespaces used in defining shapes in this model.
+    pub fn namespaces(&self) -> Vec<&NamespaceID> {
+        let mut result: Vec<&NamespaceID> = self.shape_names().map(|id| id.namespace()).collect();
+        result.dedup();
+        result
+    }
+
     // --------------------------------------------------------------------------------------------
 
     ///
@@ -186,7 +193,7 @@ impl Model {
 
 #[doc(hidden)]
 pub mod identity;
-pub use identity::{Identifier, NamespaceID, ShapeID};
+pub use identity::{HasIdentity, Identifier, NamespaceID, ShapeID};
 
 pub mod shapes;
 

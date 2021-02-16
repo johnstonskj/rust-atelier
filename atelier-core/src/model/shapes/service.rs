@@ -1,6 +1,6 @@
-use crate::model::shapes::{Shape, TopLevelShape};
+use crate::model::shapes::TopLevelShape;
 use crate::model::values::{Value, ValueMap};
-use crate::model::ShapeID;
+use crate::model::{HasIdentity, ShapeID};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -197,6 +197,17 @@ impl Resource {
     /// Return an iterator over all the identifier name and target pairs for this resource.
     pub fn identifiers(&self) -> impl Iterator<Item = (&String, &Value)> {
         self.identifiers.iter()
+    }
+
+    /// Returns `true` if this resource has **any** resource operations (create, put, read, update,
+    /// delete, or list), else `false`.
+    pub fn has_any_resource_operation(&self) -> bool {
+        self.has_create()
+            || self.has_put()
+            || self.has_read()
+            || self.has_update()
+            || self.has_delete()
+            || self.has_list()
     }
 
     optional_member! { create, ShapeID, has_create, set_create, unset_create }

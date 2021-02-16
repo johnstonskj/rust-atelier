@@ -7,8 +7,8 @@ in an action.
 
 use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::error::Result as ModelResult;
-use crate::model::shapes::{Shape, ShapeKind};
-use crate::model::{Identifier, Model, ShapeID};
+use crate::model::shapes::{HasTraits, ShapeKind};
+use crate::model::{HasIdentity, Identifier, Model, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
 use std::str::FromStr;
 

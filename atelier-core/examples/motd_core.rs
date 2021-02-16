@@ -1,9 +1,9 @@
 use atelier_core::model::shapes::{
-    AppliedTrait, MemberShape, Operation, Resource, Service, Shape, ShapeKind, Simple,
+    AppliedTrait, HasTraits, MemberShape, Operation, Resource, Service, ShapeKind, Simple,
     StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::Value;
-use atelier_core::model::{Model, NamespaceID};
+use atelier_core::model::{HasIdentity, Model, NamespaceID};
 use atelier_core::prelude::PRELUDE_NAMESPACE;
 use atelier_core::Version;
 

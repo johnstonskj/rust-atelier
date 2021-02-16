@@ -3,7 +3,13 @@ use crate::error::ErrorKind;
 use crate::error::ErrorSource;
 use crate::model::values::{Number, Value, ValueMap};
 use crate::model::ShapeID;
-use crate::prelude::PRELUDE_NAMESPACE;
+use crate::prelude::{
+    PRELUDE_NAMESPACE, TRAIT_BOX, TRAIT_DEPRECATED, TRAIT_DOCUMENTATION, TRAIT_ERROR,
+    TRAIT_EXTERNALDOCUMENTATION, TRAIT_IDEMPOTENT, TRAIT_LENGTH, TRAIT_NOREPLACE, TRAIT_PAGINATED,
+    TRAIT_PATTERN, TRAIT_PRIVATE, TRAIT_READONLY, TRAIT_REFERENCES, TRAIT_REQUIRED,
+    TRAIT_REQUIRESLENGTH, TRAIT_SENSITIVE, TRAIT_SINCE, TRAIT_STREAMING, TRAIT_TAGS, TRAIT_TITLE,
+    TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
+};
 use crate::syntax::SHAPE_ID_ABSOLUTE_SEPARATOR;
 
 // ------------------------------------------------------------------------------------------------
@@ -23,7 +29,7 @@ pub struct TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn boxed() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("box"))
+    TraitBuilder::new(&prelude_name(TRAIT_BOX))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -35,17 +41,17 @@ pub fn deprecated(message: Option<&str>, since: Option<&str>) -> TraitBuilder {
     if let Some(since) = since {
         let _ = values.string(&format!("{}#since", PRELUDE_NAMESPACE), since);
     }
-    TraitBuilder::with_value(&prelude_name("deprecated"), values.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_DEPRECATED), values.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn documentation(value: &str) -> TraitBuilder {
-    TraitBuilder::with_value(&prelude_name("documentation"), value.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_DOCUMENTATION), value.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn error_source(src: ErrorSource) -> TraitBuilder {
-    TraitBuilder::with_value(&prelude_name("error"), src.to_string().into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_ERROR), src.to_string().into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -54,12 +60,12 @@ pub fn external_documentation(map: &[(&str, &str)]) -> TraitBuilder {
         .iter()
         .map(|(k, v)| (k.to_string(), v.to_string().into()))
         .collect();
-    TraitBuilder::with_value(&prelude_name("externalDocumentation"), value.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_EXTERNALDOCUMENTATION), value.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn idempotent() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("idempotent"))
+    TraitBuilder::new(&prelude_name(TRAIT_IDEMPOTENT))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -72,12 +78,12 @@ pub fn length(min: Option<usize>, max: Option<usize>) -> TraitBuilder {
     if let Some(max) = max {
         let _ = values.integer(&format!("{}#max", PRELUDE_NAMESPACE), max as i64);
     }
-    TraitBuilder::with_value(&prelude_name("length"), values.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_LENGTH), values.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn no_replace() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("noReplace"))
+    TraitBuilder::new(&prelude_name(TRAIT_NOREPLACE))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -100,85 +106,87 @@ pub fn paginated(
     if let Some(page_size) = page_size {
         let _ = values.string(&format!("{}#pageSize", PRELUDE_NAMESPACE), page_size);
     }
-    TraitBuilder::with_value(&prelude_name("paginated"), values.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_PAGINATED), values.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn pattern(pat: &str) -> TraitBuilder {
     assert!(!pat.is_empty());
-    TraitBuilder::with_value(&prelude_name("pattern"), pat.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_PATTERN), pat.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn private() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("private"))
+    TraitBuilder::new(&prelude_name(TRAIT_PRIVATE))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn readonly() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("readonly"))
+    TraitBuilder::new(&prelude_name(TRAIT_READONLY))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn references(reference_list: Value) -> TraitBuilder {
     match reference_list {
-        Value::Array(_) => TraitBuilder::with_value(&prelude_name("references"), reference_list),
+        Value::Array(_) => {
+            TraitBuilder::with_value(&prelude_name(TRAIT_REFERENCES), reference_list)
+        }
         _ => panic!("{}", ErrorKind::InvalidValueVariant("Array".to_string())),
     }
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn required() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("required"))
+    TraitBuilder::new(&prelude_name(TRAIT_REQUIRED))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn requires_length() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("requiresLength"))
+    TraitBuilder::new(&prelude_name(TRAIT_REQUIRESLENGTH))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn sensitive() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("sensitive"))
+    TraitBuilder::new(&prelude_name(TRAIT_SENSITIVE))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn streaming() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("streaming"))
+    TraitBuilder::new(&prelude_name(TRAIT_STREAMING))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn since(date: &str) -> TraitBuilder {
     assert!(!date.is_empty());
-    TraitBuilder::with_value(&prelude_name("since"), date.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_SINCE), date.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn tagged(tags: &[&str]) -> TraitBuilder {
     TraitBuilder::with_value(
-        &prelude_name("tags"),
+        &prelude_name(TRAIT_TAGS),
         Value::Array(tags.iter().map(|s| (*s).into()).collect()),
     )
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn title(title: &str) -> TraitBuilder {
-    TraitBuilder::with_value(&prelude_name("title"), title.into())
+    TraitBuilder::with_value(&prelude_name(TRAIT_TITLE), title.into())
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn is_trait() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("trait"))
+    TraitBuilder::new(&prelude_name(TRAIT_TRAIT))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn unique_items() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("uniqueItems"))
+    TraitBuilder::new(&prelude_name(TRAIT_UNIQUEITEMS))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn unstable() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name("unstable"))
+    TraitBuilder::new(&prelude_name(TRAIT_UNSTABLE))
 }
 
 // ------------------------------------------------------------------------------------------------

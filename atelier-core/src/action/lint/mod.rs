@@ -48,8 +48,8 @@
 
 use crate::action::{Action, ActionIssue, IssueLevel, Linter};
 use crate::error::Result as ModelResult;
-use crate::model::shapes::{AppliedTrait, Shape, ShapeKind};
-use crate::model::{Identifier, Model, ShapeID};
+use crate::model::shapes::{AppliedTrait, HasTraits, ShapeKind};
+use crate::model::{HasIdentity, Identifier, Model, ShapeID};
 use heck::{CamelCase, MixedCase};
 use std::cell::RefCell;
 use std::collections::HashSet;
