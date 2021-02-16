@@ -17,4 +17,4 @@ targets = ["x86_64-unknown-linux-gnu"]
 all-features = true
 
 [dependencies]
-atelier_core = { version = "0.2.0", path = "../atelier-core" }
+atelier_core = { version = "~0.2", path = "../atelier-core" }

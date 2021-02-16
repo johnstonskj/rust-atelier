@@ -23,12 +23,11 @@ The following demonstrates how to use the `describe_model` function.
 
 ```rust
 use atelier_core::model::Model;
-# use atelier_core::Version;
 use atelier_describe::describe_model;
 use somedoc::write::{write_document_to_string, OutputFormat};
-# fn make_model() -> Model { Model::new(Version::default()) }
 
 let model = make_model();
+
 let documentation = describe_model(&model).unwrap();
 
 let doc_string = write_document_to_string(&documentation, OutputFormat::Html).unwrap();
@@ -40,14 +39,14 @@ stdout.
 ```rust
 use atelier_core::model::Model;
 use atelier_core::io::ModelWriter;
-# use atelier_core::Version;
 use atelier_describe::{describe_model, DocumentationWriter};
 use somedoc::write::{write_document_to_string, OutputFormat};
 use std::io::stdout;
-# fn make_model() -> Model { Model::new(Version::default()) }
 
 let model = make_model();
+
 let mut writer = DocumentationWriter::new(OutputFormat::Html);
+
 let documentation = writer.write(&mut stdout(), &model).unwrap();
 ```
 
