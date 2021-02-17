@@ -125,6 +125,10 @@ The following issues will be output when the validation runs.
 
 ## Changes
 
+**Version 0.2.1**
+
+* Made new command for documentation writer; this takes the `somedoc::write::OutputFormat` to select format.
+
 **Version 0.2.0**
 
 * Changes based on new core traits `HasIdentity` and `HasTraits`.

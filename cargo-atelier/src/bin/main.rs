@@ -10,6 +10,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             report::report_action_issues(actions::validate_file(cmd)?, options.use_color)?
         }
         Command::Convert(cmd, _) => actions::convert_file_format(cmd)?,
+        Command::Document(cmd, _) => actions::document_file(cmd)?,
     };
     Ok(())
 }
