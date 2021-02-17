@@ -1,3 +1,4 @@
+use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
@@ -17,6 +18,7 @@ pub enum Command {
     Lint(FileCommand, Options),
     Validate(FileCommand, Options),
     Convert(TransformCommand, Options),
+    Document(DocumentCommand, Options),
 }
 
 #[derive(Debug)]
@@ -24,7 +26,6 @@ pub enum FileFormat {
     Json,
     Smithy,
     Uml,
-    Documentation,
 }
 
 #[derive(Debug)]
@@ -46,6 +47,13 @@ pub struct TransformCommand {
 }
 
 #[derive(Debug)]
+pub struct DocumentCommand {
+    pub input_file: File,
+    pub output_file: File,
+    pub output_format: OutputFormat,
+}
+
+#[derive(Debug)]
 pub struct FormatStringError {
     failed: String,
 }
@@ -63,7 +71,6 @@ impl Display for FileFormat {
                 FileFormat::Json => "json",
                 FileFormat::Smithy => "smithy",
                 FileFormat::Uml => "uml",
-                FileFormat::Documentation => "doc",
             }
         )
     }
@@ -77,7 +84,6 @@ impl FromStr for FileFormat {
             "json" => Ok(FileFormat::Json),
             "smithy" => Ok(FileFormat::Smithy),
             "uml" => Ok(FileFormat::Uml),
-            "doc" => Ok(FileFormat::Documentation),
             _ => Err(FormatStringError::new(s)),
         }
     }

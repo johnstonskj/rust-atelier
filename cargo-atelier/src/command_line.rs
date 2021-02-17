@@ -1,4 +1,5 @@
-use crate::{Command, File, FileCommand, FileFormat, Options, TransformCommand};
+use crate::{Command, DocumentCommand, File, FileCommand, FileFormat, Options, TransformCommand};
+use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
@@ -68,6 +69,24 @@ pub(crate) enum SubCommand {
         #[structopt(short, long)]
         namespace: Option<String>,
     },
+    /// Convert model from one representation to another
+    Document {
+        /// The file to read [default: <stdin>]
+        #[structopt(long, short)]
+        in_file: Option<PathBuf>,
+
+        /// The representation of the input file
+        #[structopt(short, long, default_value = "smithy")]
+        read_format: FileFormat,
+
+        /// The file to write to [default: <stdout>]
+        #[structopt(long, short)]
+        out_file: Option<PathBuf>,
+
+        /// The documentation format supported by the `somedoc` crate
+        #[structopt(short, long, default_value = "markdown")]
+        write_format: OutputFormat,
+    },
 }
 
 #[derive(Debug)]
@@ -126,6 +145,25 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
                     format: write_format,
                 },
                 namespace,
+            },
+            options,
+        )),
+        SubCommand::Document {
+            in_file,
+            read_format,
+            out_file,
+            write_format,
+        } => Ok(Command::Document(
+            DocumentCommand {
+                input_file: File {
+                    file_name: in_file,
+                    format: read_format,
+                },
+                output_file: File {
+                    file_name: out_file,
+                    format: FileFormat::Smithy,
+                },
+                output_format: write_format,
             },
             options,
         )),
