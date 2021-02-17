@@ -9,7 +9,7 @@ A cargo command for using [Smithy](https://github.com/awslabs/smithy) models as 
 
 ```bash
 > cargo atelier --help
-cargo-atelier 0.1.2
+cargo-atelier 0.2.2
 Tools for the Smithy IDL.
 
 USAGE:
@@ -23,6 +23,7 @@ FLAGS:
 
 SUBCOMMANDS:
     convert     Convert model from one representation to another
+    document    Create human-readable documentation from a model
     help        Prints this message or the help of the given subcommand(s)
     lint        Run standard linter rules on a model file
     validate    Run standard validators on a model file
@@ -31,6 +32,10 @@ SUBCOMMANDS:
 Both the lint and validate commands use a common mechanism for printing results and will by default print using a 
 colorized output. As different linter and validation rules can be used the _reported by_ row informs you which rule-set
 has determined the error.
+
+The document command creates documentation from the model, relying on specific traits for text and the prelude traits
+for some semantic properties. It used the [somedoc](https://crates.io/crates/somedoc) crate to do the formatting and
+so the output format specified in this tool can select any of the formats supported by somedoc.
 
 # Example Lint
 
@@ -121,6 +126,37 @@ The following issues will be output when the validation runs.
 
 [error] Operation input may not refer to a service, operation, resource or apply.
 	Reported by CorrectTypeReferences on/for element `SomeOperation`.
+```
+
+# Example Documentation
+
+```bash
+> cargo atelier document -i test-models/lint-test.smithy -w xwiki
+{{comment}}
+title: Smithy Model
+{{/comment}}
+
+
+Smith Version: 1.0
+
+= Namespace org.example.smithy =
+
+(% id="shape:ThisIsNotAGoodName" %) == ThisIsNotAGoodName (structure) ==
+
+|=Trait|=Value|
+|Is Trait|##true##|
+
+
+(% id="shape:someUnknownShape" %) == someUnknownShape (string) ==
+
+(% id="shape:thisIsMyStructure" %) == thisIsMyStructure (structure) ==
+
+=== Members ===
+
+* ##Upper##: ##smithy.api#String##
+* ##lower##: ##smithy.api#String##
+* ##OK##: ##smithy.api#Boolean##
+* ##someJSONThing##: [[someUnknownShape>>.||anchor=shape:someUnknownShape]]
 ```
 
 ## Changes

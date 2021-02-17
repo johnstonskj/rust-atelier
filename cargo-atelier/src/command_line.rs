@@ -69,7 +69,7 @@ pub(crate) enum SubCommand {
         #[structopt(short, long)]
         namespace: Option<String>,
     },
-    /// Convert model from one representation to another
+    /// Create human-readable documentation from a model
     Document {
         /// The file to read [default: <stdin>]
         #[structopt(long, short)]
