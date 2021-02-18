@@ -54,6 +54,10 @@ let documentation = writer.write(&mut stdout(), &model).unwrap();
 
 **Version 0.1.1**
 
+* Fixed: bumped somedoc dependency version.
+
+**Version 0.1.1**
+
 * Fixed: removed local path dependency for `somedoc`.
 
 **Version 0.1.0**

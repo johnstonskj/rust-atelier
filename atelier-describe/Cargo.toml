@@ -18,4 +18,4 @@ all-features = true
 
 [dependencies]
 atelier_core = { version = "~0.2", path = "../atelier-core" }
-somedoc = "0.2.4"
+somedoc = "0.2.7"
