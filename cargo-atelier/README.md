@@ -161,6 +161,10 @@ Smith Version: 1.0
 
 ## Changes
 
+**Version 0.2.3**
+
+* Fixed: bumped somedoc dependency version.
+
 **Version 0.2.2**
 
 * Made new command for documentation writer; this takes the `somedoc::write::OutputFormat` to select format.
