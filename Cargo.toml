@@ -7,7 +7,6 @@ members = [
     "atelier-lib",
     "atelier-openapi",
     "atelier-rdf",
-    "atelier-select",
     "atelier-smithy",
     "cargo-atelier"
     ]

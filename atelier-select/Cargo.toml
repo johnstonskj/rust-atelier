@@ -8,14 +8,6 @@ documentation = "https://docs.rs/atelier_select/"
 repository = "https://github.com/johnstonskj/rust-atelier.git"
 license = "MIT"
 readme = "README.md"
-publish = true
-
-[package.metadata.docs.rs]
-# This sets the default target to `x86_64-unknown-linux-gnu`
-# and only builds that target for documentation.
-targets = ["x86_64-unknown-linux-gnu"]
-all-features = true
+publish = false
 
 [dependencies]
-atelier_core = { version = "~0.2", path = "../atelier-core" }
-pest = "2.1.3"
