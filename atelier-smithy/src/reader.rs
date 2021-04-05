@@ -28,6 +28,6 @@ impl ModelReader for SmithyReader {
     fn read(&mut self, r: &mut impl Read) -> Result<Model> {
         let mut content: String = String::new();
         let _ = r.read_to_string(&mut content)?;
-        parser::parse(&content)
+        parser::parse_model(&content)
     }
 }

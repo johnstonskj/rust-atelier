@@ -30,6 +30,9 @@ TBD
 #[macro_use]
 extern crate pest_derive;
 
+#[macro_use]
+extern crate log;
+
 // ------------------------------------------------------------------------------------------------
 // Public Values
 // ------------------------------------------------------------------------------------------------
@@ -51,4 +54,6 @@ pub use reader::SmithyReader;
 pub mod writer;
 pub use writer::SmithyWriter;
 
-mod parser;
+#[doc(hidden)]
+pub mod parser;
+pub use parser::{parse_model, parse_selector};

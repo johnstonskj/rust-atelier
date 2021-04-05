@@ -73,6 +73,6 @@ fn test_file_parses(file_name: &str) {
             names.sort();
             print!("{:#?}", names)
         }
-        Err(err) => panic!(err.to_string()),
+        Err(err) => panic!("{}", err.to_string()),
     }
 }

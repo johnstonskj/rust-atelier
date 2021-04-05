@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.2.3**
+
+* Added support for parsing selector expressions.
+
 **Version 0.2.2**
 
 * Fixed: test case compile error.
