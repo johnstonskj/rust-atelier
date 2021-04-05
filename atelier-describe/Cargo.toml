@@ -19,3 +19,8 @@ all-features = true
 [dependencies]
 atelier_core = { version = "~0.2", path = "../atelier-core" }
 somedoc = "0.2.7"
+
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt", "run-cargo-test" ]

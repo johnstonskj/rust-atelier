@@ -364,6 +364,12 @@ fn describe_documentation(shape: &impl HasTraits, doc: &mut Document) -> ModelRe
             Cell::code_str(&tags.join(", ")),
         ]));
     }
+    // if shape.is_titled() {
+    //     traits.add_row(Row::new(&[
+    //         Cell::plain_str("Title"),
+    //         match shape.ti,
+    //     ]));
+    // }
     // TODO: title: string
     if shape.is_trait() {
         traits.add_row(Row::new(&[
