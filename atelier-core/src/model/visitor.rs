@@ -32,11 +32,7 @@ macro_rules! visit_fn {
     (mut $fn_name:ident, $doc:expr) => {
         #[doc = $doc]
         #[allow(unused_variables)]
-        fn $fn_name(
-            &mut self,
-            id: &ShapeID,
-            traits: &[AppliedTrait],
-        ) -> Result<(), Self::Error> {
+        fn $fn_name(&mut self, id: &ShapeID, traits: &[AppliedTrait]) -> Result<(), Self::Error> {
             Ok(())
         }
     };
@@ -55,11 +51,7 @@ macro_rules! visit_fn {
     ($fn_name:ident, $doc:expr) => {
         #[doc = $doc]
         #[allow(unused_variables)]
-        fn $fn_name(
-            &self,
-            id: &ShapeID,
-            traits: &[AppliedTrait],
-        ) -> Result<(), Self::Error> {
+        fn $fn_name(&self, id: &ShapeID, traits: &[AppliedTrait]) -> Result<(), Self::Error> {
             Ok(())
         }
     };

@@ -1,4 +1,6 @@
 /*!
+This module provides a model to construct `Selector`s. These are described in §14 of the Smithy
+specification.
 */
 
 use crate::error::Error;
@@ -73,6 +75,7 @@ pub enum ShapeType {
 
 ///
 /// This denotes a literal value in an expression.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// A text, or string, literal value.
@@ -85,12 +88,19 @@ pub enum Value {
     AbsoluteRootShapeIdentifier(ShapeID),
 }
 
+///
+/// Use in the `path` field of the `Key` struct.
 #[derive(Clone, Debug, PartialEq)]
 pub enum KeyPathSegment {
+    /// A literal value.
     Value(Value),
+    /// A functional property.
     FunctionProperty(Identifier),
 }
 
+///
+/// A key used to anchor certain expression types.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Key {
     identifier: Identifier,
@@ -221,6 +231,12 @@ pub enum Comparator {
     ProjectionProperSubset,
 }
 
+///
+/// An attribute selector with a comparator checks for the existence of an attribute and compares
+/// the resolved attribute value to a comma separated list of possible values. The resolved
+/// attribute value on the left hand side of the comparator MUST match one or more of the comma
+/// separated values on the right hand side of the comparator.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct AttributeComparison {
     comparator: Comparator,
@@ -228,24 +244,68 @@ pub struct AttributeComparison {
     case_insensitive: bool,
 }
 
+///
+/// Attribute selectors are used to match shapes based on shape IDs, traits, and other attributes.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct AttributeSelector {
     key: Key,
     comparison: Option<AttributeComparison>,
 }
 
+///
+/// A scoped attribute selector is similar to an attribute selector, but it allows multiple complex
+/// comparisons to be made against a scoped attribute.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct ScopedAttributeSelector {
     key: Option<Key>,
     assertions: Vec<ScopedAttributeAssertion>,
 }
 
+///
+/// Values used in scoped attribute assertions.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum ScopedValue {
+    /// A literal value
     Value(Value),
+    /// A context value
     ContextValue(Vec<KeyPathSegment>),
 }
 
+///
+/// The first part of a scoped attribute selector is the attribute that is scoped for the
+/// expression, followed by :. The scoped attribute is accessed using a context value in the form of
+/// `z@{ identifier }`.
+///
+/// In the following selector, the trait|range attribute is used as the scoped attribute of the
+/// expression, and the selector matches shapes marked with the `range` trait where the `min` value
+/// is greater than the `max` value:
+///
+/// `[@trait|range: @{min} > @{max}]`
+///
+/// The scope can also be set to the current shape being evaluated by omitting an expression before
+/// the : character.
+///
+/// The following selector matches shapes that are traits that are applied to themselves as traits
+/// (for example, this matches `smithy.api#trait`, `smithy.api#documentation`, etc.):
+///
+/// `[trait|trait][@: @{trait|(keys)} = @{id}]`
+///
+/// A projection MAY be used as the scoped attribute context value. When the scoped attribute
+/// context value is a projection, each recursively flattened value of the projection is
+/// individually tested against each assertion. If any value from the projection matches the
+/// assertions, then the selector matches the shape.
+///
+/// The following selector matches shapes that have an enum trait where one or more of the enum
+/// definitions is both marked as `deprecated` and contains an entry in its tags property named
+/// `deprecated`.
+///
+/// `[@trait|enum|(values):
+///     @{deprecated} = true &&
+///     @{tags|(values)} = "deprecated"]`
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct ScopedAttributeAssertion {
     lhs_value: ScopedValue,
@@ -254,43 +314,185 @@ pub struct ScopedAttributeAssertion {
     case_insensitive: bool,
 }
 
+///
+/// Neighbor selectors yield shapes that are connected to the current shape. Most selectors are used
+/// to determine if a shape matches some criteria, meaning the selector yields zero or exactly one
+/// shape. However, neighbor selectors yield zero or more shapes by traversing the relationships of
+/// a shape.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum NeighborSelector {
+    ///
+    /// A *forward undirected neighbor* (`>`) yields every shape that is connected to the current
+    /// shape. For example, the following selector matches the key and value members of every map:
+    ///
+    /// `map > member`
+    ///
+    /// Neighbors can be chained to traverse further into a shape. The following selector yields
+    /// strings that are targeted by list members:
+    ///
+    /// `list > member > string`
+    ///
     ForwardUndirected,
+    ///
+    /// A *reverse undirected neighbor* yields all of the shapes that have a relationship that
+    ///
+    /// points to the current shape.
+    //
+    /// The following selector matches strings that are targeted by members of lists:
+    ///
+    /// `string :test(< member < list)`
+    ///
+    /// The following selector yields all shapes that are not traits and are not referenced by
+    /// other shapes:
+    ///
+    /// `:not([trait|trait]) :not(< *)`
+    ///
+    /// The following selectors are equivalent; however, a forward neighbor traversal is preferred
+    /// over a reverse neighbor traversal when possible.
+    ///
+    /// * Reverse: `string < member < list`
+    /// * Forward: `list :test(> member > string)`
+    ///
     ReverseUndirected,
+    ///
+    /// The *forward undirected neighbor selector* (`>`) is an undirected edge traversal. Sometimes,
+    /// a directed edge traversal is necessary. For example, the following selector matches the
+    /// "bound", "input", "output", and "error" relationships of each operation:
+    ///
+    /// `operation > *`
+    ///
+    /// A forward directed edge traversal is applied using selector_forward_directed_neighbor
+    /// (`-[X, Y, Z]->`). The following selector matches all structure shapes referenced as  
+    /// operation input or output.
+    ///
+    /// `operation -[input, output]-> structure`
+    ///
+    /// The `:test` function can be used to check if a shape has a named relationship. The following  
+    /// selector matches all resource shapes that define an identifier:
+    ///
+    /// `resource :test(-[identifier]->)`
+    ///
+    /// Relationships from a shape to the traits applied to the shape can be traversed using a
+    /// forward directed relationship named trait. It is atypical to traverse trait relationships,
+    /// therefore they are only yielded by selectors when explicitly requested using a trait
+    /// directed relationship. The following selector finds all service shapes that have a protocol
+    /// trait applied to it (that is, a trait that is marked with the `protocolDefinition` trait):
+    ///
+    /// `service :test(-[trait]-> [trait|protocolDefinition])`
+    ///
     ForwardDirected(Vec<Identifier>),
+    ///
+    /// A *reverse directed neighbor* yields all of the shapes that have a relationship of a
+    /// specific type that points to the current shape.
+    ///
+    /// For example, shapes marked with the streaming trait can only be targeted by top-level
+    /// members of operation input or output structures. The following selector finds all shapes
+    /// that target a streaming shape and violate this constraint:
+    ///
+    /// `[trait|streaming]
+    ///     :test(<)
+    ///     :not(< member < structure <-[input, output]- operation)`
+    ///
+    /// Like forward directed neighbors, trait relationships are only included when explicitly
+    /// provided in the list of relationships to traverse. The following selector yields all
+    /// shapes that are traits that are not applied to any shapes:
+    ///
+    /// `[trait|trait] :not(<-[trait]-)`
+    ///
     ReverseDirected(Vec<Identifier>),
+    ///
+    /// The *forward recursive neighbor* selector (`~>`) yields all shapes that are recursively
+    /// connected in the closure of another shape. The shapes yielded by this selector are
+    /// equivalent to yielding every shape connected to the current shape using a forward undirected
+    /// neighbor, yielding every shape connected to those shapes, and so on.
+    ///
+    /// The following selector matches operations that are connected to a service:
+    ///
+    /// `service ~> operation`
+    ///
+    /// The following selector finds operations that do not have the http trait that are in the
+    /// closure of a service marked with the `aws.protocols#restJson` trait:
+    ///
+    /// `service[trait|aws.protocols#restJson1]
+    ///     ~> operation:not([trait|http])`
+    ///
     ForwardRecursiveDirected,
 }
 
+///
+/// Functions are used to filter and yield shapes using a variadic argument list of selectors
+/// separated by a comma (,). Functions always start with a colon (:).
+///
+/// > **Important**: Implementations MUST tolerate parsing unknown function names. When evaluated,
+/// > an unknown function yields no shapes.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
     name: Identifier,
     arguments: Vec<SelectorExpression>,
 }
 
+///
+/// A variable is set using a *selector_variable_set* expression. Variables can be reassigned
+/// without error.
+///
+/// The following selector defines a variable named foo that sets the variable to the result of
+/// applying the `*` selector to the current shape.
+///
+/// `$foo(*)`
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct VariableDefinition {
     name: Identifier,
     expressions: Vec<SelectorExpression>,
 }
 
+///
+/// A variable is retrieved by name using a *selector_variable_get* expression. Retrieving a
+/// variable yields the set of shapes stored in the variable. Attempting to get a variable that
+/// does not exist yields no shapes.
+///
+/// `${foo}`
+///
+/// Variables can also be accessed inside of scoped attribute selectors from shapes using the `var`
+/// attribute.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct VariableReference {
     name: Identifier,
 }
 
+///
+/// This enum represents the set of possible selector expressions that comprise the `Selector`.
 #[derive(Clone, Debug, PartialEq)]
 pub enum SelectorExpression {
+    /// Match by shape type.
     ShapeType(ShapeType),
+    /// Attribute selectors are used to match shapes based on shape IDs, traits, and other attributes.
     AttributeSelector(AttributeSelector),
+    /// A scoped attribute selector is similar to an attribute selector, but it allows multiple
+    /// complex comparisons to be made against a scoped attribute.
     ScopedAttributeSelector(ScopedAttributeSelector),
+    /// Neighbor selectors yield shapes that are connected to the current shape.
     NeighborSelector(NeighborSelector),
+    /// Functions are used to filter and yield shapes using a variadic argument list of selectors
+    /// separated by a comma (,).
     Function(Function),
+    /// Variables are used to store eagerly computed, named intermediate results that can be
+    /// accessed later in a selector.
     VariableDefinition(VariableDefinition),
+    /// Retrieving a variable yields the set of shapes stored in the variable.
     VariableReference(VariableReference),
 }
 
+///
+/// Selectors can be composed of multiple *selector expressions*. Selectors are evaluated from left
+/// to right, yielding the results from one selector to the next. The following selector matches
+/// all string shapes marked as sensitive:
+///
+/// `string [trait|sensitive]`
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Selector {
     expressions: Vec<SelectorExpression>,
@@ -618,6 +820,7 @@ impl Display for AttributeComparison {
 }
 
 impl AttributeComparison {
+    /// Construct a new comparison with the provided comparator and right-hand side values.
     pub fn new(comparator: Comparator, values: &[Value]) -> Self {
         Self {
             comparator,
@@ -626,6 +829,7 @@ impl AttributeComparison {
         }
     }
 
+    /// Construct a new case-insensitive comparison with the provided comparator and right-hand side values.
     pub fn new_case_insensitive(comparator: Comparator, values: &[Value]) -> Self {
         Self {
             comparator,
@@ -634,14 +838,17 @@ impl AttributeComparison {
         }
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `=` operator.
     pub fn string_equal(rhs: Value) -> Self {
         Self::new(Comparator::StringEqual, &[rhs])
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `!=` operator.
     pub fn string_not_equal(rhs: Value) -> Self {
         Self::new(Comparator::StringNotEqual, &[rhs])
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `^=` operator.
     pub fn string_starts_with(rhs: Value) -> Self {
         Self::new(
             Comparator::StringStartsWith,
@@ -649,18 +856,22 @@ impl AttributeComparison {
         )
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `$=` operator.
     pub fn string_ends_with(rhs: Value) -> Self {
         Self::new(Comparator::StringEndsWith, &[rhs])
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `*=` operator.
     pub fn string_contains(rhs: Value) -> Self {
         Self::new(Comparator::StringContains, &[rhs])
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `?=` operator.
     pub fn string_exists(rhs: bool) -> Self {
         Self::new(Comparator::StringExists, &[Value::Text(rhs.to_string())])
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `>` operator.
     pub fn number_greater(rhs: Number) -> Self {
         Self::new(
             Comparator::NumberGreaterThan,
@@ -668,6 +879,7 @@ impl AttributeComparison {
         )
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `>=` operator.
     pub fn number_greater_or_equal(rhs: Number) -> Self {
         Self::new(
             Comparator::NumberGreaterOrEqual,
@@ -675,10 +887,12 @@ impl AttributeComparison {
         )
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `<` operator.
     pub fn number_less(rhs: Number) -> Self {
         Self::new(Comparator::NumberLessThan, &[Value::Text(rhs.to_string())])
     }
 
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `<=` operator.
     pub fn number_less_or_equal(rhs: Number) -> Self {
         Self::new(
             Comparator::NumberLessOrEqual,
