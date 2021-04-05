@@ -95,6 +95,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.3**
+
+* Added support for constructing `Selector` models.
+
 **Version 0.2.2**
 
 * Refactor: added `HasIdentity` and `HasTraits` traits to allow doc writer to be polymorphic.

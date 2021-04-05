@@ -246,6 +246,9 @@ extern crate error_chain;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate paste;
+
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 

@@ -225,15 +225,15 @@ impl Display for Value {
 }
 
 impl Value {
-    is_as! { is_array, Array, as_array, Vec<Value> }
+    is_as! { array, Array, Vec<Value> }
 
-    is_as! { is_object, Object, as_object, HashMap<String, Value> }
+    is_as! { object, Object, HashMap<String, Value> }
 
-    is_as! { is_number, Number, as_number, Number }
+    is_as! { number, Number, Number }
 
-    is_as! { is_boolean, Boolean, as_boolean, bool }
+    is_as! { boolean, Boolean, bool }
 
-    is_as! { is_string, String, as_string, String }
+    is_as! { string, String, String }
 
-    is_as! { is_none, None }
+    is_only! { none, None }
 }

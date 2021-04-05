@@ -572,6 +572,8 @@ impl OperationBuilder {
 
     // --------------------------------------------------------------------------------------------
 
+    add_trait!(pub idempotent);
+
     add_trait!(pub readonly);
 
     add_trait!(pub sensitive);

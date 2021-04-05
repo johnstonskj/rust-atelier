@@ -90,6 +90,11 @@ error_chain! {
             description("Reporting issues found by an Action.")
             display("Reporting issues found by an Action: {:?}", reasons)
         }
+        #[doc("The selector expression(s) failed to parse.")]
+        InvalidSelector {
+            description("The selector expression(s) failed to parse.")
+            display("RepThe selector expression(s) failed to parse.")
+        }
     }
 
     foreign_links {

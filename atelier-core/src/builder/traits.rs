@@ -175,7 +175,7 @@ pub fn title(title: &str) -> TraitBuilder {
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
-pub fn is_trait() -> TraitBuilder {
+pub fn a_trait() -> TraitBuilder {
     TraitBuilder::new(&prelude_name(TRAIT_TRAIT))
 }
 

@@ -68,7 +68,7 @@ impl Service {
         self.version = version.to_string()
     }
 
-    array_member! { operations, operation, ShapeID, has_operations, add_operation, append_operations, remove_operations }
+    array_member! { operations, operation, ShapeID }
 
     /// Add an element to this member's collection.
     pub fn add_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -77,7 +77,7 @@ impl Service {
         }
     }
 
-    array_member! { resources, resource, ShapeID, has_resources, add_resource, append_resources, remove_resources }
+    array_member! { resources, resource, ShapeID }
 
     /// Add an element to this member's collection.
     pub fn add_resource_shape(&mut self, shape: &TopLevelShape) {
@@ -100,7 +100,7 @@ impl Default for Operation {
 }
 
 impl Operation {
-    optional_member! { input, ShapeID, has_input, set_input, unset_input }
+    optional_member! { input, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_input_shape(&mut self, shape: &TopLevelShape) {
@@ -113,7 +113,7 @@ impl Operation {
         }
     }
 
-    optional_member! { output, ShapeID, has_output, set_output, unset_output }
+    optional_member! { output, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_output_shape(&mut self, shape: &TopLevelShape) {
@@ -126,7 +126,7 @@ impl Operation {
         }
     }
 
-    array_member! { errors, error, ShapeID, has_errors, add_error, append_errors, remove_errors }
+    array_member! { errors, error, ShapeID }
 
     /// Add an element to this member's collection.
     pub fn add_error_shape(&mut self, shape: &TopLevelShape) {
@@ -210,7 +210,7 @@ impl Resource {
             || self.has_list()
     }
 
-    optional_member! { create, ShapeID, has_create, set_create, unset_create }
+    optional_member! { create, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_create_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -219,7 +219,7 @@ impl Resource {
         }
     }
 
-    optional_member! { put, ShapeID, has_put, set_put, unset_put }
+    optional_member! { put, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_put_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -228,7 +228,7 @@ impl Resource {
         }
     }
 
-    optional_member! { read, ShapeID, has_read, set_read, unset_read }
+    optional_member! { read, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_read_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -237,7 +237,7 @@ impl Resource {
         }
     }
 
-    optional_member! { update, ShapeID, has_update, set_update, unset_update }
+    optional_member! { update, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_update_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -246,7 +246,7 @@ impl Resource {
         }
     }
 
-    optional_member! { delete, ShapeID, has_delete, set_delete, unset_delete }
+    optional_member! { delete, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_delete_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -255,7 +255,7 @@ impl Resource {
         }
     }
 
-    optional_member! { list, ShapeID, has_list, set_list, unset_list }
+    optional_member! { list, ShapeID }
 
     /// Set the current value of this member.
     pub fn set_list_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -264,7 +264,7 @@ impl Resource {
         }
     }
 
-    array_member! { operations, operation, ShapeID, has_operations, add_operation, append_operations, remove_operations }
+    array_member! { operations, operation, ShapeID }
 
     /// Add an element to this member's collection.
     pub fn add_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -273,7 +273,7 @@ impl Resource {
         }
     }
 
-    array_member! { collection_operations, collection_operation, ShapeID, has_collection_operations, add_collection_operation, append_collection_operations, remove_collection_operations }
+    array_member! { collection_operations, collection_operation, ShapeID }
 
     /// Add an element to this member's collection.
     pub fn add_collection_operation_shape(&mut self, shape: &TopLevelShape) {
@@ -282,7 +282,7 @@ impl Resource {
         }
     }
 
-    array_member! { resources, resource, ShapeID, has_resources, add_resource, append_resources, remove_resources }
+    array_member! { resources, resource, ShapeID }
 
     /// Add an element to this member's collection.
     pub fn add_resource_shape(&mut self, shape: &TopLevelShape) {

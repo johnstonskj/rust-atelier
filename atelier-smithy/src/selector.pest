@@ -1,15 +1,18 @@
+//
+// Generated from the ABNF at https://awslabs.github.io/smithy/1.0/spec/core/selectors.html
+//
 selector =
-    { selector_expression+ }
+    { SOI ~ selector_expression+ ~ EOI }
 
 selector_expression =
     { selector_shape_types
     | selector_attr
     | selector_scoped_attr
-    | selector_function_args
-    | selector_forward_undirected_neighbor
-    | selector_reverse_undirected_neighbor
+    | selector_function // <-- this was `selector_function_args` which was bad
     | selector_forward_directed_neighbor
     | selector_reverse_directed_neighbor
+    | selector_forward_undirected_neighbor
+    | selector_reverse_undirected_neighbor
     | selector_forward_recursive_neighbor
     | selector_variable_set
     | selector_variable_get }
@@ -67,22 +70,60 @@ selector_comparator =
     | selector_projection_comparator }
 
 selector_string_comparator =
-    {"^=" | "$=" | "*=" | "!=" | "=" | "?="}
+    { comparator_string_eq
+    | comparator_string_neq
+    | comparator_string_starts
+    | comparator_string_ends
+    | comparator_string_in
+    | comparator_string_exist }
+
+comparator_string_eq = { "=" }
+
+comparator_string_neq = { "!=" }
+
+comparator_string_starts = { "^=" }
+
+comparator_string_ends = { "$=" }
+
+comparator_string_in = { "*=" }
+
+comparator_string_exist = { "?=" }
 
 selector_numeric_comparator =
-    {">=" | ">" | "<=" | "<"}
+    { comparator_number_gt
+    | comparator_number_gte
+    | comparator_number_lt
+    | comparator_number_lte }
+
+comparator_number_gt = { ">" }
+
+comparator_number_gte = { ">=" }
+
+comparator_number_lt = { "<" }
+
+comparator_number_lte = { "<=" }
 
 selector_projection_comparator =
-    {"{=}" | "{!=}" | "{<}" | "{<<}"}
+    { comparator_projection_eq
+    | comparator_projection_neq
+    | comparator_projection_subset
+    | comparator_projection_proper }
 
-selector_absolute_root_shape_id =
-    { namespace ~ "#" ~ identifier }
+comparator_projection_eq = { "{=}" }
+
+comparator_projection_neq = { "{!=}" }
+
+comparator_projection_subset = { "{<}" }
+
+comparator_projection_proper = { "{<<}" }
 
 selector_scoped_attr =
     { "[@" ~ selector_key? ~ ":" ~ selector_scoped_assertions ~"]" }
 
 selector_scoped_assertions =
-    { selector_scoped_assertion ~ ("&&" ~ selector_scoped_assertion) }
+    { selector_scoped_assertion ~ ("&&" ~ selector_scoped_assertion)* }
+// |                                                            ---^
+// = Was missing any cardinality constraint
 
 selector_scoped_assertion =
     { selector_scoped_value ~ selector_comparator ~ selector_scoped_values ~ case_comparison_suffix? }
@@ -100,16 +141,17 @@ selector_function =
     { ":" ~ identifier ~ "(" ~ selector_function_args ~ ")" }
 
 selector_function_args =
-    { selector ~ ("," ~ selector)* }
+    { selector_expression+ ~ ("," ~ selector_expression+)* }
+//    ^--- renamed from simply `selector` to avoid SOI/EOI
 
 selector_text =
     { selector_single_quoted_text | selector_double_quoted_text }
 
 selector_single_quoted_text =
-    { "'" ~ selector_single_quoted_char+ ~ "'" }
+    @{ "'" ~ selector_single_quoted_char+ ~ "'" }
 
 selector_double_quoted_text =
-    { "\"" ~ selector_double_quoted_char+ ~ "\""}
+    @{ "\"" ~ selector_double_quoted_char+ ~ "\""}
 
 selector_single_quoted_char =
     { '\u{20}'..'\u{26}' | '\u{28}'..'\u{5B}' | '\u{5D}'..'\u{10FFFF}' }
@@ -118,12 +160,14 @@ selector_double_quoted_char =
     { '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFFF}' }
 
 selector_variable_set =
-    { "$" ~ identifier ~ "(" ~ selector ~ ")" }
+    { "$" ~ identifier ~ "(" ~ selector_expression+ ~ ")" }
 
 selector_variable_get =
     { "${" ~ identifier ~ "}" }
 
+// ------------------------------------------------------------------------------------------------
 // Copied over from Smithy.pest
+// ------------------------------------------------------------------------------------------------
 
 identifier =
     @{ ( ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* )
@@ -136,13 +180,13 @@ root_shape_id =
     { absolute_root_shape_id | identifier }
 
 absolute_root_shape_id =
-    { namespace ~ "#" ~ identifier }
+    @{ namespace ~ "#" ~ identifier }
 
 number =
-    { minus? ~ int ~ frac? ~ exp?}
+    @{ minus? ~ int ~ frac? ~ exp?}
 
 decimal_point =
-    { "."}
+    { "." }
 
 e =
     { "e" | "E" }
@@ -164,3 +208,9 @@ plus =
 
 zero =
     { "0" }
+
+// ------------------------------------------------------------------------------------------------
+// Allows default whitespace handling
+// ------------------------------------------------------------------------------------------------
+
+WHITESPACE = _{ " " | "\t" | "\n" }

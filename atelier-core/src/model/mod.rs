@@ -195,6 +195,8 @@ impl Model {
 pub mod identity;
 pub use identity::{HasIdentity, Identifier, NamespaceID, ShapeID};
 
+pub mod selector;
+
 pub mod shapes;
 
 pub mod values;

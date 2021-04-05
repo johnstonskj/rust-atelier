@@ -308,6 +308,18 @@ impl ShapeID {
     }
 
     ///
+    /// Returns the current qualified shape part of the identifier, removing any member part if
+    /// present.
+    ///
+    pub fn shape_only(&self) -> ShapeID {
+        if self.is_member() {
+            Self::new(self.namespace.clone(), self.shape_name.clone(), None)
+        } else {
+            self.clone()
+        }
+    }
+
+    ///
     /// Returns the current namespace component.
     ///
     pub fn namespace(&self) -> &NamespaceID {

@@ -9,7 +9,7 @@ enumeration, `ShapeBody`, to represent each of the productions referenced by `sh
 */
 
 use crate::model::identity::HasIdentity;
-use crate::model::{values::Value, ShapeID};
+use crate::model::{values::Value, Identifier, ShapeID};
 use crate::prelude::{
     PRELUDE_NAMESPACE, TRAIT_BOX, TRAIT_DEPRECATED, TRAIT_DOCUMENTATION, TRAIT_ERROR,
     TRAIT_EXTERNALDOCUMENTATION, TRAIT_IDEMPOTENT, TRAIT_LENGTH, TRAIT_NOREPLACE, TRAIT_PAGINATED,
@@ -17,6 +17,7 @@ use crate::prelude::{
     TRAIT_REQUIRESLENGTH, TRAIT_SENSITIVE, TRAIT_SINCE, TRAIT_STREAMING, TRAIT_TAGS, TRAIT_TITLE,
     TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
 };
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -268,16 +269,16 @@ impl From<Resource> for ShapeKind {
 }
 
 impl ShapeKind {
-    is_as! { is_simple, Simple, as_simple, Simple }
-    is_as! { is_list, List, as_list, ListOrSet }
-    is_as! { is_set, Set, as_set, ListOrSet }
-    is_as! { is_map, Map, as_map, Map}
-    is_as! { is_structure, Structure, as_structure, StructureOrUnion}
-    is_as! { is_union, Union, as_union, StructureOrUnion}
-    is_as! { is_service, Service, as_service, Service }
-    is_as! { is_operation, Operation, as_operation, Operation }
-    is_as! { is_resource, Resource, as_resource, Resource }
-    is_as! { is_unresolved, Unresolved }
+    is_as! { simple, Simple, Simple }
+    is_as! { list, List, ListOrSet }
+    is_as! { set, Set, ListOrSet }
+    is_as! { map, Map, Map}
+    is_as! { structure, Structure, StructureOrUnion}
+    is_as! { union, Union, StructureOrUnion}
+    is_as! { service, Service, Service }
+    is_as! { operation, Operation, Operation }
+    is_as! { resource, Resource, Resource }
+    is_only! { unresolved, Unresolved }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -326,6 +327,12 @@ impl Shape for TopLevelShape {
     fn is_member(&self) -> bool {
         false
     }
+}
+
+lazy_static! {
+    static ref MEMBER_MEMBER: Identifier = Identifier::from_str("member").unwrap();
+    static ref MEMBER_KEY: Identifier = Identifier::from_str("key").unwrap();
+    static ref MEMBER_VALUE: Identifier = Identifier::from_str("value").unwrap();
 }
 
 impl TopLevelShape {
@@ -384,6 +391,60 @@ impl TopLevelShape {
     delegate! { is_operation, inner = body }
     delegate! { is_resource, inner = body }
     delegate! { is_unresolved, inner = body }
+
+    // --------------------------------------------------------------------------------------------
+
+    ///
+    /// Does this shape support members?
+    ///
+    pub fn has_members(&self) -> bool {
+        !matches!(self.body(), ShapeKind::Simple(_) | ShapeKind::Unresolved)
+    }
+
+    ///
+    /// Does this shape have a member named `member`?
+    ///
+    pub fn has_member(&self, member: &Identifier) -> bool {
+        self.member(member).is_some()
+    }
+
+    ///
+    /// Return the value of this shapes member named `member`, if one exists.
+    ///
+    pub fn member(&self, member: &Identifier) -> Option<&MemberShape> {
+        match self.body() {
+            ShapeKind::Simple(_) => None,
+            ShapeKind::List(v) => {
+                if member == MEMBER_MEMBER.deref() {
+                    Some(v.member())
+                } else {
+                    None
+                }
+            }
+            ShapeKind::Set(v) => {
+                if member == MEMBER_MEMBER.deref() {
+                    Some(v.member())
+                } else {
+                    None
+                }
+            }
+            ShapeKind::Map(v) => {
+                if member == MEMBER_KEY.deref() {
+                    Some(v.key())
+                } else if member == MEMBER_VALUE.deref() {
+                    Some(v.value())
+                } else {
+                    None
+                }
+            }
+            ShapeKind::Structure(v) => v.member(member),
+            ShapeKind::Union(v) => v.member(member),
+            ShapeKind::Service(_) => None,
+            ShapeKind::Operation(_) => None,
+            ShapeKind::Resource(_) => None,
+            ShapeKind::Unresolved => None,
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -458,3 +519,4 @@ pub use aggregate::{ListOrSet, Map, MemberShape, StructureOrUnion};
 #[doc(hidden)]
 pub mod service;
 pub use service::{Operation, Resource, Service};
+use std::ops::Deref;

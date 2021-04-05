@@ -35,7 +35,7 @@ use std::collections::HashSet;
 ///
 /// Builder for a top-level `Model`. This implements `From<T>` to provide the model itself.
 ///
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ModelBuilder {
     make_references: bool,
     default_namespace: NamespaceID,
@@ -46,7 +46,7 @@ pub struct ModelBuilder {
     shapes: Vec<TopLevelShapeBuilder>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum TopLevelShapeBuilder {
     SimpleShape(SimpleShapeBuilder),
     List(ListBuilder),
@@ -207,7 +207,7 @@ impl ModelBuilder {
             if !name.is_member() {
                 name
             } else {
-                panic!(ErrorKind::ShapeIDExpected(name))
+                panic!("{}", ErrorKind::ShapeIDExpected(name))
             }
         } else if Identifier::is_valid(name) {
             let shape_name: Identifier = name.parse().unwrap();
@@ -448,6 +448,9 @@ pub use shapes::{
     ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ReferenceBuilder, ResourceBuilder,
     ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
+
+// #[doc(hidden)]
+// pub mod selector;
 
 #[doc(hidden)]
 pub mod traits;
