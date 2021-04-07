@@ -9,6 +9,10 @@ TBD
 
 ## Changes
 
+**Version 0.2.4**
+
+* Tracking change to `ShapeType` from `atelier_core` crate.
+
 **Version 0.2.3**
 
 * Added support for parsing selector expressions.
