@@ -97,6 +97,11 @@ $ cargo run --example motd_builder
 
 **Version 0.2.3**
 
+* Added initial builder types for constructing `Selector` models.
+* Renamed `ShapeType::All` to `ShapeType::Any`.
+
+**Version 0.2.3**
+
 * Added support for constructing `Selector` models.
 
 **Version 0.2.2**
@@ -167,6 +172,5 @@ $ cargo run --example motd_builder
 ## TODO
 
 1. Complete the prelude model.
-1. Complete the selector expression types
 1. More documentation
 1. More tests

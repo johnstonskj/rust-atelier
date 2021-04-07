@@ -449,8 +449,7 @@ pub use shapes::{
     ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
 
-// #[doc(hidden)]
-// pub mod selector;
+pub mod selector;
 
 #[doc(hidden)]
 pub mod traits;

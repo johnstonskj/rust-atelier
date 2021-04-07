@@ -36,7 +36,7 @@ fn test_spec_shape_types_fail() {
 fn test_spec_shape_types_all() {
     selector_eq(
         "*",
-        Some(SelectorExpression::ShapeType(ShapeType::All).into()),
+        Some(SelectorExpression::ShapeType(ShapeType::Any).into()),
     );
 }
 

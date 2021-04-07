@@ -148,6 +148,11 @@ macro_rules! array_member {
             self.$collection.iter()
         }
 
+        #[doc = "Set the `" $collection "` collection, this overwrites any existing values."]
+        pub fn [<set_ $collection>](&mut self, $collection: &[$member_type]) {
+            self.$collection = $collection.to_vec();
+        }
+
         #[doc = "Add an element to the `" $collection "` collection."]
         pub fn [<add_ $member_name>](&mut self, $member_name: $member_type) {
             self.$collection.push($member_name);

@@ -96,7 +96,7 @@ fn parse_selector_expression(input_pair: Pair<'_, Rule>) -> ModelResult<Selector
 fn parse_selector_shape_types(input_pair: Pair<'_, Rule>) -> ModelResult<ShapeType> {
     entry!("parse_selector_shape_types", input_pair);
     match input_pair.into_inner().next() {
-        None => Ok(ShapeType::All),
+        None => Ok(ShapeType::Any),
         Some(inner) => match inner.as_rule() {
             Rule::identifier => Ok(ShapeType::from_str(inner.as_str())?),
             _ => unexpected!("parse_selector_shape_types", inner),

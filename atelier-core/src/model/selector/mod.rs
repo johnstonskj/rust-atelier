@@ -20,7 +20,7 @@ use std::str::FromStr;
 #[derive(Clone, Debug, PartialEq)]
 pub enum ShapeType {
     /// Matches all shapes
-    All,
+    Any,
     /// Matches all `byte`, `short`, `integer`, `long`, `float`, `double`, `bigDecimal`, and `bigInteger` shapes
     Number,
     /// Matches all simple types
@@ -516,7 +516,7 @@ impl Display for ShapeType {
             f,
             "{}",
             match self {
-                ShapeType::All => "*",
+                ShapeType::Any => "*",
                 ShapeType::Number => "number",
                 ShapeType::SimpleType => "simpleType",
                 ShapeType::Collection => "collection",
@@ -552,7 +552,7 @@ impl FromStr for ShapeType {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "*" => Ok(ShapeType::All),
+            "*" => Ok(ShapeType::Any),
             "number" => Ok(ShapeType::Number),
             "simpleType" => Ok(ShapeType::SimpleType),
             "collection" => Ok(ShapeType::Collection),
@@ -597,7 +597,7 @@ impl Display for Value {
             f,
             "{}",
             match self {
-                Value::Text(v) => format!("{:?}", v),
+                Value::Text(v) => format!("\"{}\"", v),
                 Value::Number(v) => v.to_string(),
                 Value::RootShapeIdentifier(v) => v.to_string(),
                 Value::AbsoluteRootShapeIdentifier(v) => v.to_string(),
@@ -873,31 +873,42 @@ impl AttributeComparison {
 
     /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `>` operator.
     pub fn number_greater(rhs: Number) -> Self {
-        Self::new(
-            Comparator::NumberGreaterThan,
-            &[Value::Text(rhs.to_string())],
-        )
+        Self::new(Comparator::NumberGreaterThan, &[Value::Number(rhs)])
     }
 
     /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `>=` operator.
     pub fn number_greater_or_equal(rhs: Number) -> Self {
-        Self::new(
-            Comparator::NumberGreaterOrEqual,
-            &[Value::Text(rhs.to_string())],
-        )
+        Self::new(Comparator::NumberGreaterOrEqual, &[Value::Number(rhs)])
     }
 
     /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `<` operator.
     pub fn number_less(rhs: Number) -> Self {
-        Self::new(Comparator::NumberLessThan, &[Value::Text(rhs.to_string())])
+        Self::new(Comparator::NumberLessThan, &[Value::Number(rhs)])
     }
 
     /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `<=` operator.
     pub fn number_less_or_equal(rhs: Number) -> Self {
-        Self::new(
-            Comparator::NumberLessOrEqual,
-            &[Value::Text(rhs.to_string())],
-        )
+        Self::new(Comparator::NumberLessOrEqual, &[Value::Number(rhs)])
+    }
+
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `{=}` operator.
+    pub fn projection_equal(rhs: Value) -> Self {
+        Self::new(Comparator::ProjectionEqual, &[rhs])
+    }
+
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `{!=}` operator.
+    pub fn projection_not_equal(rhs: Value) -> Self {
+        Self::new(Comparator::ProjectionNotEqual, &[rhs])
+    }
+
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `{<}` operator.
+    pub fn projection_subset(rhs: &[Value]) -> Self {
+        Self::new(Comparator::ProjectionSubset, rhs)
+    }
+
+    /// Create a new comparison between the `AttributeSelector` and `rhs` value with the `{<<}` operator.
+    pub fn projection_proper_subset(rhs: &[Value]) -> Self {
+        Self::new(Comparator::ProjectionProperSubset, rhs)
     }
 
     // --------------------------------------------------------------------------------------------
@@ -1308,6 +1319,26 @@ impl ScopedAttributeAssertion {
         )
     }
 
+    /// Create a new assertion between `lhs` and `rhs` with the `{=}` operator.
+    pub fn projection_equal(lhs: ScopedValue, rhs: ScopedValue) -> Self {
+        Self::new(lhs, Comparator::ProjectionEqual, &[rhs])
+    }
+
+    /// Create a new assertion between `lhs` and `rhs` with the `{!=}` operator.
+    pub fn projection_not_equal(lhs: ScopedValue, rhs: ScopedValue) -> Self {
+        Self::new(lhs, Comparator::ProjectionNotEqual, &[rhs])
+    }
+
+    /// Create a new assertion between `lhs` and `rhs` with the `{<}` operator.
+    pub fn projection_subset(lhs: ScopedValue, rhs: &[ScopedValue]) -> Self {
+        Self::new(lhs, Comparator::ProjectionSubset, rhs)
+    }
+
+    /// Create a new assertion between `lhs` and `rhs` with the `{<<}` operator.
+    pub fn projection_proper_subset(lhs: ScopedValue, rhs: &[ScopedValue]) -> Self {
+        Self::new(lhs, Comparator::ProjectionProperSubset, rhs)
+    }
+
     required_member! { lhs_value, ScopedValue }
 
     required_member! { comparator, Comparator }
@@ -1479,9 +1510,3 @@ impl VariableReference {
 
     required_member! { name, Identifier }
 }
-
-// ------------------------------------------------------------------------------------------------
-// Modules
-// ------------------------------------------------------------------------------------------------
-
-//pub mod evaluate;

@@ -135,7 +135,7 @@ fn query_by_function(
 fn match_by_shape_type(shape_type: &ShapeType, shape: &TopLevelShape) -> bool {
     let shape_body = shape.body();
     match shape_type {
-        ShapeType::All => true,
+        ShapeType::Any => true,
         ShapeType::Number => {
             if shape_body.is_simple() {
                 let shape_body = shape.body().as_simple().unwrap();
