@@ -6,6 +6,7 @@ members = [
     "atelier-json",
     "atelier-lib",
     "atelier-openapi",
+    "atelier-query",
     "atelier-rdf",
     "atelier-smithy",
     "cargo-atelier"

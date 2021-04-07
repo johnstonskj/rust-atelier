@@ -7,23 +7,17 @@ More detailed description, with
 
 */
 
-use crate::error::Result as ModelResult;
-use crate::model::selector::{Selector, SelectorExpression, ShapeType};
-use crate::model::shapes::{Simple, TopLevelShape};
-use crate::model::values::Value;
-use crate::model::{Model, ShapeID};
+use crate::Projection;
+use atelier_core::model::selector::{
+    AttributeSelector, Function, NeighborSelector, ScopedAttributeSelector, Selector,
+    SelectorExpression, ShapeType,
+};
+use atelier_core::model::shapes::{Simple, TopLevelShape};
+use atelier_core::model::Model;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Projection {
-    Empty,
-    Shapes(Vec<ShapeID>),
-    Members(Vec<ShapeID>),
-    Values(Vec<Value>),
-}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -41,37 +35,13 @@ pub fn query(query: &Selector, over_model: &Model) -> Projection {
         })
 }
 
-pub fn validate_trait_constraint(
-    constraint: &Selector,
-    trait_shape: &TopLevelShape,
-    shape: TopLevelShape,
-) -> bool {
+pub fn assert_true(_constraint: &Selector, _context: &TopLevelShape, _in_model: &Model) -> bool {
     unimplemented!()
 }
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
-
-impl Default for Projection {
-    fn default() -> Self {
-        Projection::Empty
-    }
-}
-
-impl Projection {
-    fn from(model: &Model) -> Self {
-        Projection::Shapes(model.shape_names().cloned().collect())
-    }
-
-    is_only! { empty, Empty }
-
-    is_as_array! { shapes, Shapes, ShapeID }
-
-    is_as_array! { members, Members, ShapeID }
-
-    is_as_array! { values, Values, Value }
-}
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
@@ -85,17 +55,23 @@ fn query_one(
     println!("query_one({:?} |-> {})", previously_selected, query);
     match query {
         SelectorExpression::ShapeType(v) => query_by_shape_type(v, previously_selected, over_model),
-        SelectorExpression::AttributeSelector(v) => previously_selected,
-        SelectorExpression::ScopedAttributeSelector(v) => previously_selected,
-        SelectorExpression::NeighborSelector(v) => previously_selected,
-        SelectorExpression::Function(v) => previously_selected,
+        SelectorExpression::AttributeSelector(v) => {
+            query_by_attribute(v, previously_selected, over_model)
+        }
+        SelectorExpression::ScopedAttributeSelector(v) => {
+            query_by_scoped_attribute(v, previously_selected, over_model)
+        }
+        SelectorExpression::NeighborSelector(v) => {
+            query_by_neighbor(v, previously_selected, over_model)
+        }
+        SelectorExpression::Function(v) => query_by_function(v, previously_selected, over_model),
         SelectorExpression::VariableDefinition(v) => previously_selected,
         SelectorExpression::VariableReference(v) => previously_selected,
     }
 }
 
 fn query_by_shape_type(
-    shape_type: &ShapeType,
+    query: &ShapeType,
     previously_selected: Projection,
     over_model: &Model,
 ) -> Projection {
@@ -113,7 +89,7 @@ fn query_by_shape_type(
         Projection::Shapes(mut shape_ids) => {
             shape_ids.retain(|shape_id| {
                 if let Some(shape) = over_model.shape(shape_id) {
-                    match_by_shape_type(shape_type, shape)
+                    match_by_shape_type(query, shape)
                 } else {
                     false
                 }
@@ -122,6 +98,38 @@ fn query_by_shape_type(
         }
         _ => Projection::default(),
     }
+}
+
+fn query_by_attribute(
+    _query: &AttributeSelector,
+    _previously_selected: Projection,
+    _over_model: &Model,
+) -> Projection {
+    unimplemented!()
+}
+
+fn query_by_scoped_attribute(
+    _query: &ScopedAttributeSelector,
+    _previously_selected: Projection,
+    _over_model: &Model,
+) -> Projection {
+    unimplemented!()
+}
+
+fn query_by_neighbor(
+    _query: &NeighborSelector,
+    _previously_selected: Projection,
+    _over_model: &Model,
+) -> Projection {
+    unimplemented!()
+}
+
+fn query_by_function(
+    _query: &Function,
+    _previously_selected: Projection,
+    _over_model: &Model,
+) -> Projection {
+    unimplemented!()
 }
 
 fn match_by_shape_type(shape_type: &ShapeType, shape: &TopLevelShape) -> bool {

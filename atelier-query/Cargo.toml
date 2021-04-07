@@ -1,0 +1,16 @@
+[package]
+name = "atelier_query"
+description = "Model query/assertion using selector expressions."
+version = "0.1.0"
+authors = ["Simon Johnston <johnstonskj@gmail.com>"]
+edition = "2018"
+documentation = "https://docs.rs/atelier_query/"
+repository = "https://github.com/johnstonskj/rust-atelier.git"
+license = "MIT"
+readme = "README.md"
+publish = true
+
+[dependencies]
+atelier_core = { version = "~0.2", path = "../atelier-core" }
+log = "0.4.14"
+paste = "1.0.5"
