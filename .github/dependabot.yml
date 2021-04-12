@@ -4,7 +4,14 @@
 # https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+
 updates:
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+
   - package-ecosystem: "cargo"
     directory: "/atelier-core"
     schedule:
@@ -14,7 +21,15 @@ updates:
       prefix-development: "cargo dev"
       include: "scope"
 
-updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-describe"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
   - package-ecosystem: "cargo"
     directory: "/atelier-json"
     schedule:
@@ -24,27 +39,6 @@ updates:
       prefix-development: "cargo dev"
       include: "scope"
 
-updates:
-  - package-ecosystem: "cargo"
-    directory: "/atelier-openapi"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "cargo prod"
-      prefix-development: "cargo dev"
-      include: "scope"
-
-updates:
-  - package-ecosystem: "cargo"
-    directory: "/atelier-smithy"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "cargo prod"
-      prefix-development: "cargo dev"
-      include: "scope"
-
-updates:
   - package-ecosystem: "cargo"
     directory: "/atelier-lib"
     schedule:
@@ -54,7 +48,33 @@ updates:
       prefix-development: "cargo dev"
       include: "scope"
 
-updates:
+  - package-ecosystem: "cargo"
+    directory: "/atelier-openapi"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+  - package-ecosystem: "cargo"
+    directory: "/atelier-query"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
+  - package-ecosystem: "cargo"
+    directory: "/atelier-smithy"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "cargo prod"
+      prefix-development: "cargo dev"
+      include: "scope"
+
   - package-ecosystem: "cargo"
     directory: "/cargo-atelier"
     schedule:
