@@ -9,8 +9,9 @@ core traits for other crates. Specifically it provides:
 
 1. The semantic [model](model/index.html) itself  that represents a Smithy model. This API is the
    in-memory representation shared by all Atelier crates and tools.
-1. A model [builder](builder/index.html) API that allow for a more _fluent_ and less repetative construction of a
-   core model.
+1. A set of model [builder](builder/index.html)s that allow for a more _fluent_ and less repetative
+   construction of a core model.
+1. A pair of traits for model [io](io/index.html) and helper functions for reading/writing models.
 1. The [prelude](prelude/index.html) module contains the set of shapes defined in the Smithy specification.
 1. Traits for model [actions](action/index.html) used to implement linters, validators, and transformations.
 1. Traits for [reading/writing](io/index.html) model files in different representations.

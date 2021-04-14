@@ -1,4 +1,4 @@
-use atelier_core::io::read_model_from_string;
+use atelier_core::io::{read_model_from_file, read_model_from_string};
 use atelier_core::model::shapes::{HasTraits, ShapeKind};
 use atelier_core::model::{HasIdentity, ShapeID};
 use atelier_core::syntax::{
@@ -45,12 +45,10 @@ fn test_file_parses(file_name: &str) {
     let mut path = PathBuf::from_str(MANIFEST_DIR).unwrap();
     path.push(format!("tests/good/{}.smithy", file_name));
     println!("{:?}", path);
-    let mut file = File::open(path).unwrap();
-    let mut content: Vec<u8> = Vec::default();
-    let _ = file.read_to_end(&mut content).unwrap();
 
     let mut reader = SmithyReader::default();
-    let result = read_model_from_string(&mut reader, content);
+    let result = read_model_from_file(&mut reader, path);
+
     let trait_trait = ShapeID::from_str("smithy.api#trait").unwrap();
     match result {
         Ok(parsed) => {

@@ -5,7 +5,26 @@ Provides the ability to read and write [Smithy](https://github.com/awslabs/smith
 [![crates.io](https://img.shields.io/crates/v/atelier_json.svg)](https://crates.io/crates/atelier_json)
 [![docs.rs](https://docs.rs/atelier_json/badge.svg)](https://docs.rs/atelier_json)
 
-TBD
+# Example
+
+
+The following demonstrates the `JsonReader` to parse a model.
+
+```rust
+use atelier_core::io::read_model_from_string;
+use atelier_json::JsonReader;
+
+# const JSON: &str =
+#        r#"{ "smithy": "1.0", "shapes": { "smithy.example#MyString": { "type": "string" } } }"#;
+let mut reader = JsonReader::default();
+let result = read_model_from_string(&mut reader, JSON);
+if result.is_err() {
+    println!("{:?}", result);
+}
+assert!(result.is_ok());
+println!("{:#?}", result.unwrap());
+```
+
 
 ## Changes
 

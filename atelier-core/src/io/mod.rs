@@ -2,11 +2,8 @@
 Traits for reading and writing models in different formats. Separate crates implement the ability
 to handle different representations, such as the original Smithy, JSON AST, and OpenAPI.
 
-This module also provides some useful `Writer` implementations, all are features, all are included
-by default.
-
-* **debug**; uses the `Debug` implementation of Model to write out the internal structure.
-* **uml**; uses [PlantUML](https://plantuml.com/) to generate diagrams of a model structure.
+This module also provides a `Debug` implementation of `ModelWriter` to write out the internal
+structure. The details of this are shown in the following example.
 
 # Example Model Writer
 
@@ -18,6 +15,7 @@ using the `Debug` implementation associated with those objects.
 # use atelier_core::model::Model;
 # use atelier_core::error::Result as ModelResult;
 # use std::io::Write;
+
 #[derive(Debug)]
 pub struct Debugger {}
 
@@ -34,11 +32,12 @@ impl ModelWriter for Debugger {
     }
 }
 ```
-
 */
 
 use crate::error::Result as ModelResult;
 use crate::model::Model;
+use std::fs::File;
+use std::path::PathBuf;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -84,17 +83,37 @@ where
 }
 
 ///
+/// Read a model from a file path using the given `ModelReader`. This is simply a
+/// short-cut that saves some repetitive boiler-plate.
+///
+pub fn read_model_from_file(r: &mut impl ModelReader, path: PathBuf) -> ModelResult<Model> {
+    let mut file = File::open(path)?;
+    r.read(&mut file)
+}
+
+///
 /// Write the `model` into a string `s` using the given `ModelWriter`. This is simply a
 /// short-cut that saves some repetitive boiler-plate.
 ///
-pub fn write_model_to_string<'a>(
-    w: &mut impl ModelWriter,
-    model: &'a Model,
-) -> ModelResult<String> {
+pub fn write_model_to_string(w: &mut impl ModelWriter, model: &Model) -> ModelResult<String> {
     use std::io::Cursor;
     let mut buffer = Cursor::new(Vec::new());
     w.write(&mut Box::new(&mut buffer), model)?;
     Ok(String::from_utf8(buffer.into_inner()).unwrap())
+}
+
+///
+/// Write the `model` into a file using the given `ModelWriter`. This is simply a
+/// short-cut that saves some repetitive boiler-plate.
+///
+pub fn write_model_to_file(
+    w: &mut impl ModelWriter,
+    model: &Model,
+    path: PathBuf,
+) -> ModelResult<()> {
+    let mut file = File::open(path)?;
+    w.write(&mut file, model)?;
+    Ok(())
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -22,6 +22,8 @@ service, `MessageOfTheDay` has a single resource `Message`. The resource has an 
 date, but the `read` operation does not make the date member required and so will return the message
 for the current date.
 
+# Example - Builder
+
 ```rust
 use atelier_core::error::ErrorSource;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
@@ -77,7 +79,6 @@ fn make_model() -> Model {
         .into()
 }
 ```
-*/
 
 ## Runnable Examples
 
