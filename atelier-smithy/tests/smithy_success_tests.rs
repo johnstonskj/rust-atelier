@@ -1,4 +1,4 @@
-use atelier_core::io::{read_model_from_file, read_model_from_string};
+use atelier_core::io::read_model_from_file;
 use atelier_core::model::shapes::{HasTraits, ShapeKind};
 use atelier_core::model::{HasIdentity, ShapeID};
 use atelier_core::syntax::{
@@ -6,8 +6,6 @@ use atelier_core::syntax::{
     SHAPE_STRUCTURE, SHAPE_UNION,
 };
 use atelier_smithy::SmithyReader;
-use std::fs::File;
-use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
 

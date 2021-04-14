@@ -9,8 +9,10 @@ representation.
 The crate provides two low-level parsers, `parse_model` and `parse_selector` that correspond to the
 core `Model` and `Selector` types. These are decouple to allow for the tool use cases where it is
 unnecessary or even undesirable to parse all selector expressions as well as those cases where
-selector expressions may be useful in non-model scenarios. This crate also provides an
-implementation of the core `ModelReader` trait for Smithy IDL files.
+selector expressions may be useful in non-model scenarios. 
+
+This crate also provides implementations of both the core `ModelReader` and `ModelWriter` traits
+for Smithy IDL files.
 
 # Example
 

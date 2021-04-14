@@ -14,8 +14,6 @@ The following demonstrates the `JsonReader` to parse a model.
 use atelier_core::io::read_model_from_string;
 use atelier_json::JsonReader;
 
-# const JSON: &str =
-#        r#"{ "smithy": "1.0", "shapes": { "smithy.example#MyString": { "type": "string" } } }"#;
 let mut reader = JsonReader::default();
 let result = read_model_from_string(&mut reader, JSON);
 if result.is_err() {
