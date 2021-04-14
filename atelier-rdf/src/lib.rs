@@ -5,7 +5,8 @@ to integrate Smithy models into other knowledge frameworks and to enrich the mod
 facts from other tools. It also allows for inferencing over Smithy models using ontology languages
 such as the W3C [Web Ontology Language (OWL)](https://www.w3.org/OWL/).
 
-For the specifics of the mapping between RDF and Smithy, see the module [`model`](model/index.html).
+This *model-to-model* mapping is performed by the `model_to_rdf` and `rdf_to_model` functions; for
+the specifics of this mapping, see the module [`model`](model/index.html).
 
 */
 
@@ -43,11 +44,11 @@ extern crate rdftk_names;
 // Modules
 // ------------------------------------------------------------------------------------------------
 
-#[doc(hidden)]
 pub mod urn;
 
 pub mod model;
 
+#[doc(hidden)]
 pub mod reader;
 
 pub mod writer;

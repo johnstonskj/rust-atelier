@@ -7,11 +7,19 @@ TBD
 
 */
 
-// use ...
+use atelier_core::io::ModelReader;
+use atelier_core::model::Model;
+use std::io::Read;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
+
+///
+/// Simple implementation of the `ModelReader` trait that reads the RDF representation of a model.
+///
+#[derive(Debug)]
+pub struct RdfReader {}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -24,6 +32,12 @@ TBD
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+impl ModelReader for RdfReader {
+    fn read(&mut self, r: &mut impl Read) -> atelier_core::error::Result<Model> {
+        unimplemented!()
+    }
+}
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions

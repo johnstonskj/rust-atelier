@@ -1,4 +1,5 @@
 use atelier_rdf::model;
+use rdftk_core::Graph;
 
 pub mod common;
 

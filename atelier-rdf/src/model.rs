@@ -173,7 +173,7 @@ struct RdfModelVisitor {
 ///
 /// See [module documentation](index.html) for an explanation of the mapping itself.
 ///
-pub fn model_to_rdf(model: &Model, model_iri: Option<IRIRef>) -> ModelResult<Box<dyn Graph>> {
+pub fn model_to_rdf(model: &Model, model_iri: Option<IRIRef>) -> ModelResult<impl Graph> {
     let model_iri = match model_iri {
         None => SubjectNode::blank(),
         Some(iri) => SubjectNode::named(iri),
@@ -204,7 +204,7 @@ pub fn model_to_rdf(model: &Model, model_iri: Option<IRIRef>) -> ModelResult<Box
     };
     walk_model(model, &visitor)?;
 
-    Ok(Box::new(visitor.graph.into_inner()))
+    Ok(visitor.graph.into_inner())
 }
 
 ///
