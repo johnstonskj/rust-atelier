@@ -15,9 +15,9 @@
 *
 * ```rust
 * use atelier_core::model::selector::{ShapeType, Selector};
-* use atelier_core::builder::selector::ExpressionListBuilder;
+* use atelier_core::builder::selector::SelectorBuilder;
 *
-* let selector: Selector = ExpressionListBuilder::from(ShapeType::Any.into()).into();
+* let selector: Selector = SelectorBuilder::from(ShapeType::Any.into()).into();
 * ```
 *
 * The selector builder has a number of helper functions to add common selector expressions and so
@@ -25,9 +25,9 @@
 *
 * ```rust
 * use atelier_core::model::selector::Selector;
-* use atelier_core::builder::selector::ExpressionListBuilder;
+* use atelier_core::builder::selector::SelectorBuilder;
 *
-* let selector: Selector = ExpressionListBuilder::any_shape().into();
+* let selector: Selector = SelectorBuilder::any_shape().into();
 * ```
 *
 */
@@ -46,7 +46,7 @@ use crate::model::{Identifier, ShapeID};
 
 /// Builder for `Selector` instances.
 #[derive(Clone, Debug)]
-pub struct ExpressionListBuilder {
+pub struct SelectorBuilder {
     exs: Vec<SelectorExpression>,
 }
 
@@ -67,27 +67,33 @@ pub struct ScopedAttributeBuilder {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-impl From<ExpressionListBuilder> for Selector {
-    fn from(v: ExpressionListBuilder) -> Self {
+impl From<&mut SelectorBuilder> for SelectorBuilder {
+    fn from(v: &mut SelectorBuilder) -> Self {
+        v.clone()
+    }
+}
+
+impl From<SelectorBuilder> for Selector {
+    fn from(v: SelectorBuilder) -> Self {
         let mut v = v;
         Selector::from(&mut v)
     }
 }
 
-impl From<&mut ExpressionListBuilder> for ExpressionListBuilder {
-    fn from(v: &mut ExpressionListBuilder) -> Self {
-        v.clone()
+impl From<&mut SelectorBuilder> for Vec<Selector> {
+    fn from(v: &mut SelectorBuilder) -> Self {
+        vec![v.into()]
     }
 }
 
-impl From<&mut ExpressionListBuilder> for Selector {
-    fn from(v: &mut ExpressionListBuilder) -> Self {
+impl From<&mut SelectorBuilder> for Selector {
+    fn from(v: &mut SelectorBuilder) -> Self {
         assert!(!v.exs.is_empty());
         Selector::from(v.exs.clone())
     }
 }
 
-impl ExpressionListBuilder {
+impl SelectorBuilder {
     /// Returns `true` if the list of expressions is empty, else `false`.
     pub fn is_empty(&self) -> bool {
         self.exs.is_empty()
@@ -385,57 +391,67 @@ impl ExpressionListBuilder {
     }
 
     /// Construct a single `Function` selector expression.
-    pub fn function_from(name: Identifier, expressions: ExpressionListBuilder) -> Self {
-        Self::function(Function::new(name, &expressions.exs))
+    pub fn function_from(name: Identifier, arguments: &[SelectorBuilder]) -> Self {
+        let arguments = arguments
+            .iter()
+            .cloned()
+            .map(|e| e.into())
+            .collect::<Vec<Selector>>();
+        Self::function(Function::new(name, &arguments))
     }
 
     /// Add a single `Function` selector expression to this selector.
     pub fn add_function_from(
         &mut self,
         name: Identifier,
-        expressions: ExpressionListBuilder,
+        arguments: &[SelectorBuilder],
     ) -> &mut Self {
-        self.add(Function::new(name, &expressions.exs).into())
+        let arguments = arguments
+            .iter()
+            .cloned()
+            .map(|e| e.into())
+            .collect::<Vec<Selector>>();
+        self.add(Function::new(name, &arguments).into())
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn fn_test(expressions: ExpressionListBuilder) -> Self {
-        Self::function_from(Identifier::new_unchecked("test"), expressions)
+    pub fn fn_test(arguments: &[SelectorBuilder]) -> Self {
+        Self::function_from(Identifier::new_unchecked("test"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn add_test_function(&mut self, expressions: ExpressionListBuilder) -> &mut Self {
-        self.add_function_from(Identifier::new_unchecked("test"), expressions)
+    pub fn add_test_function(&mut self, arguments: &[SelectorBuilder]) -> &mut Self {
+        self.add_function_from(Identifier::new_unchecked("test"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn fn_is(expressions: ExpressionListBuilder) -> Self {
-        Self::function_from(Identifier::new_unchecked("is"), expressions)
+    pub fn fn_is(arguments: &[SelectorBuilder]) -> Self {
+        Self::function_from(Identifier::new_unchecked("is"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn add_is_function(&mut self, expressions: ExpressionListBuilder) -> &mut Self {
-        self.add_function_from(Identifier::new_unchecked("is"), expressions)
+    pub fn add_is_function(&mut self, arguments: &[SelectorBuilder]) -> &mut Self {
+        self.add_function_from(Identifier::new_unchecked("is"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn fn_not(expressions: ExpressionListBuilder) -> Self {
-        Self::function_from(Identifier::new_unchecked("not"), expressions)
+    pub fn fn_not(arguments: &[SelectorBuilder]) -> Self {
+        Self::function_from(Identifier::new_unchecked("not"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn add_not_function(&mut self, expressions: ExpressionListBuilder) -> &mut Self {
-        self.add_function_from(Identifier::new_unchecked("not"), expressions)
+    pub fn add_not_function(&mut self, arguments: &[SelectorBuilder]) -> &mut Self {
+        self.add_function_from(Identifier::new_unchecked("not"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn fn_topdown(expressions: ExpressionListBuilder) -> Self {
-        Self::function_from(Identifier::new_unchecked("topdown"), expressions)
+    pub fn fn_topdown(arguments: &[SelectorBuilder]) -> Self {
+        Self::function_from(Identifier::new_unchecked("topdown"), arguments)
     }
 
     /// Add a single named `Function` selector expression to this selector.
-    pub fn add_topdown_function(&mut self, expressions: ExpressionListBuilder) -> &mut Self {
-        self.add_function_from(Identifier::new_unchecked("topdown"), expressions)
+    pub fn add_topdown_function(&mut self, arguments: &[SelectorBuilder]) -> &mut Self {
+        self.add_function_from(Identifier::new_unchecked("topdown"), arguments)
     }
 
     /// Construct a single `NeighborSelector` selector expression.
@@ -529,17 +545,17 @@ impl ExpressionListBuilder {
     }
 
     /// Construct a single `VariableDefinition` selector expression.
-    pub fn variable_definition_from(name: Identifier, expressions: ExpressionListBuilder) -> Self {
-        Self::variable_definition(VariableDefinition::new(name, &expressions.exs))
+    pub fn variable_definition_from(name: Identifier, selector: SelectorBuilder) -> Self {
+        Self::variable_definition(VariableDefinition::new(name, selector.into()))
     }
 
     /// Add a single `VariableDefinition` selector expression to this selector.
     pub fn add_variable_definition_from(
         &mut self,
         name: Identifier,
-        expressions: ExpressionListBuilder,
+        selector: SelectorBuilder,
     ) -> &mut Self {
-        self.add(VariableDefinition::new(name, &expressions.exs).into())
+        self.add(VariableDefinition::new(name, selector.into()).into())
     }
 
     /// Construct a single `AttributeSelector` selector expression.
@@ -586,13 +602,13 @@ impl From<AttributeBuilder> for SelectorExpression {
     }
 }
 
-impl From<AttributeBuilder> for ExpressionListBuilder {
+impl From<AttributeBuilder> for SelectorBuilder {
     fn from(v: AttributeBuilder) -> Self {
-        ExpressionListBuilder::from(v.into())
+        SelectorBuilder::from(v.into())
     }
 }
 
-impl From<&mut AttributeBuilder> for ExpressionListBuilder {
+impl From<&mut AttributeBuilder> for SelectorBuilder {
     fn from(v: &mut AttributeBuilder) -> Self {
         v.clone().into()
     }
@@ -618,41 +634,48 @@ impl From<&mut AttributeBuilder> for Selector {
 
 impl From<AttributeBuilder> for Selector {
     fn from(v: AttributeBuilder) -> Self {
-        ExpressionListBuilder::from(v.into()).into()
+        SelectorBuilder::from(v.into()).into()
     }
 }
 
 impl AttributeBuilder {
+    /// Construct a new attribute builder for the provided key. In general it is easier to
+    /// use one of `named_id`, `named_service`, `named_trait`, or `named_var`.
     pub fn named(identifier: Identifier) -> Self {
         Self {
             selector: AttributeSelector::new(Key::new(identifier)),
         }
     }
 
-    pub fn new_id() -> Self {
+    /// Construct a new attribute builder with the key `id`.
+    pub fn named_id() -> Self {
         Self {
             selector: AttributeSelector::new(Key::new(Identifier::new_unchecked("id"))),
         }
     }
 
-    pub fn new_service() -> Self {
+    /// Construct a new attribute builder with the key `service`.
+    pub fn named_service() -> Self {
         Self {
             selector: AttributeSelector::new(Key::new(Identifier::new_unchecked("service"))),
         }
     }
 
-    pub fn new_trait() -> Self {
+    /// Construct a new attribute builder with the key `trait`.
+    pub fn named_trait() -> Self {
         Self {
             selector: AttributeSelector::new(Key::new(Identifier::new_unchecked("trait"))),
         }
     }
 
-    pub fn new_var() -> Self {
+    /// Construct a new attribute builder with the key `var`.
+    pub fn named_var() -> Self {
         Self {
             selector: AttributeSelector::new(Key::new(Identifier::new_unchecked("var"))),
         }
     }
 
+    /// Set the key-path component to the set of provided segments.
     pub fn path(&mut self, path: &[KeyPathSegment]) -> &mut Self {
         let mut key = self.selector.key().clone();
         key.set_path(path);
@@ -660,6 +683,7 @@ impl AttributeBuilder {
         self
     }
 
+    /// Add the provided segment to the current key-path.
     pub fn path_segment(&mut self, segment: KeyPathSegment) -> &mut Self {
         let mut key = self.selector.key().clone();
         key.add_path_segment(segment);
@@ -667,33 +691,40 @@ impl AttributeBuilder {
         self
     }
 
+    /// Add the provided `Identifier` to the current key-path.
     pub fn path_segment_for_id(&mut self, segment: Identifier) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::RootShapeIdentifier(segment)))
     }
 
+    /// Add the provided `ShapeID` to the current key-path.
     pub fn path_segment_for_shape(&mut self, segment: ShapeID) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::AbsoluteRootShapeIdentifier(
             segment,
         )))
     }
 
+    /// Add the provided string as a `Value::Text` to the current key-path.
     pub fn path_segment_for_text(&mut self, segment: &str) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::Text(segment.to_string())))
     }
 
+    /// Add the provided string as a `Value::Number` to the current key-path.
     pub fn path_segment_for_number(&mut self, segment: Number) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::Number(segment)))
     }
 
+    /// Add the provided identifier as a `FunctionProperty` to the current key-path.
     pub fn path_segment_for_function(&mut self, segment: Identifier) -> &mut Self {
         self.path_segment(KeyPathSegment::FunctionProperty(segment))
     }
 
+    /// Set the comparison part of this selector.
     pub fn compare(&mut self, comparison: AttributeComparison) -> &mut Self {
         self.selector.set_comparison(comparison);
         self
     }
 
+    /// Set the comparison part of this selector to be a string comparison.
     pub fn string_compare(
         &mut self,
         comparator: Comparator,
@@ -707,54 +738,63 @@ impl AttributeBuilder {
         })
     }
 
+    /// Set the comparison part of this selector to the string comparison "=".
     pub fn string_equal(&mut self, rhs: &[Value], case_insensitive: bool) -> &mut Self {
         self.string_compare(Comparator::StringEqual, rhs, case_insensitive)
     }
 
+    /// Set the comparison part of this selector to the string comparison "!=".
     pub fn string_not_equal(&mut self, rhs: &[Value], case_insensitive: bool) -> &mut Self {
         self.string_compare(Comparator::StringNotEqual, rhs, case_insensitive)
     }
 
+    /// Set the comparison part of this selector to the string comparison "^=".
     pub fn string_starts_with(&mut self, rhs: &[Value], case_insensitive: bool) -> &mut Self {
         self.string_compare(Comparator::StringStartsWith, rhs, case_insensitive)
     }
 
+    /// Set the comparison part of this selector to the string comparison "$=".
     pub fn string_ends_with(&mut self, rhs: &[Value], case_insensitive: bool) -> &mut Self {
         self.string_compare(Comparator::StringEndsWith, rhs, case_insensitive)
     }
 
+    /// Set the comparison part of this selector to the string comparison "*=".
     pub fn string_contains(&mut self, rhs: &[Value], case_insensitive: bool) -> &mut Self {
         self.string_compare(Comparator::StringContains, rhs, case_insensitive)
     }
 
+    /// Set the comparison part of this selector to the string comparison "?=".
     pub fn string_exists(&mut self, rhs: bool, case_insensitive: bool) -> &mut Self {
         self.string_compare(
             Comparator::StringExists,
-            &[Value::Text(rhs.to_string()).into()],
+            &[Value::Text(rhs.to_string())],
             case_insensitive,
         )
     }
 
+    /// Set the comparison part of this selector to the numeric comparison ">".
     pub fn number_greater(&mut self, rhs: &[Number]) -> &mut Self {
         self.compare(AttributeComparison::new(
             Comparator::NumberGreaterThan,
             &rhs.iter()
                 .cloned()
-                .map(|n| Value::Number(n))
+                .map(Value::Number)
                 .collect::<Vec<Value>>(),
         ))
     }
 
+    /// Set the comparison part of this selector to the numeric comparison ">=".
     pub fn number_greater_or_equal(&mut self, rhs: &[Number]) -> &mut Self {
         self.compare(AttributeComparison::new(
             Comparator::NumberGreaterOrEqual,
             &rhs.iter()
                 .cloned()
-                .map(|n| Value::Number(n))
+                .map(Value::Number)
                 .collect::<Vec<Value>>(),
         ))
     }
 
+    /// Set the comparison part of this selector to the numeric comparison "<".
     pub fn number_less(&mut self, rhs: &[Number]) -> &mut Self {
         self.compare(AttributeComparison::new(
             Comparator::NumberLessThan,
@@ -765,6 +805,7 @@ impl AttributeBuilder {
         ))
     }
 
+    /// Set the comparison part of this selector to the numeric comparison "<=".
     pub fn number_less_or_equal(&mut self, rhs: &[Number]) -> &mut Self {
         self.compare(AttributeComparison::new(
             Comparator::NumberLessOrEqual,
@@ -775,10 +816,12 @@ impl AttributeBuilder {
         ))
     }
 
+    /// Set the comparison part of this selector to the projection comparison "{=}".
     pub fn projection_equal(&mut self, rhs: &[Value]) -> &mut Self {
         self.compare(AttributeComparison::new(Comparator::ProjectionEqual, rhs))
     }
 
+    /// Set the comparison part of this selector to the projection comparison "{!=}".
     pub fn projection_not_equal(&mut self, rhs: &[Value]) -> &mut Self {
         self.compare(AttributeComparison::new(
             Comparator::ProjectionNotEqual,
@@ -786,10 +829,12 @@ impl AttributeBuilder {
         ))
     }
 
+    /// Set the comparison part of this selector to the projection comparison "{<}".
     pub fn projection_subset(&mut self, rhs: &[Value]) -> &mut Self {
         self.compare(AttributeComparison::new(Comparator::ProjectionSubset, rhs))
     }
 
+    /// Set the comparison part of this selector to the projection comparison "{<<}".
     pub fn projection_proper_subset(&mut self, rhs: &[Value]) -> &mut Self {
         self.compare(AttributeComparison::new(
             Comparator::ProjectionProperSubset,
@@ -816,13 +861,13 @@ impl From<ScopedAttributeBuilder> for SelectorExpression {
     }
 }
 
-impl From<ScopedAttributeBuilder> for ExpressionListBuilder {
+impl From<ScopedAttributeBuilder> for SelectorBuilder {
     fn from(v: ScopedAttributeBuilder) -> Self {
-        ExpressionListBuilder::from(v.into())
+        SelectorBuilder::from(v.into())
     }
 }
 
-impl From<&mut ScopedAttributeBuilder> for ExpressionListBuilder {
+impl From<&mut ScopedAttributeBuilder> for SelectorBuilder {
     fn from(v: &mut ScopedAttributeBuilder) -> Self {
         v.clone().into()
     }
@@ -852,11 +897,13 @@ impl From<&mut ScopedAttributeBuilder> for Selector {
 
 impl From<ScopedAttributeBuilder> for Selector {
     fn from(v: ScopedAttributeBuilder) -> Self {
-        ExpressionListBuilder::from(v.into()).into()
+        SelectorBuilder::from(v.into()).into()
     }
 }
 
 impl ScopedAttributeBuilder {
+    /// Construct a new scoped attribute builder for the provided key. In general it is easier to
+    /// use one of `named_id`, `named_service`, `named_trait`, or `named_var`.
     pub fn named(identifier: Identifier) -> Self {
         Self {
             key: Some(Key::new(identifier)),
@@ -864,6 +911,7 @@ impl ScopedAttributeBuilder {
         }
     }
 
+    /// Construct a new attribute builder with the key `id`.
     pub fn new_id() -> Self {
         Self {
             key: Some(Key::new(Identifier::new_unchecked("id"))),
@@ -871,6 +919,7 @@ impl ScopedAttributeBuilder {
         }
     }
 
+    /// Construct a new scoped attribute builder with the key `service`.
     pub fn new_service() -> Self {
         Self {
             key: Some(Key::new(Identifier::new_unchecked("service"))),
@@ -878,6 +927,7 @@ impl ScopedAttributeBuilder {
         }
     }
 
+    /// Construct a new scoped attribute builder with the key `trait`.
     pub fn new_trait() -> Self {
         Self {
             key: Some(Key::new(Identifier::new_unchecked("trait"))),
@@ -885,6 +935,7 @@ impl ScopedAttributeBuilder {
         }
     }
 
+    /// Construct a new scoped attribute builder with the key `var`.
     pub fn new_var() -> Self {
         Self {
             key: Some(Key::new(Identifier::new_unchecked("var"))),
@@ -892,6 +943,7 @@ impl ScopedAttributeBuilder {
         }
     }
 
+    /// Set the key-path component to the set of provided segments.
     pub fn path(&mut self, path: &[KeyPathSegment]) -> &mut Self {
         match &mut self.key {
             Some(key) => key.set_path(path),
@@ -900,6 +952,7 @@ impl ScopedAttributeBuilder {
         self
     }
 
+    /// Add the provided segment to the current key-path.
     pub fn path_segment(&mut self, segment: KeyPathSegment) -> &mut Self {
         match &mut self.key {
             Some(key) => key.add_path_segment(segment),
@@ -908,28 +961,34 @@ impl ScopedAttributeBuilder {
         self
     }
 
+    /// Add the provided `Identifier` to the current key-path.
     pub fn path_segment_for_id(&mut self, segment: Identifier) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::RootShapeIdentifier(segment)))
     }
 
+    /// Add the provided `ShapeID` to the current key-path.
     pub fn path_segment_for_shape(&mut self, segment: ShapeID) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::AbsoluteRootShapeIdentifier(
             segment,
         )))
     }
 
+    /// Add the provided string as a `Value::Text` to the current key-path.
     pub fn path_segment_for_text(&mut self, segment: &str) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::Text(segment.to_string())))
     }
 
+    /// Add the provided string as a `Value::Number` to the current key-path.
     pub fn path_segment_for_number(&mut self, segment: Number) -> &mut Self {
         self.path_segment(KeyPathSegment::Value(Value::Number(segment)))
     }
 
+    /// Add the provided identifier as a `FunctionProperty` to the current key-path.
     pub fn path_segment_for_function(&mut self, segment: Identifier) -> &mut Self {
         self.path_segment(KeyPathSegment::FunctionProperty(segment))
     }
 
+    /// Add the provided scoped attribute assertion to this selector.
     pub fn assertion(&mut self, assertion: ScopedAttributeAssertion) -> &mut Self {
         self.assertions.push(assertion);
         self

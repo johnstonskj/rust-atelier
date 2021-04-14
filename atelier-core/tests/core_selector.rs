@@ -1,6 +1,7 @@
-use atelier_core::builder::selector::{AttributeBuilder, ExpressionListBuilder};
+use atelier_core::builder::selector::{AttributeBuilder, SelectorBuilder};
 use atelier_core::model::selector::*;
 use atelier_core::model::{Identifier, ShapeID};
+use atelier_core::shape_selector;
 use std::str::FromStr;
 
 fn selector_eq(input: Selector, expected: &str) {
@@ -13,56 +14,47 @@ fn selector_eq(input: Selector, expected: &str) {
 
 #[test]
 fn test_spec_shape_types_all() {
-    selector_eq(ExpressionListBuilder::any_shape().into(), "*");
+    selector_eq(SelectorBuilder::any_shape().into(), "*");
 }
 
 #[test]
 fn test_spec_shape_types_number() {
-    selector_eq(ExpressionListBuilder::any_number().into(), "number");
+    selector_eq(SelectorBuilder::any_number().into(), "number");
 }
 
 #[test]
 fn test_spec_shape_types_simple_type() {
-    selector_eq(
-        ExpressionListBuilder::any_simple_type().into(),
-        "simpleType",
-    );
+    selector_eq(SelectorBuilder::any_simple_type().into(), "simpleType");
 }
 
 #[test]
 fn test_spec_shape_types_collection() {
-    selector_eq(ExpressionListBuilder::any_collection().into(), "collection");
+    selector_eq(SelectorBuilder::any_collection().into(), "collection");
 }
 
 #[test]
 fn test_spec_shape_types_blob() {
-    selector_eq(ExpressionListBuilder::blob().into(), "blob");
+    selector_eq(SelectorBuilder::blob().into(), "blob");
 }
 
 #[test]
 fn test_spec_shape_types_boolean() {
-    selector_eq(ExpressionListBuilder::boolean().into(), "boolean");
+    selector_eq(SelectorBuilder::boolean().into(), "boolean");
 }
 
 #[test]
 fn test_spec_shape_types_document() {
-    selector_eq(ExpressionListBuilder::document().into(), "document");
+    selector_eq(SelectorBuilder::document().into(), "document");
 }
 
 #[test]
 fn test_spec_shape_types_string() {
-    selector_eq(
-        SelectorExpression::ShapeType(ShapeType::String).into(),
-        "string",
-    );
+    selector_eq(shape_selector!(String), "string");
 }
 
 #[test]
 fn test_spec_shape_types_integer() {
-    selector_eq(
-        SelectorExpression::ShapeType(ShapeType::Integer).into(),
-        "integer",
-    );
+    selector_eq(shape_selector!(Integer), "integer");
 }
 
 #[test]
@@ -200,8 +192,8 @@ fn test_spec_shape_types_member() {
 #[test]
 fn test_spec_selector_attr_1() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("deprecated").unwrap())
                 .into(),
         )
@@ -213,8 +205,8 @@ fn test_spec_selector_attr_1() {
 #[test]
 fn test_spec_selector_attr_2() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("enum").unwrap())
                 .path_segment_for_function(Identifier::from_str("values").unwrap())
                 .path_segment_for_id(Identifier::from_str("tags").unwrap())
@@ -229,8 +221,8 @@ fn test_spec_selector_attr_2() {
 #[test]
 fn test_spec_selector_attr_3() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .path_segment_for_id(Identifier::from_str("namespace").unwrap())
                 .string_equal(&["smithy.example".into()], false)
                 .into(),
@@ -243,8 +235,8 @@ fn test_spec_selector_attr_3() {
 #[test]
 fn test_spec_selector_attr_4() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("since").unwrap())
                 .string_equal(&[2019.into(), 2020.into()], false)
                 .into(),
@@ -257,8 +249,8 @@ fn test_spec_selector_attr_4() {
 #[test]
 fn test_spec_selector_attr_5() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("httpError").unwrap())
                 .number_greater(&[500.into()])
                 .into(),
@@ -271,8 +263,8 @@ fn test_spec_selector_attr_5() {
 #[test]
 fn test_spec_selector_attr_6() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("range").unwrap())
                 .path_segment_for_id(Identifier::from_str("min").unwrap())
                 .string_equal(&[1.into()], false)
@@ -286,8 +278,8 @@ fn test_spec_selector_attr_6() {
 #[test]
 fn test_spec_selector_attr_7() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("documentation").unwrap())
                 .path_segment_for_id(Identifier::from_str("invalid").unwrap())
                 .path_segment_for_id(Identifier::from_str("child").unwrap())
@@ -304,9 +296,9 @@ fn test_spec_selector_attr_7() {
 #[test]
 fn test_spec_multiple_1() {
     selector_eq(
-        ExpressionListBuilder::string()
+        SelectorBuilder::string()
             .add_attribute(
-                AttributeBuilder::new_trait()
+                AttributeBuilder::named_trait()
                     .path_segment_for_id(Identifier::from_str("sensitive").unwrap())
                     .into(),
             )
@@ -320,8 +312,8 @@ fn test_spec_multiple_1() {
 #[test]
 fn test_spec_id_attribute_1() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .string_equal(
                     &[ShapeID::from_str("foo.baz#Structure").unwrap().into()],
                     false,
@@ -336,8 +328,8 @@ fn test_spec_id_attribute_1() {
 #[test]
 fn test_spec_id_attribute_2() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .string_equal(&["foo.baz#Structure$foo".into()], false)
                 .into(),
         )
@@ -349,8 +341,8 @@ fn test_spec_id_attribute_2() {
 #[test]
 fn test_spec_id_attribute_4() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .path_segment_for_id(Identifier::from_str("name").unwrap())
                 .string_equal(&[Identifier::from_str("MyShape").unwrap().into()], false)
                 .into(),
@@ -363,8 +355,8 @@ fn test_spec_id_attribute_4() {
 #[test]
 fn test_spec_id_attribute_5() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .path_segment_for_id(Identifier::from_str("member").unwrap())
                 .string_equal(&[Identifier::from_str("foo").unwrap().into()], false)
                 .into(),
@@ -377,8 +369,8 @@ fn test_spec_id_attribute_5() {
 #[test]
 fn test_spec_id_attribute_6() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .path_segment_for_function(Identifier::from_str("length").unwrap())
                 .number_greater(&[80.into()])
                 .into(),
@@ -391,8 +383,8 @@ fn test_spec_id_attribute_6() {
 #[test]
 fn test_spec_id_attribute_7() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_id()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_id()
                 .path_segment_for_id(Identifier::from_str("member").unwrap())
                 .path_segment_for_function(Identifier::from_str("length").unwrap())
                 .number_greater(&[20.into()])
@@ -408,7 +400,7 @@ fn test_spec_id_attribute_7() {
 #[test]
 fn test_spec_service_attribute_1() {
     selector_eq(
-        ExpressionListBuilder::attribute(AttributeBuilder::new_service().into()).into(),
+        SelectorBuilder::attribute(AttributeBuilder::named_service().into()).into(),
         "[service]",
     );
 }
@@ -416,8 +408,8 @@ fn test_spec_service_attribute_1() {
 #[test]
 fn test_spec_service_attribute_3() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_service()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_service()
                 .string_equal(
                     &[ShapeID::from_str("smithy.example#MyService")
                         .unwrap()
@@ -434,8 +426,8 @@ fn test_spec_service_attribute_3() {
 #[test]
 fn test_spec_service_attribute_4() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_service()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_service()
                 .path_segment_for_id(Identifier::from_str("version").unwrap())
                 .string_starts_with(&["2018-".into()], false)
                 .into(),
@@ -450,8 +442,8 @@ fn test_spec_service_attribute_4() {
 #[test]
 fn test_spec_trait_attribute_1() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_function(Identifier::from_str("keys").unwrap())
                 .path_segment_for_id(Identifier::from_str("namespace").unwrap())
                 .string_equal(&["smithy.example".into()], false)
@@ -465,8 +457,8 @@ fn test_spec_trait_attribute_1() {
 #[test]
 fn test_spec_trait_attribute_2() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_function(Identifier::from_str("values").unwrap())
                 .path_segment_for_id(Identifier::from_str("tags").unwrap())
                 .into(),
@@ -479,8 +471,8 @@ fn test_spec_trait_attribute_2() {
 #[test]
 fn test_spec_trait_attribute_3() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_function(Identifier::from_str("length").unwrap())
                 .number_greater(&[10.into()])
                 .into(),
@@ -493,8 +485,8 @@ fn test_spec_trait_attribute_3() {
 #[test]
 fn test_spec_trait_attribute_4() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_shape(ShapeID::from_str("smithy.api#deprecated").unwrap())
                 .into(),
         )
@@ -506,8 +498,8 @@ fn test_spec_trait_attribute_4() {
 #[test]
 fn test_spec_trait_attribute_5() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("deprecated").unwrap())
                 .into(),
         )
@@ -519,8 +511,8 @@ fn test_spec_trait_attribute_5() {
 #[test]
 fn test_spec_trait_attribute_6() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("error").unwrap())
                 .string_equal(&[Identifier::from_str("client").unwrap().into()], false)
                 .into(),
@@ -533,8 +525,8 @@ fn test_spec_trait_attribute_6() {
 #[test]
 fn test_spec_trait_attribute_7() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("error").unwrap())
                 .string_not_equal(&[Identifier::from_str("client").unwrap().into()], false)
                 .into(),
@@ -547,8 +539,8 @@ fn test_spec_trait_attribute_7() {
 #[test]
 fn test_spec_trait_attribute_8() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("documentation").unwrap())
                 .string_contains(
                     &[
@@ -569,8 +561,8 @@ fn test_spec_trait_attribute_8() {
 #[test]
 fn test_spec_node_attribute_1() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("externalDocumentation").unwrap())
                 .path_segment_for_function(Identifier::from_str("keys").unwrap())
                 .string_equal(&[Identifier::from_str("Homepage").unwrap().into()], false)
@@ -584,8 +576,8 @@ fn test_spec_node_attribute_1() {
 #[test]
 fn test_spec_node_attribute_2() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("enum").unwrap())
                 .path_segment_for_function(Identifier::from_str("values").unwrap())
                 .path_segment_for_id(Identifier::from_str("tags").unwrap())
@@ -601,8 +593,8 @@ fn test_spec_node_attribute_2() {
 #[test]
 fn test_spec_node_attribute_3() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("documentation").unwrap())
                 .path_segment_for_function(Identifier::from_str("length").unwrap())
                 .number_less(&[3.into()])
@@ -616,8 +608,8 @@ fn test_spec_node_attribute_3() {
 #[test]
 fn test_spec_node_attribute_4() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::from_str("externalDocumentation").unwrap())
                 .path_segment_for_text("Reference Docs")
                 .into(),
@@ -801,7 +793,7 @@ fn test_spec_context_values_7() {
 #[test]
 fn test_spec_neighbors_1() {
     selector_eq(
-        ExpressionListBuilder::map()
+        SelectorBuilder::map()
             .add_forward_undirected()
             .add_member()
             .into(),
@@ -812,7 +804,7 @@ fn test_spec_neighbors_1() {
 #[test]
 fn test_spec_neighbors_2() {
     selector_eq(
-        ExpressionListBuilder::list()
+        SelectorBuilder::list()
             .add_forward_undirected()
             .add_member()
             .add_forward_undirected()
@@ -825,7 +817,7 @@ fn test_spec_neighbors_2() {
 #[test]
 fn test_spec_neighbors_3() {
     selector_eq(
-        ExpressionListBuilder::operation()
+        SelectorBuilder::operation()
             .add_forward_undirected()
             .add_any_shape()
             .into(),
@@ -836,7 +828,7 @@ fn test_spec_neighbors_3() {
 #[test]
 fn test_spec_neighbors_4() {
     selector_eq(
-        ExpressionListBuilder::operation()
+        SelectorBuilder::operation()
             .add_forward_directed(&[
                 Identifier::from_str("input").unwrap(),
                 Identifier::from_str("output").unwrap(),
@@ -850,16 +842,16 @@ fn test_spec_neighbors_4() {
 #[test]
 fn test_spec_neighbors_5() {
     selector_eq(
-        ExpressionListBuilder::service()
-            .add_test_function(
-                ExpressionListBuilder::forward_directed(&[Identifier::new_unchecked("trait")])
+        SelectorBuilder::service()
+            .add_test_function(&[
+                SelectorBuilder::forward_directed(&[Identifier::new_unchecked("trait")])
                     .add_attribute(
-                        AttributeBuilder::new_trait()
+                        AttributeBuilder::named_trait()
                             .path_segment_for_id(Identifier::new_unchecked("protocolDefinition"))
                             .into(),
                     )
                     .into(),
-            )
+            ])
             .into(),
         "service :test(-[trait]-> [trait|protocolDefinition])",
     );
@@ -868,7 +860,7 @@ fn test_spec_neighbors_5() {
 #[test]
 fn test_spec_neighbors_6() {
     selector_eq(
-        ExpressionListBuilder::service()
+        SelectorBuilder::service()
             .add_forward_recursive_directed()
             .add_operation()
             .into(),
@@ -879,9 +871,9 @@ fn test_spec_neighbors_6() {
 #[test]
 fn test_spec_neighbors_7() {
     selector_eq(
-        ExpressionListBuilder::service()
+        SelectorBuilder::service()
             .add_attribute(
-                AttributeBuilder::new_trait()
+                AttributeBuilder::named_trait()
                     .path_segment_for_shape(ShapeID::new_unchecked(
                         "aws.protocols",
                         "restJson1",
@@ -891,11 +883,11 @@ fn test_spec_neighbors_7() {
             )
             .add_forward_recursive_directed()
             .add_operation()
-            .add_not_function(ExpressionListBuilder::attribute(
-                AttributeBuilder::new_trait()
+            .add_not_function(&[SelectorBuilder::attribute(
+                AttributeBuilder::named_trait()
                     .path_segment_for_id(Identifier::new_unchecked("http"))
                     .into(),
-            ))
+            )])
             .into(),
         "service [trait|aws.protocols#restJson1] ~> operation :not([trait|http])",
     );
@@ -904,14 +896,12 @@ fn test_spec_neighbors_7() {
 #[test]
 fn test_spec_neighbors_8() {
     selector_eq(
-        ExpressionListBuilder::string()
-            .add_test_function(
-                ExpressionListBuilder::reverse_undirected()
-                    .add_member()
-                    .add_reverse_undirected()
-                    .add_list()
-                    .into(),
-            )
+        SelectorBuilder::string()
+            .add_test_function(&[SelectorBuilder::reverse_undirected()
+                .add_member()
+                .add_reverse_undirected()
+                .add_list()
+                .into()])
             .into(),
         "string :test(< member < list)",
     );
@@ -920,16 +910,12 @@ fn test_spec_neighbors_8() {
 #[test]
 fn test_spec_neighbors_9() {
     selector_eq(
-        ExpressionListBuilder::fn_not(ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::fn_not(&[SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::new_unchecked("trait"))
                 .into(),
-        ))
-        .add_not_function(
-            ExpressionListBuilder::reverse_undirected()
-                .add_any_shape()
-                .into(),
-        )
+        )])
+        .add_not_function(&[SelectorBuilder::reverse_undirected().add_any_shape().into()])
         .into(),
         ":not([trait|trait]) :not(< *)",
     );
@@ -938,24 +924,22 @@ fn test_spec_neighbors_9() {
 #[test]
 fn test_spec_neighbors_10() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::new_unchecked("streaming"))
                 .into(),
         )
-        .add_test_function(ExpressionListBuilder::reverse_undirected())
-        .add_not_function(
-            ExpressionListBuilder::reverse_undirected()
-                .add_member()
-                .add_reverse_undirected()
-                .add_structure()
-                .add_reverse_directed(&[
-                    Identifier::new_unchecked("input"),
-                    Identifier::new_unchecked("output"),
-                ])
-                .add_operation()
-                .into(),
-        )
+        .add_test_function(&[SelectorBuilder::reverse_undirected()])
+        .add_not_function(&[SelectorBuilder::reverse_undirected()
+            .add_member()
+            .add_reverse_undirected()
+            .add_structure()
+            .add_reverse_directed(&[
+                Identifier::new_unchecked("input"),
+                Identifier::new_unchecked("output"),
+            ])
+            .add_operation()
+            .into()])
         .into(),
         "[trait|streaming] :test(<) :not(< member < structure <-[input, output]- operation)",
     );
@@ -964,14 +948,14 @@ fn test_spec_neighbors_10() {
 #[test]
 fn test_spec_neighbors_11() {
     selector_eq(
-        ExpressionListBuilder::attribute(
-            AttributeBuilder::new_trait()
+        SelectorBuilder::attribute(
+            AttributeBuilder::named_trait()
                 .path_segment_for_id(Identifier::new_unchecked("trait"))
                 .into(),
         )
-        .add_not_function(ExpressionListBuilder::reverse_directed(&[
+        .add_not_function(&[SelectorBuilder::reverse_directed(&[
             Identifier::new_unchecked("trait"),
-        ]))
+        ])])
         .into(),
         "[trait|trait] :not(<-[trait]-)",
     );
@@ -982,14 +966,14 @@ fn test_spec_neighbors_11() {
 #[test]
 fn test_spec_functions_1() {
     selector_eq(
-        ExpressionListBuilder::list()
+        SelectorBuilder::list()
             .add_function_from(
                 Identifier::from_str("test").unwrap(),
-                ExpressionListBuilder::forward_undirected()
+                &[SelectorBuilder::forward_undirected()
                     .add_member()
                     .add_forward_undirected()
                     .add_string()
-                    .into(),
+                    .into()],
             )
             .into(),
         "list :test(> member > string)",

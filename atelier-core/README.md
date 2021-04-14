@@ -95,6 +95,13 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.5**
+
+* Added public `shape_selector!` macro.
+* Added `PartialEq` to all model types to enable more testing.  
+* Tidied up builder interfaces and added some more trait functions.
+* Renamed `ExpressionListBuilder` to `SelectorBuilder`.
+
 **Version 0.2.3**
 
 * Added initial builder types for constructing `Selector` models.

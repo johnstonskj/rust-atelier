@@ -430,7 +430,7 @@ pub enum NeighborSelector {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
     name: Identifier,
-    arguments: Vec<SelectorExpression>,
+    arguments: Vec<Selector>,
 }
 
 ///
@@ -445,7 +445,7 @@ pub struct Function {
 #[derive(Clone, Debug, PartialEq)]
 pub struct VariableDefinition {
     name: Identifier,
-    expressions: Vec<SelectorExpression>,
+    selector: Selector,
 }
 
 ///
@@ -1406,9 +1406,9 @@ impl Display for Function {
             self.name,
             self.arguments
                 .iter()
-                .map(SelectorExpression::to_string)
+                .map(Selector::to_string)
                 .collect::<Vec<String>>()
-                .join(" ")
+                .join(", ")
         )
     }
 }
@@ -1421,7 +1421,7 @@ impl From<Function> for SelectorExpression {
 
 impl Function {
     /// Construct a new function named `name` and corresponding `arguments` expressions.
-    pub fn new(name: Identifier, arguments: &[SelectorExpression]) -> Self {
+    pub fn new(name: Identifier, arguments: &[Selector]) -> Self {
         assert!(!arguments.is_empty());
         Self {
             name,
@@ -1432,7 +1432,7 @@ impl Function {
     required_member! { name, Identifier }
 
     array_member! {
-        arguments, argument, SelectorExpression
+        arguments, argument, Selector
 
     }
 }
@@ -1441,16 +1441,7 @@ impl Function {
 
 impl Display for VariableDefinition {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "${}({})",
-            self.name,
-            self.expressions
-                .iter()
-                .map(SelectorExpression::to_string)
-                .collect::<Vec<String>>()
-                .join(" ")
-        )
+        write!(f, "${}({})", self.name, self.selector,)
     }
 }
 
@@ -1462,19 +1453,13 @@ impl From<VariableDefinition> for SelectorExpression {
 
 impl VariableDefinition {
     /// Construct a new variable named `name` and defined by `expressions`.
-    pub fn new(name: Identifier, expressions: &[SelectorExpression]) -> Self {
-        assert!(!expressions.is_empty());
-        Self {
-            name,
-            expressions: expressions.to_vec(),
-        }
+    pub fn new(name: Identifier, selector: Selector) -> Self {
+        Self { name, selector }
     }
 
     required_member! { name, Identifier }
 
-    array_member! {
-        expressions, expression, SelectorExpression
-    }
+    required_member! { selector, Selector }
 
     /// Create a new reference to this definition.
     pub fn new_reference(&self) -> VariableReference {

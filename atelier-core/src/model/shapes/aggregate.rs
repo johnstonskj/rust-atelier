@@ -13,7 +13,7 @@ use std::collections::HashMap;
 /// Represents a member shape, part of an aggregate top-level shape. The `target` is the target
 /// type for this member.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MemberShape {
     id: ShapeID,
     traits: Vec<AppliedTrait>,
@@ -24,7 +24,7 @@ pub struct MemberShape {
 /// Corresponds to the Smithy List and Set shape. It has a single member, named `member` which determines
 /// the shape type for each member of the list.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ListOrSet {
     pub(crate) member: MemberShape,
 }
@@ -33,7 +33,7 @@ pub struct ListOrSet {
 /// Corresponds to the Smithy Map shape. It has two members, `key` and `value` which determine the
 /// shape types for each element within the map.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Map {
     pub(crate) key: MemberShape,
     pub(crate) value: MemberShape,
@@ -43,7 +43,7 @@ pub struct Map {
 /// Corresponds to the Smithy Structure or Union shape. It has two members, `key` and `value` which determine the
 /// shape types for each element within the map.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct StructureOrUnion {
     pub(crate) members: HashMap<Identifier, MemberShape>,
 }

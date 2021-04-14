@@ -1,5 +1,31 @@
 // ------------------------------------------------------------------------------------------------
-// Macros
+// Public Macros
+// ------------------------------------------------------------------------------------------------
+
+///
+/// This macro will create a new Selector instance using the ShapeType variant provided.
+///
+/// # Example
+///
+/// ```rust
+/// use atelier_core::model::selector::{Selector, SelectorExpression, ShapeType};
+/// use atelier_core::shape_selector;
+///
+/// assert_eq!(
+///     Selector::from(SelectorExpression::ShapeType(ShapeType::String)),
+///     shape_selector!(String),
+/// )
+/// ```
+///
+#[macro_export]
+macro_rules! shape_selector {
+    ($shape_name:ident) => {
+        Selector::from(SelectorExpression::ShapeType(ShapeType::$shape_name))
+    };
+}
+
+// ------------------------------------------------------------------------------------------------
+// Crate-only Macros
 // ------------------------------------------------------------------------------------------------
 
 macro_rules! is_only {

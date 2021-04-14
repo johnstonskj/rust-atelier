@@ -192,7 +192,7 @@ pub trait Shape: HasIdentity + HasTraits {
 /// the `ShapeKind` enumeration. Aggregate shapes may have members of type `MemberShape`, but a
 /// model only directly contains top-level shapes.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TopLevelShape {
     id: ShapeID,
     traits: Vec<AppliedTrait>,
@@ -203,7 +203,7 @@ pub struct TopLevelShape {
 /// This enumeration represents the set of shape types supported by Smithy.
 ///
 #[allow(clippy::large_enum_variant)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ShapeKind {
     /// An shape holding atomic, or primitive values.
     Simple(Simple),

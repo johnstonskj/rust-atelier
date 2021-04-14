@@ -6,7 +6,7 @@ use crate::model::ShapeID;
 use crate::prelude::{
     PRELUDE_NAMESPACE, TRAIT_BOX, TRAIT_DEPRECATED, TRAIT_DOCUMENTATION, TRAIT_ERROR,
     TRAIT_EXTERNALDOCUMENTATION, TRAIT_IDEMPOTENT, TRAIT_LENGTH, TRAIT_NOREPLACE, TRAIT_PAGINATED,
-    TRAIT_PATTERN, TRAIT_PRIVATE, TRAIT_READONLY, TRAIT_REFERENCES, TRAIT_REQUIRED,
+    TRAIT_PATTERN, TRAIT_PRIVATE, TRAIT_RANGE, TRAIT_READONLY, TRAIT_REFERENCES, TRAIT_REQUIRED,
     TRAIT_REQUIRESLENGTH, TRAIT_SENSITIVE, TRAIT_SINCE, TRAIT_STREAMING, TRAIT_TAGS, TRAIT_TITLE,
     TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
 };
@@ -36,10 +36,10 @@ pub fn boxed() -> TraitBuilder {
 pub fn deprecated(message: Option<&str>, since: Option<&str>) -> TraitBuilder {
     let mut values = ObjectBuilder::default();
     if let Some(message) = message {
-        let _ = values.string(&format!("{}#message", PRELUDE_NAMESPACE), message);
+        let _ = values.string("message", message);
     }
     if let Some(since) = since {
-        let _ = values.string(&format!("{}#since", PRELUDE_NAMESPACE), since);
+        let _ = values.string("since", since);
     }
     TraitBuilder::with_value(&prelude_name(TRAIT_DEPRECATED), values.into())
 }
@@ -73,12 +73,22 @@ pub fn length(min: Option<usize>, max: Option<usize>) -> TraitBuilder {
     assert!(min.is_some() || max.is_some());
     let mut values = ObjectBuilder::default();
     if let Some(min) = min {
-        let _ = values.integer(&format!("{}#min", PRELUDE_NAMESPACE), min as i64);
+        let _ = values.integer("min", min as i64);
     }
     if let Some(max) = max {
-        let _ = values.integer(&format!("{}#max", PRELUDE_NAMESPACE), max as i64);
+        let _ = values.integer("max", max as i64);
     }
     TraitBuilder::with_value(&prelude_name(TRAIT_LENGTH), values.into())
+}
+
+/// Create a new `TraitBuilder` for the corresponding prelude trait.
+pub fn length_max(value: usize) -> TraitBuilder {
+    length(None, Some(value))
+}
+
+/// Create a new `TraitBuilder` for the corresponding prelude trait.
+pub fn length_min(value: usize) -> TraitBuilder {
+    length(Some(value), None)
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -95,16 +105,16 @@ pub fn paginated(
 ) -> TraitBuilder {
     let mut values = ObjectBuilder::default();
     if let Some(input_token) = input_token {
-        let _ = values.string(&format!("{}#inputToken", PRELUDE_NAMESPACE), input_token);
+        let _ = values.string("inputToken", input_token);
     }
     if let Some(output_token) = output_token {
-        let _ = values.string(&format!("{}#outputToken", PRELUDE_NAMESPACE), output_token);
+        let _ = values.string("outputToken", output_token);
     }
     if let Some(items) = items {
-        let _ = values.string(&format!("{}#items", PRELUDE_NAMESPACE), items);
+        let _ = values.string("items", items);
     }
     if let Some(page_size) = page_size {
-        let _ = values.string(&format!("{}#pageSize", PRELUDE_NAMESPACE), page_size);
+        let _ = values.string("pageSize", page_size);
     }
     TraitBuilder::with_value(&prelude_name(TRAIT_PAGINATED), values.into())
 }
@@ -118,6 +128,29 @@ pub fn pattern(pat: &str) -> TraitBuilder {
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn private() -> TraitBuilder {
     TraitBuilder::new(&prelude_name(TRAIT_PRIVATE))
+}
+
+/// Create a new `TraitBuilder` for the corresponding prelude trait.
+pub fn range(min: Option<usize>, max: Option<usize>) -> TraitBuilder {
+    assert!(min.is_some() || max.is_some());
+    let mut values = ObjectBuilder::default();
+    if let Some(min) = min {
+        let _ = values.integer("min", min as i64);
+    }
+    if let Some(max) = max {
+        let _ = values.integer("max", max as i64);
+    }
+    TraitBuilder::with_value(&prelude_name(TRAIT_RANGE), values.into())
+}
+
+/// Create a new `TraitBuilder` for the corresponding prelude trait.
+pub fn range_max(value: usize) -> TraitBuilder {
+    range(None, Some(value))
+}
+
+/// Create a new `TraitBuilder` for the corresponding prelude trait.
+pub fn range_min(value: usize) -> TraitBuilder {
+    range(Some(value), None)
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.

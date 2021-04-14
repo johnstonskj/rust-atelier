@@ -23,7 +23,7 @@ use std::fmt::Debug;
 /// * Any metadata associated with the model (with the `metadata` statement).
 /// * A map of shapes declared by the model.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Model {
     pub(crate) smithy_version: Version,
     pub(crate) metadata: ValueMap,

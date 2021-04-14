@@ -17,28 +17,28 @@ use std::ops::Deref;
 
 #[doc(hidden)]
 macro_rules! add_trait {
-    (pub $trait_fn:ident) => {
+    ($vis:vis $trait_fn:ident) => {
         /// Add the correspondingly named prelude trait to this model element
-        pub fn $trait_fn(&mut self) -> &mut Self {
+        $vis fn $trait_fn(&mut self) -> &mut Self {
             self.apply_trait(traits::$trait_fn().into())
         }
     };
-    ($trait_fn:ident) => {
-        fn $trait_fn(&mut self) -> &mut Self {
-            self.apply_trait(traits::$trait_fn().into())
-        }
-    };
-    (pub $trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
+    // ($trait_fn:ident) => {
+    //     fn $trait_fn(&mut self) -> &mut Self {
+    //         self.apply_trait(traits::$trait_fn().into())
+    //     }
+    // };
+    ($vis:vis $trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
         /// Add the correspondingly named prelude trait, and value(s), to this model element
-        pub fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
+        $vis fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
             self.apply_trait(traits::$trait_fn($( $i ),*).into())
         }
     };
-    ($trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
-        fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
-            self.apply_trait(traits::$trait_fn($( $i ),*).into())
-        }
-    };
+    // ($trait_fn:ident ( $( $i:ident : $t:ty ),* ) ) => {
+    //     fn $trait_fn(&mut self, $( $i: $t ),* ) -> &mut Self {
+    //         self.apply_trait(traits::$trait_fn($( $i ),*).into())
+    //     }
+    // };
 }
 
 macro_rules! from_mut {

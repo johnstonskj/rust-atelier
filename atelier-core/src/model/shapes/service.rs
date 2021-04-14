@@ -9,7 +9,7 @@ use crate::model::{HasIdentity, ShapeID};
 ///
 /// Corresponds to the "service" shape.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Service {
     version: String,
     operations: Vec<ShapeID>,
@@ -19,7 +19,7 @@ pub struct Service {
 ///
 /// Corresponds to the "operation" shape.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Operation {
     input: Option<ShapeID>,
     output: Option<ShapeID>,
@@ -29,7 +29,7 @@ pub struct Operation {
 ///
 /// Corresponds to the "resource" shape.
 ///
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Resource {
     identifiers: ValueMap,
     create: Option<ShapeID>,

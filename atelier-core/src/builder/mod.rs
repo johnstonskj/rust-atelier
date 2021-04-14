@@ -64,6 +64,13 @@ enum TopLevelShapeBuilder {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
+impl From<ModelBuilder> for Model {
+    fn from(builder: ModelBuilder) -> Self {
+        let mut builder = builder;
+        Self::from(&mut builder)
+    }
+}
+
 impl From<&mut ModelBuilder> for Model {
     fn from(builder: &mut ModelBuilder) -> Self {
         let mut model = Model::new(builder.smithy_version);
@@ -196,6 +203,14 @@ impl ModelBuilder {
     /// Set a metadata value.
     pub fn meta_data(&mut self, key: String, value: Value) -> &mut Self {
         let _ = self.metadata.insert(key, value);
+        self
+    }
+
+    /// Set a metadata value.
+    pub fn meta_data_from(&mut self, value_map: ValueMap) -> &mut Self {
+        for (key, value) in value_map {
+            let _ = self.metadata.insert(key, value);
+        }
         self
     }
 
