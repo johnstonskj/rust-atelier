@@ -31,18 +31,30 @@ struct SelectorParser;
 /// model as the selectors are not necessarily required for all processing cases.
 ///
 pub fn parse_selector(input: &str) -> ModelResult<Selector> {
-    let mut parsed = SelectorParser::parse(Rule::selector, input).map_err(from_pest_error)?;
+    info!("parse_selector({})", input);
+    let mut parsed = SelectorParser::parse(Rule::input, input).map_err(from_pest_error)?;
     let top_pair = parsed.next().unwrap();
-    trace!("{:#?}", top_pair);
-    parse_selectors(top_pair)
+    match top_pair.as_rule() {
+        Rule::input => {
+            let inner = top_pair.into_inner().next().unwrap();
+            println!("{:#?}", inner);
+            trace!("{:#?}", inner);
+            if inner.as_rule() == Rule::selector {
+                parse_a_selector(inner)
+            } else {
+                unexpected!("parse_selector", inner);
+            }
+        }
+        _ => unexpected!("parse_selector", top_pair),
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
-fn parse_selectors(input_pair: Pair<'_, Rule>) -> ModelResult<Selector> {
-    entry!("parse_selectors", input_pair);
+fn parse_a_selector(input_pair: Pair<'_, Rule>) -> ModelResult<Selector> {
+    entry!("parse_a_selector", input_pair);
     let mut results = Selector::default();
     match input_pair.as_rule() {
         Rule::selector => {
@@ -51,12 +63,11 @@ fn parse_selectors(input_pair: Pair<'_, Rule>) -> ModelResult<Selector> {
                     Rule::selector_expression => {
                         results.add_expression(parse_selector_expression(inner)?);
                     }
-                    Rule::EOI => {}
-                    _ => unexpected!("parse_selectors", inner),
+                    _ => unexpected!("parse_a_selector", inner),
                 }
             }
         }
-        _ => unexpected!("parse_selectors", input_pair),
+        _ => unexpected!("parse_a_selector", input_pair),
     }
 
     Ok(results)
@@ -359,12 +370,12 @@ fn parse_selector_function(input_pair: Pair<'_, Rule>) -> ModelResult<Function> 
     };
 
     let next = inner.next().unwrap();
-    let mut arguments: Vec<SelectorExpression> = Default::default();
+    let mut arguments: Vec<Selector> = Default::default();
     match next.as_rule() {
         Rule::selector_function_args => {
             for inner in next.into_inner() {
                 match inner.as_rule() {
-                    Rule::selector_expression => arguments.push(parse_selector_expression(inner)?),
+                    Rule::selector => arguments.push(parse_a_selector(inner)?),
                     _ => unexpected!("parse_selector_function", inner),
                 }
             }
@@ -384,15 +395,11 @@ fn parse_selector_variable_set(input_pair: Pair<'_, Rule>) -> ModelResult<Variab
         _ => unexpected!("parse_selector_variable_set", first),
     };
 
-    let mut arguments: Vec<SelectorExpression> = Default::default();
-    for inner in outer {
-        match inner.as_rule() {
-            Rule::selector_expression => arguments.push(parse_selector_expression(inner)?),
-            _ => unexpected!("parse_selector_variable_set", inner),
-        }
+    let next = outer.next().unwrap();
+    match next.as_rule() {
+        Rule::selector => Ok(VariableDefinition::new(name, parse_a_selector(next)?)),
+        _ => unexpected!("parse_selector_variable_set", next),
     }
-
-    Ok(VariableDefinition::new(name, &arguments))
 }
 
 fn parse_selector_variable_get(input_pair: Pair<'_, Rule>) -> ModelResult<VariableReference> {

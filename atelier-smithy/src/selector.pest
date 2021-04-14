@@ -1,8 +1,11 @@
 //
 // Generated from the ABNF at https://awslabs.github.io/smithy/1.0/spec/core/selectors.html
 //
+input =
+    { SOI ~ selector ~ EOI }
+
 selector =
-    { SOI ~ selector_expression+ ~ EOI }
+    { selector_expression+ }
 
 selector_expression =
     { selector_shape_types
@@ -141,7 +144,7 @@ selector_function =
     { ":" ~ identifier ~ "(" ~ selector_function_args ~ ")" }
 
 selector_function_args =
-    { selector_expression+ ~ ("," ~ selector_expression+)* }
+    { selector ~ ("," ~ selector)* }
 //    ^--- renamed from simply `selector` to avoid SOI/EOI
 
 selector_text =
@@ -160,7 +163,7 @@ selector_double_quoted_char =
     { '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFFF}' }
 
 selector_variable_set =
-    { "$" ~ identifier ~ "(" ~ selector_expression+ ~ ")" }
+    { "$" ~ identifier ~ "(" ~ selector ~ ")" }
 
 selector_variable_get =
     { "${" ~ identifier ~ "}" }
@@ -183,7 +186,7 @@ absolute_root_shape_id =
     @{ namespace ~ "#" ~ identifier }
 
 number =
-    @{ minus? ~ int ~ frac? ~ exp?}
+    @{ minus? ~ int ~ fraction? ~ exp?}
 
 decimal_point =
     { "." }
@@ -194,7 +197,7 @@ e =
 exp =
     { e ~ (minus | plus)? ~ ASCII_DIGIT+ }
 
-frac =
+fraction =
     { decimal_point ~ ASCII_DIGIT+ }
 
 int =

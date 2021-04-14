@@ -25,6 +25,16 @@ fn test_smithy_prelude() {
     test_file_parses("prelude-traits");
 }
 
+#[test]
+fn test_waiters_example() {
+    test_file_parses("waiters");
+}
+
+#[test]
+fn test_mqtt_api_example() {
+    test_file_parses("smithy-api-mqtt");
+}
+
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------

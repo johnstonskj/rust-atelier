@@ -2,7 +2,7 @@ idl =
     { SOI ~ ws ~ control_section ~ metadata_section ~ shape_section ~ EOI }
 
 ws =
-    _{ (sp | (!("///") ~ line_comment) | NEWLINE)* }
+    _{ (sp | NEWLINE | (!("///") ~ line_comment | ",") )* }
 
 sp =
     _{ " " | "\t" }
@@ -23,7 +23,7 @@ control_section =
     { control_statement* }
 
 control_statement =
-    { "$" ~ ws ~ node_object_key ~ ws ~ ":" ~ ws ~ node_value ~ br }
+    { "$" ~ ws ~ node_object_key ~ ws ~ ":" ~ ws ~ node_value ~ ws }
 
 version_string =
     { ASCII_DIGIT+ ~ ( "." ~ ASCII_DIGIT+ )? }
@@ -51,13 +51,14 @@ node_value =
     { node_array | node_object | number | node_keywords | shape_id | text_block | quoted_text }
 
 node_array =
-    _{ empty_node_array | populated_node_array }
-
-empty_node_array =
-    { "[" ~ ws ~ "]" }
-
-populated_node_array =
-    { "[" ~ ws ~ node_value ~ ws ~ (comma ~ node_value ~ ws)* ~ trailing_comma ~ "]" }
+    { "[" ~ ws ~ (node_value ~ ws)* ~ "]" }
+//    { empty_node_array | populated_node_array }
+//
+// empty_node_array =
+//     { "[" ~ ws ~ "]" }
+//
+// populated_node_array =
+//     { "[" ~ ws ~ node_value ~ ws ~ (comma ~ node_value ~ ws)* ~ trailing_comma ~ "]" }
 
 trailing_comma =
     _{ comma? }
@@ -66,13 +67,14 @@ comma =
     _{ "," ~ ws }
 
 node_object =
-    _{ empty_node_object | populated_node_object }
-
-empty_node_object =
-    { "{" ~ ws ~ "}" }
-
-populated_node_object =
-    { "{" ~ ws ~ node_object_kvp ~  ws ~ (comma ~ node_object_kvp ~ ws)* ~ trailing_comma ~ "}" }
+    { "{" ~ ws ~ (node_object_kvp ~ ws)*  ~ "}" }
+//    _{ empty_node_object | populated_node_object }
+//
+// empty_node_object =
+//     { "{" ~ ws ~ "}" }
+//
+// populated_node_object =
+//     { "{" ~ ws ~ node_object_kvp ~  ws ~ (comma ~ node_object_kvp ~ ws)* ~ trailing_comma ~ "}" }
 
 node_object_kvp =
     { node_object_key ~ ws ~ ":" ~ ws ~ node_value }
@@ -135,11 +137,10 @@ escape =
     { "\\" }
 
 text_block =
-    { three_dquotes ~ br ~ block_quoted_chars ~ three_dquotes }
+    { DQUOTE{3} ~ br ~ block_quoted_chars ~ DQUOTE{3} }
 
-three_dquotes =
-    _{ DQUOTE ~ DQUOTE ~ DQUOTE }
-
+// three_dquotes =
+//     _{ DQUOTE ~ DQUOTE ~ DQUOTE }
 
 block_quoted_chars =
     @{ ( sp | NEWLINE | '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFF}' | escaped_char | preserved_double)* }
@@ -151,19 +152,19 @@ shape_section =
     { ( namespace_statement ~ (use_section)? ~ (shape_statements)? )? }
 
 namespace_statement =
-    { "namespace" ~ ws ~ namespace ~ br }
+    { "namespace" ~ ws ~ namespace ~ ws }
 
 use_section =
     { use_statement+ }
 
 use_statement =
-    { "use" ~ ws ~ absolute_root_shape_id ~ br }
+    { "use" ~ ws ~ absolute_root_shape_id ~ ws }
 
 shape_statements =
     { (shape_statement | apply_statement)+ }
 
 shape_statement =
-    { documentation_comment* ~ ws ~ trait_statements ~ shape_body ~ br}
+    { documentation_comment* ~ ws ~ trait_statements ~ shape_body ~ ws}
 
 shape_body =
     _{ simple_shape_statement | list_statement | set_statement | map_statement | structure_statement
@@ -203,13 +204,14 @@ type_big_decimal = {"bigDecimal"}
 type_timestamp = {"timestamp"}
 
 shape_members =
-    _{ empty_shape_members | populated_shape_members }
-
-empty_shape_members =
-    { "{" ~ ws ~ "}" }
-
-populated_shape_members =
-    { "{" ~ ws ~ shape_member_kvp ~ ws ~ (comma ~ shape_member_kvp ~ ws)* ~ trailing_comma ~ ws ~ "}" }
+    { "{" ~ ws ~ (shape_member_kvp ~ ws)* ~ "}" }
+//    _{ empty_shape_members | populated_shape_members }
+//
+// empty_shape_members =
+//     { "{" ~ ws ~ "}" }
+//
+// populated_shape_members =
+//     { "{" ~ ws ~ shape_member_kvp ~ ws ~ (comma ~ shape_member_kvp ~ ws)* ~ trailing_comma ~ ws ~ "}" }
 
 shape_member_kvp =
     { documentation_comment* ~ ws ~ trait_statements ~ identifier ~ ws ~ ":" ~ ws ~ shape_id }
@@ -239,7 +241,7 @@ resource_statement =
     { "resource" ~ ws ~ identifier ~ ws ~ node_object }
 
 apply_statement =
-    { "apply" ~ ws ~ shape_id ~ ws ~ a_trait ~ br}
+    { "apply" ~ ws ~ shape_id ~ ws ~ a_trait ~ ws}
 
 trait_statements =
      { (ws ~ a_trait)* ~ ws }
@@ -248,19 +250,19 @@ a_trait =
     { "@" ~ shape_id ~ trait_body? }
 
 trait_body =
-    _{ empty_trait_body | populated_trait_body }
-
-empty_trait_body =
-    _{ "(" ~ ws ~  ")" }
-
-populated_trait_body =
-    _{ "(" ~ ws ~ trait_body_value ~ ws ~ ")" }
+//     _{ empty_trait_body | populated_trait_body }
+//
+// empty_trait_body =
+//     _{ "(" ~ ws ~  ")" }
+//
+// populated_trait_body =
+    _{ "(" ~ ws ~ (trait_body_value ~ ws)* ~ ")" }
 
 trait_body_value =
     _{ trait_structure | node_value }
 
 trait_structure =
-    _{ trait_structure_kvp ~ (ws ~  comma ~ trait_structure_kvp)* }
+    _{ trait_structure_kvp ~ (ws ~ trait_structure_kvp)* }
 
 trait_structure_kvp =
     { node_object_key ~ ws ~ ":" ~ ws ~ node_value }
@@ -269,4 +271,4 @@ metadata_section =
     { metadata_statement* }
 
 metadata_statement =
-    { "metadata" ~ ws ~ node_object_key ~ ws ~ "=" ~ ws ~ node_value ~ br }
+    { "metadata" ~ ws ~ node_object_key ~ ws ~ "=" ~ ws ~ node_value ~ ws }

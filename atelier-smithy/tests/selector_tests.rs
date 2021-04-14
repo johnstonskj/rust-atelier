@@ -1,18 +1,21 @@
 use atelier_core::model::selector::*;
 use atelier_core::model::values::Number;
 use atelier_core::model::Identifier;
+use atelier_core::shape_selector;
 use atelier_smithy::parser::parse_selector;
 use std::str::FromStr;
 
 fn selector_eq(input: &str, expected: Option<Selector>) {
     println!(">>>>> {} >>>>>", input);
     let parsed = parse_selector(input);
-    assert!(parsed.is_ok());
-    let parsed = parsed.unwrap();
-    println!("{:#?}", parsed);
-    println!("<<<<< {} <<<<<<", parsed);
-    if let Some(expected) = expected {
-        assert_eq!(parsed, expected);
+    if let Ok(parsed) = parsed {
+        println!("{:#?}", parsed);
+        println!("<<<<< {} <<<<<<", parsed);
+        if let Some(expected) = expected {
+            assert_eq!(parsed, expected);
+        }
+    } else {
+        panic!("Failed to parse input selector: {:#?}", parsed);
     }
 }
 
@@ -34,34 +37,22 @@ fn test_spec_shape_types_fail() {
 
 #[test]
 fn test_spec_shape_types_all() {
-    selector_eq(
-        "*",
-        Some(SelectorExpression::ShapeType(ShapeType::Any).into()),
-    );
+    selector_eq("*", shape_selector!(Any).into());
 }
 
 #[test]
 fn test_spec_shape_types_number() {
-    selector_eq(
-        "number",
-        Some(SelectorExpression::ShapeType(ShapeType::Number).into()),
-    );
+    selector_eq("number", shape_selector!(Number).into());
 }
 
 #[test]
 fn test_spec_shape_types_simple_type() {
-    selector_eq(
-        "simpleType",
-        Some(SelectorExpression::ShapeType(ShapeType::SimpleType).into()),
-    );
+    selector_eq("simpleType", shape_selector!(SimpleType).into());
 }
 
 #[test]
 fn test_spec_shape_types_collection() {
-    selector_eq(
-        "collection",
-        Some(SelectorExpression::ShapeType(ShapeType::Collection).into()),
-    );
+    selector_eq("collection", shape_selector!(Collection).into());
 }
 
 #[test]

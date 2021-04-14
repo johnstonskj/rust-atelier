@@ -1,7 +1,7 @@
 # Examples
 
-| File Name         | Source        |
-|-------------------|---------------|
-| `prelude-traits`  | [AWS Smithy GitHub repo](https://github.com/awslabs/smithy/blob/master/smithy-model/src/main/resources/software/amazon/smithy/model/loader/prelude-traits.smithy) |
-| `weather`         | [Smithy Quick Start guide](https://awslabs.github.io/smithy/quickstart.html#complete-example) |
+* [prelude-traits](https://raw.githubusercontent.com/awslabs/smithy/main/smithy-model/src/main/resources/software/amazon/smithy/model/loader/prelude.smithy)
+* [smithy-api-mqtt](https://raw.githubusercontent.com/awslabs/smithy/main/smithy-mqtt-traits/src/main/resources/META-INF/smithy/smithy.api.mqtt.smithy)
+* [waiters](https://raw.githubusercontent.com/awslabs/smithy/main/smithy-waiters/src/main/resources/META-INF/smithy/waiters.smithy)
+* [weather](https://awslabs.github.io/smithy/quickstart.html#complete-example)
 

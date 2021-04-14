@@ -24,6 +24,51 @@ macro_rules! entry {
     };
 }
 
+macro_rules! pair_as_str {
+    ($fn_name:expr, $item:expr, $rule:expr) => {
+        if $item.as_rule() == $rule {
+            $item.as_str().to_string()
+        } else {
+            unexpected!($fn_name, $item)
+        }
+    };
+}
+
+macro_rules! next_pair_as_str {
+    ($fn_name:expr, $outer:expr, $rule:expr) => {{
+        let item = $outer.next().unwrap();
+        pair_as_str!($fn_name, item, $rule)
+    }};
+}
+
+macro_rules! pair_into {
+    ($fn_name:expr, $item:expr, $rule:expr, $into_fn:ident) => {
+        if $item.as_rule() == $rule {
+            $into_fn($item)?
+        } else {
+            unexpected!($fn_name, $item)
+        }
+    };
+    ($fn_name:expr, $item:expr, $rule:expr, $into_fn:expr) => {
+        if $item.as_rule() == $rule {
+            $into_fn($item)?
+        } else {
+            unexpected!($fn_name, $item)
+        }
+    };
+}
+
+macro_rules! next_pair_into {
+    ($fn_name:expr, $outer:expr, $rule:expr, $into_fn:ident) => {{
+        let item = $outer.next().unwrap();
+        pair_into!($fn_name, item, $rule, $into_fn)
+    }};
+    ($fn_name:expr, $outer:expr, $rule:expr, $into_fn:expr) => {{
+        let item = $outer.next().unwrap();
+        pair_into!($fn_name, item, $rule, $into_fn)
+    }};
+}
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 # Atelier: crate atelier_smithy
 
-Provides the ability to read and write [Smithy](https://github.com/awslabs/smithy) models in its own native language representation.
+Provides the ability to read and write [Smithy](https://github.com/awslabs/smithy) models in its own native language 
+representation.
 
 [![crates.io](https://img.shields.io/crates/v/atelier_smithy.svg)](https://crates.io/crates/atelier_smithy)
 [![docs.rs](https://docs.rs/atelier_smithy/badge.svg)](https://docs.rs/atelier_smithy)
@@ -8,6 +9,14 @@ Provides the ability to read and write [Smithy](https://github.com/awslabs/smith
 TBD
 
 ## Changes
+
+**Version 0.2.5**
+
+* Updated Smithy grammar and parser to match changes in the specification:
+  * turned the comma "," character into whitespace so it becomes optional as a member separator
+  * removed the `br` rule as to ensure members are defined on separate lines
+  * simplified a number of rules that had empty/populated pairs
+* Added two additional test example files
 
 **Version 0.2.4**
 
