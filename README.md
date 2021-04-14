@@ -28,14 +28,14 @@ crate incorporates all, except the cargo command, using features to select the d
 
 | crate                                    | Content                                                | Status                              |
 |------------------------------------------|--------------------------------------------------------|-------------------------------------|
-| [`atelier_core`](./atelier-core)         | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: 5% |
-| [`atelier_describe`](./atelier-describe) | Model documentation writer, uses `somedoc` crate.      | Writer: 75%, Tests: 5%              |
-| [`atelier_select`](./atelier-select)     | Parser for Smithy select expressions.                  | Not Started                         |
-| [`atelier_smithy`](./atelier-smithy)     | The serializer/de-serializer for native Smithy.        | Writer: 95%, Reader: 95%, Tests: 5% |
-| [`atelier_json`](./atelier-json)         | The serializer/de-serializer for the JSON AST          | Writer: 95%, Reader: 95%, Tests: 5% |
-| [`atelier_openapi`](./atelier-openapi)   | A Serializer only to OpenAPI                           | Not Started                         |
-| [`atelier_rdf`](./atelier-rdf)           | The serializer/de-serializer to RDF                    | Not Started                         |
+| [`atelier_core`](./atelier-core)         | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: OK |
+| [`atelier_describe`](./atelier-describe) | Model documentation writer, uses `somedoc` crate.      | Writer: 75%, Tests: Low             |
+| [`atelier_json`](./atelier-json)         | The serializer/de-serializer for the JSON AST          | Reader/Writer: Done, Tests: Low     |
 | [`atelier_lib`](./atelier-lib)           | Re-export structures from previous crates.             | Done.                               |
+| [`atelier_openapi`](./atelier-openapi)   | A Serializer only to OpenAPI                           | Not Started                         |
+| [`atelier_query`](./atelier-query)       | Evaluator for Smithy select expressions.               | Not Started                         |
+| [`atelier_rdf`](./atelier-rdf)           | The serializer/de-serializer to RDF                    | Model: Done                         |
+| [`atelier_smithy`](./atelier-smithy)     | The serializer/de-serializer for native Smithy.        | Reader/Writer: Done, Tests: Low     |
 | [`cargo_atelier`](./cargo-atelier)       | Cargo command to lint, validate, and convert models.   | Commands working correctly.         |
 
 ## Book
@@ -45,56 +45,4 @@ set. This is built using GitHub pages and accessible at [rust-atelier.dev](https
 
 ## Changes
 
-**Version 0.2.1**
-
-* Changed API in core; extracted to new traits, `HasIdentity` and `HasTraits` which made handling of different
-  member shapes easier when writing documentation.
-* Added new documentation crate (`atelier_describe`) to write documentation for a given model.
-* Added support in `cargo-atelier` for writing documentation.
-
-**Version 0.2.0**
-
-* Clean separation of the semantic model. 
-* Addition of RDF module.
-* Refactor imports for lib crate.
-
-**Version 0.1.3**
-
-* Added book structure, will be a project on its own, published to [GitHub Pages](https://simonkjohnston.life/rust-atelier/introduction/smithy.html).
-* Complete model API re-work after conversations with [@mtdowling](https://github.com/mtdowling).
-* Added `ModelAssembler` to library crate.
-* Added `atelier_rdf` as stub crate.
-* Added `atelier_select` as stub crate.
-
-**Version 0.1.2**
-
-* cargo command working, validation and linters started.
-
-**Version 0.1.2**
-
-* Core API support for readers.
-* Parser for Smithy representation.
-* Parser for Smithy's JSON AST representation.
-* Additional documentation.
-
-**Version 0.1.1**
-
-* Cleaned up core and builder APIs. 
-* Documented all core package APIs.
-* Goal: documentation and examples.
-
-**Version 0.1.0**
-
-* Initial types for manipulation of Smithy Models, _not_ including selector expressions.
-* Initial builder types for fluent construction of models.
-* Builder example working to construct the weather model.
-* Complete JSON serialization of the weather model.
-* Complete Smithy serialization of the weather model.
-* Goal: to be able to create a copy of the weather example model in code using the model builder API.
-
-## TODO
-
-1. Complete model for selector expressions.
-1. Validation (internal and external) support.
-1. Parser and writer for OpenAPI representation.
-1. Work on cargo command for processing Smithy files.
+See individual crate README files.
