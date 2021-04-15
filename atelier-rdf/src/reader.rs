@@ -34,7 +34,7 @@ pub struct RdfReader {}
 // ------------------------------------------------------------------------------------------------
 
 impl ModelReader for RdfReader {
-    fn read(&mut self, r: &mut impl Read) -> atelier_core::error::Result<Model> {
+    fn read(&mut self, _r: &mut impl Read) -> atelier_core::error::Result<Model> {
         unimplemented!()
     }
 }

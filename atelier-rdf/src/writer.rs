@@ -6,8 +6,21 @@ model_to_rdf and use one of the graph writer implementation in the
 
 # Example
 
-TBD
+This example writes the provided model in RDF's [Turtle](https://www.w3.org/TR/turtle/)
+serialization representation.
 
+```rust
+use atelier_core::model::Model;
+use atelier_core::io::ModelWriter;
+use atelier_rdf::writer::RdfWriter;
+use std::io::stdout;
+# use atelier_core::Version;
+# fn make_model() -> Model { Model::new(Version::default()) }
+
+let model = make_model();
+let mut writer = RdfWriter::default();
+writer.write(&mut stdout(), &model).unwrap();
+```
 */
 
 use crate::model::model_to_rdf;

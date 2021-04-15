@@ -2,6 +2,8 @@
 A Simple IRI (URN) naming scheme for Smithy shape identifiers, it requires the shape identifiers be
 absolute and not relative.
 
+# Mapping
+
 The following rules apply:
 
 * The URI scheme is `urn`.
@@ -33,6 +35,9 @@ const SHAPE_URN_MEMBER_SEPARATOR: char = '/';
 
 const URN_NID: &str = "smithy:";
 
+///
+/// Convert a Smithy `ShapeID` into an `IRIRef`.
+///
 pub fn shape_to_iri(value: &ShapeID) -> IRIRef {
     Arc::from(
         IRI::from_str(&format!(
@@ -53,11 +58,14 @@ pub fn shape_to_iri(value: &ShapeID) -> IRIRef {
     )
 }
 
+///
+/// Convert an `IRIRef` into a Smithy `ShapeID`. This will fail if the provided `IRI` does not
+/// conform to the format described in the module documentation.
+///
 pub fn iri_to_shape(iri: IRIRef) -> Result<ShapeID, String> {
     if iri.scheme() == &Some(Scheme::from_str("urn").unwrap()) {
         let path = iri.path().to_string();
-        if path.starts_with(URN_NID) {
-            let path = &path[URN_NID.len()..];
+        if let Some(path) = path.strip_prefix(URN_NID) {
             if path
                 .chars()
                 .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == ':' || c == '/')
