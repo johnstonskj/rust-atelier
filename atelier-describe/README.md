@@ -33,24 +33,27 @@ let documentation = describe_model(&model).unwrap();
 let doc_string = write_document_to_string(&documentation, OutputFormat::Html).unwrap();
 ```
 
-The following example demonstrates the `ModelWriter` trait and outputs the documentation to
-stdout.
+The following example demonstrates the `ModelWriter` trait and outputs the documentation, in 
+[CommonMark](https://spec.commonmark.org/) format, to stdout.
 
 ```rust
 use atelier_core::model::Model;
 use atelier_core::io::ModelWriter;
-use atelier_describe::{describe_model, DocumentationWriter};
-use somedoc::write::{write_document_to_string, OutputFormat};
+use atelier_describe::DocumentationWriter;
 use std::io::stdout;
 
 let model = make_model();
 
-let mut writer = DocumentationWriter::new(OutputFormat::Html);
+let mut writer = DocumentationWriter::default();
 
 let documentation = writer.write(&mut stdout(), &model).unwrap();
 ```
 
 ## Changes
+
+**Version 0.1.3**
+
+* Refactored `DocumentationWriter` so that it only emits CommonMark, more closely aligned with Smithy IDL.
 
 **Version 0.1.1**
 

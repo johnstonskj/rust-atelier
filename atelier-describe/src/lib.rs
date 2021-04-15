@@ -31,43 +31,42 @@
 * let doc_string = write_document_to_string(&documentation, OutputFormat::Html).unwrap();
 * ```
 *
-* The following example demonstrates the `ModelWriter` trait and outputs the documentation to
-* stdout.
+* The following example demonstrates the `ModelWriter` trait and outputs the documentation, in
+* [CommonMark](https://spec.commonmark.org/) format, to stdout.
 *
 * ```rust
 * use atelier_core::model::Model;
 * use atelier_core::io::ModelWriter;
 * # use atelier_core::Version;
-* use atelier_describe::{describe_model, DocumentationWriter};
-* use somedoc::write::{write_document_to_string, OutputFormat};
+* use atelier_describe::DocumentationWriter;
 * use std::io::stdout;
 * # fn make_model() -> Model { Model::new(Version::default()) }
 *
 * let model = make_model();
-* let mut writer = DocumentationWriter::new(OutputFormat::Html);
-* let documentation = writer.write(&mut stdout(), &model).unwrap();
+* let mut writer = DocumentationWriter::default();
+* writer.write(&mut stdout(), &model).expect("Error writing model documentation");
 * ```
 *
 */
 
 #![warn(
-// ---------- Stylistic
-future_incompatible,
-nonstandard_style,
-rust_2018_idioms,
-trivial_casts,
-trivial_numeric_casts,
-// ---------- Public
-missing_debug_implementations,
-missing_docs,
-unreachable_pub,
-// ---------- Unsafe
-unsafe_code,
-// ---------- Unused
-unused_extern_crates,
-unused_import_braces,
-unused_qualifications,
-unused_results,
+    // ---------- Stylistic
+    future_incompatible,
+    nonstandard_style,
+    rust_2018_idioms,
+    trivial_casts,
+    trivial_numeric_casts,
+    // ---------- Public
+    missing_debug_implementations,
+    missing_docs,
+    unreachable_pub,
+    // ---------- Unsafe
+    unsafe_code,
+    // ---------- Unused
+    unused_extern_crates,
+    unused_import_braces,
+    unused_qualifications,
+    unused_results,
 )]
 
 use atelier_core::error::Result as ModelResult;
@@ -92,6 +91,7 @@ use somedoc::model::block::{
 use somedoc::model::inline::HyperLink;
 use somedoc::model::inline::{HasInlineContent, InlineContent, Span};
 use somedoc::model::Document;
+use somedoc::write::markdown::MarkdownFlavor;
 use somedoc::write::{write_document, OutputFormat};
 use std::io::Write;
 
@@ -100,12 +100,12 @@ use std::io::Write;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// A `ModelWriter` for creating documentation of a model instance.
+/// A `ModelWriter` for creating documentation of a model instance. This will always generate
+/// [CommonMark](https://spec.commonmark.org/) output as this is the format that Smithy expects in
+/// documentation traits and comments.
 ///
 #[derive(Debug)]
-pub struct DocumentationWriter {
-    output_format: OutputFormat,
-}
+pub struct DocumentationWriter {}
 
 // ------------------------------------------------------------------------------------------------
 // Public Functions
@@ -127,41 +127,24 @@ pub fn describe_model(model: &Model) -> ModelResult<Document> {
 
 impl Default for DocumentationWriter {
     fn default() -> Self {
-        Self {
-            output_format: Default::default(),
-        }
+        Self {}
     }
 }
 
 impl ModelWriter for DocumentationWriter {
     fn write(&mut self, w: &mut impl Write, model: &Model) -> ModelResult<()> {
         let document = describe_model(model)?;
-        match write_document(&document, self.output_format.clone(), w) {
+        match write_document(
+            &document,
+            OutputFormat::Markdown(MarkdownFlavor::CommonMark),
+            w,
+        ) {
             Ok(_) => Ok(()),
             Err(err) => Err(err.to_string().into()),
         }
     }
 }
 
-impl DocumentationWriter {
-    ///
-    /// Construct a new writer with the given output format. The output formats
-    /// are part of the `somedoc` crate and allow different documentation technology
-    /// to render the content.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use atelier_describe::DocumentationWriter;
-    /// use somedoc::write::OutputFormat;
-    ///
-    /// let writer = DocumentationWriter::new(OutputFormat::Html);
-    /// ```
-    ///
-    pub fn new(output_format: OutputFormat) -> Self {
-        Self { output_format }
-    }
-}
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------

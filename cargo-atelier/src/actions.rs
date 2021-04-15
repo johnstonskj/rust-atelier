@@ -5,11 +5,11 @@ use atelier_lib::core::error::{Error as ModelError, ErrorKind, Result as ModelRe
 use atelier_lib::core::io::read_model_from_string;
 use atelier_lib::core::io::ModelWriter;
 use atelier_lib::core::model::{Model, NamespaceID};
-use atelier_lib::format::describe::DocumentationWriter;
+use atelier_lib::format::describe::describe_model;
 use atelier_lib::format::json::{JsonReader, JsonWriter};
 use atelier_lib::format::plant_uml::PlantUmlWriter;
 use atelier_lib::format::smithy::{SmithyReader, SmithyWriter};
-use somedoc::write::OutputFormat;
+use somedoc::write::{write_document, OutputFormat};
 use std::error::Error;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -100,15 +100,13 @@ fn document_a_file(
     format: OutputFormat,
 ) -> Result<(), Box<dyn Error>> {
     let model = read_model(input)?;
-
-    let mut writer = DocumentationWriter::new(format);
+    let document = describe_model(&model)?;
 
     let mut file: Box<dyn Write> = match output.file_name {
         None => Box::new(std::io::stdout()),
         Some(file_name) => Box::new(File::open(file_name)?),
     };
-    writer.write(&mut file, &model)?;
-
+    write_document(&document, format, &mut file)?;
     Ok(())
 }
 
