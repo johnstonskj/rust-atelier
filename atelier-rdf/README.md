@@ -62,8 +62,3 @@ writer.write(&mut stdout(), &model).unwrap();
 **Version 0.1.0**
 
 * Provides `SmithyUrn` type as a URI for RDF usage.
-
-## TODO
-
-1. Write to RDF
-1. Parse from RDF
