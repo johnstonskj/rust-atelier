@@ -3,6 +3,7 @@ Standard `Error`, `ErrorKind`, and `Result` types.
 */
 
 #![allow(missing_docs)]
+#![allow(clippy::upper_case_acronyms)]
 
 use crate::action::ActionIssue;
 use crate::model::identity::ShapeID;

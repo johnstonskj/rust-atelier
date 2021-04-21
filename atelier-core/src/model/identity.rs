@@ -30,6 +30,7 @@ pub struct Identifier(String);
 ///   of the Smithy 1.0 Specification.
 ///
 #[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Debug, Eq, Hash)]
 pub struct NamespaceID(String);
 
@@ -55,6 +56,7 @@ pub struct NamespaceID(String);
 /// * `Member name`; an optional `Identifier` value.
 ///   * Preceded by the separator character `CHAR_SHAPE_ID_MEMBER`.
 ///
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ShapeID {
     namespace: NamespaceID,
