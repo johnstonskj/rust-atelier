@@ -26,6 +26,7 @@ use crate::model::{Identifier, Model, NamespaceID, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
 use crate::Version;
 use std::collections::HashSet;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -227,7 +228,7 @@ impl ModelBuilder {
             let shape_name: Identifier = name.parse().unwrap();
             if self.shape_names.contains(&shape_name) {
                 self.default_namespace.make_shape(shape_name)
-            } else if crate::prelude::prelude_model_shape_ids(&self.smithy_version)
+            } else if prelude::prelude_model_shape_ids(&self.smithy_version)
                 .contains(&ShapeID::new_unchecked(PRELUDE_NAMESPACE, name, None))
             {
                 self.prelude_namespace.make_shape(shape_name)
@@ -392,7 +393,7 @@ impl ModelBuilder {
         let mut resource = Resource::default();
         for (name, shape_ref) in &builder.identifiers {
             let shape = self.resolve_shape_name(&shape_ref);
-            let _ = resource.add_identifier(name, &shape.to_string());
+            let _ = resource.add_identifier(Identifier::from_str(name).unwrap(), shape);
         }
         if let Some(shape_id) = &builder.create {
             resource.set_create(self.resolve_shape_name(shape_id));
@@ -456,14 +457,16 @@ impl ModelBuilder {
 // Modules
 // ------------------------------------------------------------------------------------------------
 
+mod prelude;
+
+pub mod selector;
+
 #[doc(hidden)]
 pub mod shapes;
 pub use shapes::{
     ListBuilder, MapBuilder, MemberBuilder, OperationBuilder, ReferenceBuilder, ResourceBuilder,
     ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
-
-pub mod selector;
 
 #[doc(hidden)]
 pub mod traits;

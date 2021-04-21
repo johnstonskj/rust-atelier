@@ -3,7 +3,7 @@ use atelier_core::model::shapes::{
     StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::Value;
-use atelier_core::model::{HasIdentity, Model, NamespaceID};
+use atelier_core::model::{HasIdentity, Identifier, Model, NamespaceID};
 use atelier_core::prelude::PRELUDE_NAMESPACE;
 use atelier_core::Version;
 
@@ -75,7 +75,7 @@ pub fn main() {
 
     // ----------------------------------------------------------------------------------------
     let mut message = Resource::default();
-    message.add_identifier("date", &date.id().to_string());
+    message.add_identifier(Identifier::new_unchecked("date"), date.id().clone());
     message.set_read_operation_shape(&get_message);
     let message = TopLevelShape::new(
         namespace.make_shape("Message".parse().unwrap()),

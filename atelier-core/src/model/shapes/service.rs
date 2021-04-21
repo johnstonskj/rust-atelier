@@ -1,6 +1,6 @@
 use crate::model::shapes::TopLevelShape;
-use crate::model::values::{Value, ValueMap};
-use crate::model::{HasIdentity, ShapeID};
+use crate::model::{HasIdentity, Identifier, ShapeID};
+use std::collections::HashMap;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -31,7 +31,7 @@ pub struct Operation {
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Resource {
-    identifiers: ValueMap,
+    identifiers: HashMap<Identifier, ShapeID>,
     create: Option<ShapeID>,
     put: Option<ShapeID>,
     read: Option<ShapeID>,
@@ -166,36 +166,28 @@ impl Resource {
     }
 
     /// Returns `true` if this resource has an identifier with the provided name, else `false`.
-    pub fn has_identifier(&self, name: &str) -> bool {
+    pub fn has_identifier(&self, name: &Identifier) -> bool {
         !self.identifiers.contains_key(name)
     }
 
     /// Returns the identifier's value, which should always be `Value::String`, representing the
     /// shape ID of the target shape.
-    pub fn identifier(&self, name: &str) -> Option<&Value> {
+    pub fn identifier(&self, name: &Identifier) -> Option<&ShapeID> {
         self.identifiers.get(name)
     }
 
     /// Remove the identifier from this resource returning any previous value for the identifier name.
-    pub fn remove_identifier(&mut self, name: &str) -> Option<Value> {
+    pub fn remove_identifier(&mut self, name: &Identifier) -> Option<ShapeID> {
         self.identifiers.remove(name)
     }
 
     /// Add an identifier, providing a name and the target shape ID.
-    pub fn add_identifier(&mut self, name: &str, target: &str) -> Option<Value> {
-        self.identifiers
-            .insert(name.to_string(), Value::String(target.to_string()))
-    }
-
-    /// Add an identifier, providing a name and the target shape ID. This method will panic if the
-    /// target is not a `Value::String`.
-    pub fn add_identifier_value(&mut self, name: &str, target: Value) -> Option<Value> {
-        assert!(target.is_string());
-        self.identifiers.insert(name.to_string(), target)
+    pub fn add_identifier(&mut self, name: Identifier, target: ShapeID) -> Option<ShapeID> {
+        self.identifiers.insert(name, target)
     }
 
     /// Return an iterator over all the identifier name and target pairs for this resource.
-    pub fn identifiers(&self) -> impl Iterator<Item = (&String, &Value)> {
+    pub fn identifiers(&self) -> impl Iterator<Item = (&Identifier, &ShapeID)> {
         self.identifiers.iter()
     }
 

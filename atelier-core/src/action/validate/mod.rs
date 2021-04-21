@@ -8,9 +8,8 @@ in an action.
 use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::error::Result as ModelResult;
 use crate::model::shapes::{HasTraits, ShapeKind};
-use crate::model::{HasIdentity, Identifier, Model, ShapeID};
+use crate::model::{HasIdentity, Model, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
-use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -121,8 +120,8 @@ impl Validator for CorrectTypeReferences {
                 ShapeKind::Resource(resource) => {
                     for (id, target) in resource.identifiers() {
                         self.check_type_only(
-                            &shape.id().make_member(Identifier::from_str(id).unwrap()),
-                            &ShapeID::from_str(&target.as_string().unwrap()).unwrap(),
+                            &shape.id().make_member(id.clone()),
+                            &target,
                             model,
                             "Resource identifier",
                         );

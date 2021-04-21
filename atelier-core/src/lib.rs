@@ -36,7 +36,7 @@ be resolved to an absolute name.
 For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/model_api.html).
 
 ```rust
-use atelier_core::model::identity::HasIdentity;
+use atelier_core::model::identity::{HasIdentity, Identifier};
 use atelier_core::model::shapes::{
     AppliedTrait, HasTraits, MemberShape, Operation, Resource, Service, Shape,
     ShapeKind, Simple, StructureOrUnion, TopLevelShape,
@@ -113,7 +113,7 @@ get_message.apply_trait(required);
 
 // ----------------------------------------------------------------------------------------
 let mut message = Resource::default();
-message.add_identifier("date", &date.id().to_string());
+message.add_identifier(Identifier::new_unchecked("date"), date.id().clone());
 message.set_read_operation_shape(&get_message);
 let message = TopLevelShape::new(
     namespace.make_shape("Message".parse().unwrap()),

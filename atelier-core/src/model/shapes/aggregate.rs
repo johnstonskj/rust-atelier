@@ -62,35 +62,7 @@ impl HasIdentity for MemberShape {
     }
 }
 
-impl HasTraits for MemberShape {
-    fn has_traits(&self) -> bool {
-        !self.traits.is_empty()
-    }
-
-    fn has_trait(&self, id: &ShapeID) -> bool {
-        self.traits.iter().any(|t| t.id() == id)
-    }
-
-    fn traits(&self) -> &Vec<AppliedTrait> {
-        &self.traits
-    }
-
-    fn apply_trait(&mut self, a_trait: AppliedTrait) {
-        // TODO: apply trait duplicate rules.
-        // (https://github.com/johnstonskj/rust-atelier/issues/5)
-        self.traits.push(a_trait);
-    }
-
-    fn append_traits(&mut self, traits: &[AppliedTrait]) {
-        for a_trait in traits {
-            self.apply_trait(a_trait.clone());
-        }
-    }
-
-    fn remove_trait(&mut self, id: &ShapeID) {
-        self.traits.retain(|t| t.id() != id);
-    }
-}
+has_traits_impl! { MemberShape . traits }
 
 impl Shape for MemberShape {
     fn is_member(&self) -> bool {

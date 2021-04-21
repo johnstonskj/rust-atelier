@@ -96,6 +96,12 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.6**
+
+* Refactored the prelude module, moved the lazy statics out to builder where they are used.
+* Made a common implementation of HasTraits for TopLevelShape and MemberShip using a macro.
+* Changed Resource::identifiers to be more type specific.
+
 **Version 0.2.5**
 
 * Added public `shape_selector!` macro.
