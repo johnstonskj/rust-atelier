@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Model Reader - Atelier — Smithy for Rust</title>
+        <title>Traits and Values - Atelier — Smithy for Rust</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html" class="active"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html"><strong aria-hidden="true">7.</strong> Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded "><a href="../reference/rdf.html"><strong aria-hidden="true">8.</strong> Appendix: RDF Mapping</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/rdf-model.html"><strong aria-hidden="true">8.1.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/rdf-shapes.html"><strong aria-hidden="true">8.2.</strong> Shapes</a></li><li class="chapter-item expanded "><a href="../reference/rdf-traits-values.html"><strong aria-hidden="true">8.3.</strong> Traits and Values</a></li><li class="chapter-item expanded "><a href="../reference/rdf-example.html"><strong aria-hidden="true">8.4.</strong> Example</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html"><strong aria-hidden="true">7.</strong> Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded "><a href="../reference/rdf.html"><strong aria-hidden="true">8.</strong> Appendix: RDF Mapping</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/rdf-model.html"><strong aria-hidden="true">8.1.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/rdf-shapes.html"><strong aria-hidden="true">8.2.</strong> Shapes</a></li><li class="chapter-item expanded "><a href="../reference/rdf-traits-values.html" class="active"><strong aria-hidden="true">8.3.</strong> Traits and Values</a></li><li class="chapter-item expanded "><a href="../reference/rdf-example.html"><strong aria-hidden="true">8.4.</strong> Example</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -153,72 +153,128 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#model-reader" id="model-reader">Model Reader</a></h1>
-<pre><pre class="playpen"><code class="language-rust">
-<span class="boring">#![allow(unused_variables)]
-</span><span class="boring">fn main() {
-</span>const MANIFEST_DIR: &amp;str = env!(&quot;CARGO_MANIFEST_DIR&quot;);
+                        <h1><a class="header" href="#traits-and-values" id="traits-and-values">Traits and Values</a></h1>
+<h2><a class="header" href="#traits" id="traits">Traits</a></h2>
+<p>Any shape, either a <em>top-level</em>, or a <em>member</em>, may have traits applied and these are represented as
+follows.</p>
+<ol>
+<li>The shape resource MAY have any number of properties, named <code>smithy:apply</code> with a blank node value.
+<ol>
+<li>This blank node MUST have a property <code>smithy:trait</code> with a value which is the identifier
+of a <em>top-level</em> shape resource.</li>
+<li>This blank node MAY have a property <code>smithy:value</code> representing the trait parameter value -
+see <a href="#values">Value</a> production rules later.</li>
+</ol>
+</li>
+</ol>
+<p>The following example shows traits applied to a <em>top-level</em> shape.</p>
+<pre><code class="language-turtle">motd:BadDateValue
+  a smithy:Structure ;
+  smithy:apply [
+    smithy:trait api:error ;
+    smithy:value &quot;client&quot;
+  ] .
+</code></pre>
+<p>The following example shows traits applied to a <em>member</em> shape.</p>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:BadDateValue/errorMessage&gt; 
+  a smithy:Member ;
+  smithy:target smithy:String ;
+  smithy:apply [
+    smithy:trait api:required
+  ] .
+</code></pre>
+<h2><a class="header" href="#values" id="values">Values</a></h2>
+<p>Values are are used in both the model metadata section,</p>
+<pre><code class="language-turtle">smithy:metadata [
+  a rdf:Bag
+  rdf:_1 [
+    smithy:key &quot;domain&quot; ;
+    smithy:value &quot;identity&quot; ;
+  ]
+] .
+</code></pre>
+<p>as well as in passing parameters to applied traits.</p>
+<pre><code class="language-turtle">smithy:apply [
+  smithy:trait api:title ;
+  smithy:value &quot;My new thing&quot;
+] .
+</code></pre>
+<p>The following define the production rules for values in either of these cases.</p>
+<h3><a class="header" href="#strings" id="strings">Strings</a></h3>
+<p>String values MAY be represented as unqualified string literals OR as qualified strings with the data type <code>xsd:string</code>.</p>
+<pre><code class="language-turtle">[] smithy:value &quot;My new thing&quot; .
 
-fn test_file_parses(file_name: &amp;str) {
-    let mut path = PathBuf::from_str(MANIFEST_DIR).unwrap();
-    path.push(format!(&quot;tests/good/{}.smithy&quot;, file_name));
-    println!(&quot;{:?}&quot;, path);
-    let mut file = File::open(path).unwrap();
-    let mut content: Vec&lt;u8&gt; = Vec::default();
-    let _ = file.read_to_end(&amp;mut content).unwrap();
+[] smithy:value &quot;My new thing&quot;^^xsd:string .
+</code></pre>
+<h3><a class="header" href="#booleans" id="booleans">Booleans</a></h3>
+<p>Boolean values MUST be represented as string literals with the type <code>xsd:boolean</code>.</p>
+<pre><code class="language-turtle">[] smithy:value &quot;true&quot;^^xsd:boolean&quot; .
 
-    let mut reader = SmithyReader::default();
-    let result = read_model_from_string(&amp;mut reader, content);
-    let trait_trait = ShapeID::from_str(&quot;smithy.api#trait&quot;).unwrap();
-    match result {
-        Ok(parsed) =&gt; {
-            let mut names = parsed
-                .shapes()
-                .map(|shape| {
-                    format!(
-                        &quot;{:&lt;32} -&gt; {}{}&quot;,
-                        shape.id(),
-                        if shape.has_trait(&amp;trait_trait) {
-                            &quot;trait &quot;
-                        } else {
-                            &quot;&quot;
-                        },
-                        match shape.body() {
-                            ShapeKind::Simple(v) =&gt; v.to_string(),
-                            ShapeKind::List(_) =&gt; SHAPE_LIST.to_string(),
-                            ShapeKind::Set(_) =&gt; SHAPE_SET.to_string(),
-                            ShapeKind::Map(_) =&gt; SHAPE_MAP.to_string(),
-                            ShapeKind::Structure(_) =&gt; SHAPE_STRUCTURE.to_string(),
-                            ShapeKind::Union(_) =&gt; SHAPE_UNION.to_string(),
-                            ShapeKind::Service(_) =&gt; SHAPE_SERVICE.to_string(),
-                            ShapeKind::Operation(_) =&gt; SHAPE_OPERATION.to_string(),
-                            ShapeKind::Resource(_) =&gt; SHAPE_RESOURCE.to_string(),
-                            ShapeKind::Unresolved =&gt; SHAPE_APPLY.to_string(),
-                        }
-                    )
-                })
-                .collect::&lt;Vec&lt;String&gt;&gt;();
-            names.sort();
-            print!(&quot;{:#?}&quot;, names)
-        }
-        Err(err) =&gt; panic!(err.to_string()),
-    }
-}
-<span class="boring">}
-</span></code></pre></pre>
+# alternatively, in Turtle:
+
+[] smithy:value true .
+</code></pre>
+<h3><a class="header" href="#numbers" id="numbers">Numbers</a></h3>
+<p>Number values MUST be represented as string literals with either the type <code>xsd:signedLong</code> or
+<code>xsd:double</code>.</p>
+<pre><code class="language-turtle">[] smithy:value &quot;1&quot;^^xsd:signedLong&quot; .
+
+[] smithy:value &quot;3.14&quot;^^xsd:double&quot; .
+</code></pre>
+<h3><a class="header" href="#arrays" id="arrays">Arrays</a></h3>
+<p>Array values MUST be represented as a new blank node.</p>
+<ol>
+<li>This node MUST have a property <code>rdf:type</code> with the IRI value <code>rdf:Seq</code>.</li>
+<li>Each property of this blank node follows the standard method to generate predicate names of the 
+form <code>rdf:_{n}</code> with a <em>value</em> using these same production rules.</li>
+</ol>
+<pre><code class="language-turtle">smithy:value [
+  a rdf:Seq ;
+  rdf:_1 &quot;experimental&quot; ;
+  rdf:_2 &quot;public&quot;
+]
+</code></pre>
+<h3><a class="header" href="#objects" id="objects">Objects</a></h3>
+<p>Object values MUST be represented as a new blank node.</p>
+<ol>
+<li>This node MUST have a property <code>rdf:type</code> with the IRI value <code>rdf:Bag</code>.</li>
+<li>Each property of this blank node follows the standard method to generate predicate names of the
+form<code>rdf:_{n}</code> with a blank node value.
+<ol>
+<li>This node MUST have a property <code>smithy:key</code> with a string literal for the identifier name.</li>
+<li>This node MUST have a property <code>smithy:value</code> with a <em>value</em> using these same production rules.</li>
+</ol>
+</li>
+</ol>
+<pre><code class="language-turtle">smithy:value [
+ a rdf:Bag ;
+ rdf:_1 [
+   smithy:key &quot;Homepage&quot; ;
+   smithy:value &quot;https://www.example.com/&quot; ;
+ ] ;
+ rdf:_1 [
+   smithy:key &quot;API Reference&quot; ;
+   smithy:value &quot;https://www.example.com/api-ref&quot; ;
+ ] ;
+]
+</code></pre>
+<h3><a class="header" href="#null" id="null">Null</a></h3>
+<p>Smithy supports the notion of a null type, this is represented by the specific IRI <code>smithy:null</code>.</p>
+<pre><code class="language-turtle">[] smithy:value smithy:null .
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../using/io.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../reference/rdf-shapes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../using/writer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../reference/rdf-example.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -230,13 +286,13 @@ fn test_file_parses(file_name: &amp;str) {
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../using/io.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../reference/rdf-shapes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../using/writer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../reference/rdf-example.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

@@ -1,5 +1,14 @@
+
 table {
     font-size: small;
+}
+
+table.plain tbody tr:nth-child(2n) {
+    background: var(--bg);
+}
+
+table.plain tbody td {
+    vertical-align: top;
 }
 
 main img {

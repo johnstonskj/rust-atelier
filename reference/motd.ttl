@@ -1,0 +1,77 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix smithy: <https://awslabs.github.io/smithy/rdf-1.0#> .
+@prefix api: <urn:smithy:smithy.api:> .
+@prefix : <urn:smithy:example.motd:> .
+
+[]
+  a smithy:Model ;
+  smithy:smithy_version "1.0" ;
+  smithy:shape
+    :GetMessageOutput ,
+    :Message ,
+    :GetMessageInput ,
+    :BadDateValue ,
+    :GetMessage ,
+    :MessageOfTheDay ,
+    :Date .
+
+:Date
+  a smithy:String ;
+  smithy:apply [
+    smithy:trait api:pattern ;
+    smithy:value "^\\d\\d\\d\\d\\-\\d\\d-\\d\\d$"
+  ] .
+
+:Message
+  a smithy:Resource ;
+  smithy:identifiers [
+    a rdf:Bag ;
+    rdf:_1 [
+      smithy:key "date" ;
+      smithy:target :Date
+    ]
+  ] ;
+  smithy:read :GetMessage .
+
+:GetMessageInput
+  a smithy:Structure ;
+  smithy:member [
+    a :Date ;
+    smithy:name "date"^^xsd:string
+  ] .
+
+:GetMessageOutput
+  a smithy:Structure ;
+  smithy:member [
+    a api:String ;
+    smithy:name "message"^^xsd:string ;
+    smithy:apply [ smithy:trait api:required ] ;
+  ] .
+
+:BadDateValue
+  a smithy:Structure ;
+  smithy:apply [
+    smithy:trait api:error ;
+    smithy:value "client"
+  ] ;
+  smithy:member [
+    a api:String ;
+    smithy:name "errorMessage"^^xsd:string ;
+    smithy:apply [ smithy:trait <urn:smithy:smithy.api:required> ] ;
+  ] .
+
+:GetMessage
+  a smithy:Operation ;
+  smithy:input :GetMessageInput ;
+  smithy:output :GetMessageOutput ;
+  smithy:error :BadDateValue .
+
+:MessageOfTheDay
+  a smithy:Service ;
+  smithy:apply [
+    smithy:trait api:documentation ;
+    smithy:value "Provides a Message of the day."
+  ] ;
+  smithy:version "2020-06-21" ;
+  smithy:resource :Message .

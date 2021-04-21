@@ -1,0 +1,430 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Shapes - Atelier — Smithy for Rust</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+        <link rel="stylesheet" href="../atelier.css">
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">3.4.</strong> Model Visitor</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html"><strong aria-hidden="true">7.</strong> Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded "><a href="../reference/rdf.html"><strong aria-hidden="true">8.</strong> Appendix: RDF Mapping</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/rdf-model.html"><strong aria-hidden="true">8.1.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/rdf-shapes.html" class="active"><strong aria-hidden="true">8.2.</strong> Shapes</a></li><li class="chapter-item expanded "><a href="../reference/rdf-traits-values.html"><strong aria-hidden="true">8.3.</strong> Traits and Values</a></li><li class="chapter-item expanded "><a href="../reference/rdf-example.html"><strong aria-hidden="true">8.4.</strong> Example</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Atelier — Smithy for Rust</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/johnstonskj/rust-atelier" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#shapes" id="shapes">Shapes</a></h1>
+<ol>
+<li>Each <em>top-level</em> shape is an RDF resource, it’s identifier is the URN form of the shape’s <strong>Shape ID</strong>.</li>
+<li>The shape resource MUST have a property <code>rdf:type</code> that denotes it’s Smithy type.</li>
+<li>The shape resource MAY have applied traits, see later for details.</li>
+<li>Aggregate and Service shapes have members, these <em>member</em> shapes have a common set of rules.</li>
+<li>All <em>top-level</em> and <em>member</em> shape resource MAY have <a href="rdf-traits-values.html#traits">applied traits</a>.</li>
+</ol>
+<h2><a class="header" href="#member-shapes" id="member-shapes">Member Shapes</a></h2>
+<ol>
+<li>Each <em>member</em> shape is an RDF resource, it’s identifier is the URN form of the shape’s <strong>Shape ID</strong>.</li>
+<li>The shape resource MUST have a property <code>rdf:type</code> with a value which is the identifier of a <em>top-level</em> shape 
+resource.</li>
+<li>The shape resource MUST have a property <code>smithy:name</code> with a value which is a literal string for the
+name of this member, this value must be a valid identifier.</li>
+</ol>
+<pre><code class="language-turtle">motd:GetMessageInput
+  a smithy:Structure ;
+  smithy:member [
+    a motd:Date ;
+    smithy:name &quot;date&quot;
+  ] .
+</code></pre>
+<h2><a class="header" href="#simple-shapes" id="simple-shapes">Simple shapes</a></h2>
+<p>No additional rules.</p>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:Date&gt; a smithy:String .
+</code></pre>
+<h3><a class="header" href="#list-shapes" id="list-shapes">List shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:List</code>.</li>
+<li>The shape resource MUST have a <em>member</em> shape with the name “member”.</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:Messages&gt; 
+  a smithy:List ;
+  smithy:member [
+    a smithy:String ;
+    smithy:name &quot;member&quot;
+  ] .
+</code></pre>
+<h3><a class="header" href="#set-shapes" id="set-shapes">Set shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Set</code>.</li>
+<li>The shape resource MUST have a <em>member</em> shape with the name “member”.</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:Messages&gt; 
+  a smithy:Set ;
+  smithy:member [
+    a smithy:String ;
+    smithy:name &quot;member&quot;
+  ] .
+</code></pre>
+<h3><a class="header" href="#map-shapes" id="map-shapes">Map shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Map</code>.</li>
+<li>The shape resource MUST have a <em>member</em> shape with the name “key”.</li>
+<li>The shape resource MUST have a <em>member</em> shape with the name “value”.</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:Messages&gt; 
+  a smithy:Map ;
+  smithy:member [
+    a &lt;urn:smithy:example.motd:Language&gt; ;
+    smithy:name &quot;key&quot;
+  ] ;
+  smithy:member [
+    a smithy:String ;
+    smithy:name &quot;value&quot;
+  ] .
+</code></pre>
+<h3><a class="header" href="#structure-shapes" id="structure-shapes">Structure shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Structure</code>.</li>
+<li>The shape resource MAY have any number of <em>member</em> shapes.</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:MessageResponse&gt; 
+  a smithy:Structure ;
+  smithy:member [
+    a smithy:String ;
+    smithy:name &quot;language&quot;
+  ] ;
+  smithy:member [
+    a smithy:String ;
+    smithy:name &quot;message&quot;
+  ] .
+</code></pre>
+<h3><a class="header" href="#union-shapes" id="union-shapes">Union shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Structure</code>.</li>
+<li>The shape resource MAY have any number of <em>member</em> shapes.</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:MessageResponse&gt; 
+  a smithy:Union ;
+  smithy:member [
+    a smithy:Integer ;
+    smithy:name &quot;messageCode&quot;
+  ] ;
+  smithy:member [
+    a smithy:String ;
+    smithy:name &quot;message&quot;
+] .
+</code></pre>
+<h3><a class="header" href="#operation-shapes" id="operation-shapes">Operation shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Operation</code>.</li>
+<li>The shape resource MAY have a property, named <code>smithy:input</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:output</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have any number of properties, named <code>smithy:error</code> with a value which is the 
+identifier of a top-level shape resource.</li>
+</ol>
+<pre><code class="language-turtle">&lt;urn:smithy:example.motd:GetMessage&gt;
+  a smithy:Operation ;
+  smithy:input &lt;urn:smithy:example.motd:GetMessageRequest&gt; ;
+  smithy:output &lt;urn:smithy:example.motd:GetMessageResponse&gt; ;
+  smithy:error &lt;urn:smithy:example.motd:BadDateValue&gt; .
+</code></pre>
+<h3><a class="header" href="#resource-shapes" id="resource-shapes">Resource shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Resource</code>.</li>
+<li>The shape resource MAY have a property, named <code>smithy:identifiers</code> with a blank node value.
+<ol>
+<li>This blank node MUST have a property <code>rdf:type</code> with the IRI value <code>rdf:Bag</code>.</li>
+<li>Each property of this blank node follows the standard method to generate predicate names of the
+form <code>rdf:_{n}</code> with a blank node value.
+<ol>
+<li>This blank node MUST have a property <code>smithy:key</code> with a literal string value representing the
+identifier item’s key.</li>
+<li>This blank node MUST have a property <code>smithy:target</code> with a value which is the identifier
+of a top-level shape resource.</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>The shape resource MAY have a property, named <code>smithy:create</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:put</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:read</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:update</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:delete</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:list</code> with a value which is the identifier of a shape resource.</li>
+<li>The shape resource MAY have any number of properties, named <code>smithy:operation</code> with a value which is the
+identifier of a top-level shape resource.</li>
+<li>The shape resource MAY have any number of properties, named <code>smithy:collectionOperation</code> with a value which is the
+identifier of a top-level shape resource.</li>
+<li>The shape resource MAY have any number of properties, named <code>smithy:resource</code> with a value which is the
+identifier of a top-level shape resource.</li>
+</ol>
+<pre><code class="language-turtle">weather:Forecast
+  a smithy:Resource ;
+  smithy:identifiers [
+    a rdf:Bag ;
+    rdf:_1 [
+      smithy:key &quot;forecastId&quot; ;
+      smithy:target weather:ForecastId
+    ]
+  ] ;
+  smithy:read weather:GetForecast .
+</code></pre>
+<h3><a class="header" href="#service-shapes" id="service-shapes">Service shapes</a></h3>
+<ol>
+<li>The shape resource MUST have a property <code>rdf:type</code> with the IRI value <code>smithy:Service</code>.</li>
+<li>The shape resource MUST have a property <code>smithy:version</code> with a literal,
+non-empty, string value.</li>
+<li>The shape resource MAY have any number of properties, named <code>smithy:operation</code> with a value which is the
+identifier of a top-level shape resource.</li>
+<li>The shape resource MAY have any number of properties, named <code>smithy:resource</code> with a value which is the
+identifier of a top-level shape resource.</li>
+<li>The shape resource MAY have a property, named <code>smithy:rename</code> with a blank node value.
+<ol>
+<li>This blank node MUST have a property <code>rdf:type</code> with the IRI value <code>rdf:Bag</code>.</li>
+<li>Each property of this blank node follows the standard method to generate predicate names of the
+form <code>rdf:_{n}</code> with a blank node value.
+<ol>
+<li>This blank node MUST have a property <code>smithy:shape</code> with a value which is the identifier
+of a top-level shape resource.</li>
+<li>This blank node MUST have a property <code>smithy:name</code> with a literal string value.</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<pre><code class="language-turtle">example:MyService
+  a smithy:Service ;
+  smithy:version &quot;2017-02-11&quot; ;
+  smithy:operations [
+    a rdf:Bag ;
+    rdf:_1 example:GetSomething
+  ] ;
+  smithy:rename [
+    a rdf:Bag ;
+    rdf:_1 [
+      smithy:shape &lt;urn:smithy:foo.example:Widget&gt; ;
+      smithy:name &quot;FooWidget&quot;
+    ]
+  ] .
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../reference/rdf-model.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../reference/rdf-traits-values.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../reference/rdf-model.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="../reference/rdf-traits-values.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+        <script type="text/javascript" src="../smithy.js"></script>
+        
+        <script type="text/javascript" src="../turtle.js"></script>
+        
+        <script type="text/javascript" src="../atelier.js"></script>
+        
+
+        
+
+    </body>
+</html>
