@@ -19,5 +19,9 @@
    1. [Adding a Validator](extending/validator.md)
    1. [Adding a Model Transformation](extending/transformer.md)
 
-[Appendix: Java/Rust Differences](reference/java_to_rust.md)
-[Appendix: RDF Mapping](reference/rdf.md)
+1. [Appendix: Java/Rust Differences](reference/java_to_rust.md)
+1. [Appendix: RDF Mapping](reference/rdf.md)
+   1. [Models](reference/rdf-model.md)
+   1. [Shapes](reference/rdf-shapes.md)
+   1. [Traits and Values](reference/rdf-traits-values.md)
+   1. [Example](reference/rdf-example.md)

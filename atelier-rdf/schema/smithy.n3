@@ -1,0 +1,108 @@
+﻿@prefix smithy:  <https://awslabs.github.io/smithy/rdf-1.0#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+@base <https://awslabs.github.io/smithy/rdf-1.0#> .
+
+# The model root
+smithy:Model rdfs:subClassOf rdfs:Resource .
+
+smithy:smithy_version
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Model ;
+    rdfs:range rdfs:Literal .
+
+smithy:shapes
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Model ;
+    rdfs:range rdf:Bag .
+
+# Shapes
+smithy:Shape rdf:subClassOf rdfs:Resource .
+
+smithy:TopLevelShape rdf:subClassOf smithy:Shape .
+
+# Simple Shapes
+smithy:Blob rdfs:subClassOf smithy:TopLevelShape .
+smithy:Boolean rdfs:subClassOf smithy:TopLevelShape .
+smithy:String rdfs:subClassOf smithy:TopLevelShape .
+smithy:Byte rdfs:subClassOf smithy:TopLevelShape .
+smithy:Short rdfs:subClassOf smithy:TopLevelShape .
+smithy:Integer rdfs:subClassOf smithy:TopLevelShape .
+smithy:Long rdfs:subClassOf smithy:TopLevelShape .
+smithy:Float rdfs:subClassOf smithy:TopLevelShape .
+smithy:Double rdfs:subClassOf smithy:TopLevelShape .
+smithy:BigInteger rdfs:subClassOf smithy:TopLevelShape .
+smithy:BigDecimal rdfs:subClassOf smithy:TopLevelShape .
+smithy:Timestamp rdfs:subClassOf smithy:TopLevelShape .
+smithy:Document rdfs:subClassOf smithy:TopLevelShape .
+
+# Members
+smithy:Member rdfs:subClassOf smithy:Shape .
+
+smithy:target
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Member ;
+    rdfs:range rdf:TopLevelShape .
+
+# Lists and Sets
+smithy:SVCollection rdfs:subClassOf smithy:TopLevelShape .
+
+smithy:List rdfs:subClassOf smithy:SVCollection .
+
+smithy:Set rdfs:subClassOf smithy:SVCollection .
+
+smithy:target
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:SVCollection ;
+    rdfs:range rdf:TopLevelShape .
+
+# Maps
+smithy:Map rdfs:subClassOf smithy:TopLevelShape .
+
+smithy:key_target
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Map ;
+    rdfs:range rdf:TopLevelShape .
+
+smithy:value_target
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Map ;
+    rdfs:range rdf:TopLevelShape .
+
+# Structures and Unions
+smithy:Aggregate rdfs:subClassOf smithy:TopLevelShape .
+
+smithy:Structure rdfs:subClassOf smithy:Aggregate .
+
+smithy:Union rdfs:subClassOf smithy:Aggregate .
+
+smithy:members
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Aggregate ;
+    rdfs:range rdf:Bag .
+
+# Service shapes
+smithy:Service rdfs:subClassOf smithy:TopLevelShape .
+
+smithy:version
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Service ;
+    rdfs:range rdfs:Literal .
+
+smithy:Operation rdfs:subClassOf smithy:TopLevelShape .
+
+smithy:Resource rdfs:subClassOf smithy:TopLevelShape .
+
+# Traits
+smithy:apply
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain smithy:Service ;
+    rdfs:range rdf:Bag .
+
+smithy:trait
+    rdfs:subClassOf rdf:Property ;
+    rdfs:domain rdf:Bag ;
+    rdfs:range smithy:TopLevelShape .

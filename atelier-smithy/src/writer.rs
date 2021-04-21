@@ -22,6 +22,7 @@ use std::io::Write;
 #[derive(Debug)]
 pub struct SmithyWriter {
     namespace: NamespaceID,
+    prelude_namespace: NamespaceID,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -45,7 +46,10 @@ impl ModelWriter for SmithyWriter {
 
 impl SmithyWriter {
     pub fn new(namespace: NamespaceID) -> Self {
-        Self { namespace }
+        Self {
+            namespace,
+            prelude_namespace: NamespaceID::new_unchecked(atelier_core::prelude::PRELUDE_NAMESPACE),
+        }
     }
 
     fn write_control_section(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
@@ -105,37 +109,42 @@ impl SmithyWriter {
             }
             match shape.body() {
                 ShapeKind::Simple(st) => {
-                    writeln!(w, "{} {}", st, shape.id())?;
+                    writeln!(w, "{} {}", st, shape.id().shape_name())?;
                 }
                 ShapeKind::List(list) => {
-                    writeln!(w, "{} {} {{", SHAPE_LIST, shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_LIST, shape.id().shape_name())?;
                     writeln!(w, "    {}: {}", MEMBER_MEMBER, list.member().target())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Set(set) => {
-                    writeln!(w, "{} {} {{", SHAPE_SET, shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_SET, shape.id().shape_name())?;
                     writeln!(w, "    {}: {}", MEMBER_MEMBER, set.member().target())?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Map(map) => {
-                    writeln!(w, "{} {} {{", SHAPE_MAP, shape.id())?;
-                    writeln!(w, "    {}: {}", MEMBER_KEY, map.key().target())?;
-                    writeln!(w, "    {}: {}", MEMBER_VALUE, map.value().target())?;
+                    writeln!(w, "{} {} {{", SHAPE_MAP, shape.id().shape_name())?;
+                    writeln!(w, "    {}: {}", MEMBER_KEY, map.key().target().shape_name())?;
+                    writeln!(
+                        w,
+                        "    {}: {}",
+                        MEMBER_VALUE,
+                        map.value().target().shape_name()
+                    )?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Structure(structured) => {
-                    writeln!(w, "{} {} {{", SHAPE_STRUCTURE, shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_STRUCTURE, shape.id().shape_name())?;
                     self.write_members(w, structured.members(), "    ")?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Union(structured) => {
-                    writeln!(w, "{} {} {{", SHAPE_UNION, shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_UNION, shape.id().shape_name())?;
                     self.write_members(w, structured.members(), "    ")?;
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Service(service) => {
-                    writeln!(w, "{} {} {{", SHAPE_SERVICE, shape.id())?;
-                    writeln!(w, "    {}: {}", MEMBER_VERSION, service.version())?;
+                    writeln!(w, "{} {} {{", SHAPE_SERVICE, shape.id().shape_name())?;
+                    writeln!(w, "    {}: {:?}", MEMBER_VERSION, service.version())?;
                     if service.has_operations() {
                         writeln!(
                             w,
@@ -143,7 +152,7 @@ impl SmithyWriter {
                             MEMBER_OPERATIONS,
                             service
                                 .operations()
-                                .map(|s| s.to_string())
+                                .map(|s| s.shape_name().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ")
                         )?;
@@ -155,7 +164,7 @@ impl SmithyWriter {
                             MEMBER_RESOURCES,
                             service
                                 .resources()
-                                .map(|s| s.to_string())
+                                .map(|s| s.shape_name().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ")
                         )?;
@@ -163,12 +172,12 @@ impl SmithyWriter {
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Operation(operation) => {
-                    writeln!(w, "{} {} {{", SHAPE_OPERATION, shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_OPERATION, shape.id().shape_name())?;
                     if let Some(id) = operation.input() {
-                        writeln!(w, "    {}: {}", MEMBER_INPUT, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_INPUT, id.shape_name())?;
                     }
                     if let Some(id) = operation.output() {
-                        writeln!(w, "    {}: {}", MEMBER_OUTPUT, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_OUTPUT, id.shape_name())?;
                     }
                     if operation.has_errors() {
                         writeln!(
@@ -177,7 +186,7 @@ impl SmithyWriter {
                             MEMBER_ERRORS,
                             operation
                                 .errors()
-                                .map(|s| s.to_string())
+                                .map(|s| s.shape_name().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ")
                         )?;
@@ -185,31 +194,31 @@ impl SmithyWriter {
                     writeln!(w, "}}")?;
                 }
                 ShapeKind::Resource(resource) => {
-                    writeln!(w, "{} {} {{", SHAPE_RESOURCE, shape.id())?;
+                    writeln!(w, "{} {} {{", SHAPE_RESOURCE, shape.id().shape_name())?;
                     if resource.has_identifiers() {
                         writeln!(w, "    {}: {{", MEMBER_IDENTIFIERS)?;
-                        for (id, ref_id) in resource.identifiers() {
-                            writeln!(w, "        {}: {}", id, ref_id)?;
+                        for (id, target) in resource.identifiers() {
+                            writeln!(w, "        {}: {}", id, target.shape_name())?;
                         }
                         writeln!(w, "    }}")?;
                     }
                     if let Some(id) = resource.create() {
-                        writeln!(w, "    {}: {}", MEMBER_CREATE, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_CREATE, id.shape_name())?;
                     }
                     if let Some(id) = resource.put() {
-                        writeln!(w, "    {}: {}", MEMBER_PUT, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_PUT, id.shape_name())?;
                     }
                     if let Some(id) = resource.read() {
-                        writeln!(w, "    {}: {}", MEMBER_READ, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_READ, id.shape_name())?;
                     }
                     if let Some(id) = resource.update() {
-                        writeln!(w, "    {}: {}", MEMBER_UPDATE, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_UPDATE, id.shape_name())?;
                     }
                     if let Some(id) = resource.delete() {
-                        writeln!(w, "    {}: {}", MEMBER_DELETE, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_DELETE, id.shape_name())?;
                     }
                     if let Some(id) = resource.list() {
-                        writeln!(w, "    {}: {}", MEMBER_LIST, id)?;
+                        writeln!(w, "    {}: {}", MEMBER_LIST, id.shape_name())?;
                     }
                     if resource.has_operations() {
                         writeln!(
@@ -218,7 +227,7 @@ impl SmithyWriter {
                             MEMBER_OPERATIONS,
                             resource
                                 .operations()
-                                .map(|s| s.to_string())
+                                .map(|s| s.shape_name().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ")
                         )?;
@@ -230,7 +239,7 @@ impl SmithyWriter {
                             MEMBER_COLLECTION_OPERATIONS,
                             resource
                                 .collection_operations()
-                                .map(|s| s.to_string())
+                                .map(|s| s.shape_name().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ")
                         )?;
@@ -242,7 +251,7 @@ impl SmithyWriter {
                             MEMBER_RESOURCES,
                             resource
                                 .resources()
-                                .map(|s| s.to_string())
+                                .map(|s| s.shape_name().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ")
                         )?;
@@ -269,18 +278,25 @@ impl SmithyWriter {
         a_trait: &AppliedTrait,
         prefix: &str,
     ) -> Result<()> {
-        write!(w, "{}{}{}", prefix, TRAIT_PREFIX, a_trait.id())?;
+        let trait_namespace = a_trait.id().namespace();
+        let id = if *trait_namespace == self.namespace || *trait_namespace == self.prelude_namespace
+        {
+            a_trait.id().shape_name().to_string()
+        } else {
+            a_trait.id().to_string()
+        };
+        write!(w, "{}{}{}", prefix, TRAIT_PREFIX, id)?;
         match a_trait.value() {
             None => writeln!(w)?,
             Some(Value::Object(map)) => writeln!(
                 w,
                 "({})",
                 map.iter()
-                    .map(|(k, v)| format!("{}: {}", k, v))
+                    .map(|(k, v)| format!("{}: {:?}", k, v))
                     .collect::<Vec<String>>()
                     .join(", ")
             )?,
-            Some(value) => writeln!(w, "({})", value.to_string())?,
+            Some(value) => writeln!(w, "({:?})", value.to_string())?,
         }
         Ok(())
     }
@@ -306,7 +322,13 @@ impl SmithyWriter {
         for a_trait in member.traits() {
             self.write_trait(w, a_trait, prefix)?;
         }
-        writeln!(w, "{}{}: {}", prefix, member.id(), member.target())?;
+        writeln!(
+            w,
+            "{}{}: {}",
+            prefix,
+            member.id().member_name().as_ref().unwrap(),
+            member.target().shape_name()
+        )?;
         Ok(())
     }
 }

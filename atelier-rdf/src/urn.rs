@@ -4,14 +4,15 @@ absolute and not relative.
 
 # Mapping
 
-The following rules apply:
-
-* The URI scheme is `urn`.
-* The URN scheme is `smithy`.
-* The _namespace-specific string_ (NSS) is formatted as follows.
-* The identifier's namespace component is next, followed by ":"
-* The identifier's shape name is next
-* If present the identifier's member name is next, prefixed with "/"
+1. The URI scheme MUST be exactly `urn`.
+1. The URN scheme MUST be exactly `smithy`.
+1. The _namespace-specific string_ (NSS) MUST be formatted as follows.
+   1. The identifier's namespace component.
+   1. The colon character, `':'`.
+   1. The identifier's shape name component.
+   1. **If** the Shape ID represents a member shape:
+      1. The forward slash character, `'/'`.
+      1. The identifier's member name component.
 
 # Examples
 

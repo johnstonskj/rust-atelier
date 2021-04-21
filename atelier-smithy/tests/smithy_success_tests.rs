@@ -33,6 +33,11 @@ fn test_mqtt_api_example() {
     test_file_parses("smithy-api-mqtt");
 }
 
+#[test]
+fn test_motd_example() {
+    test_file_parses("motd");
+}
+
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
@@ -79,6 +84,6 @@ fn test_file_parses(file_name: &str) {
             names.sort();
             print!("{:#?}", names)
         }
-        Err(err) => panic!("{}", err.to_string()),
+        Err(err) => panic!("{}", err),
     }
 }

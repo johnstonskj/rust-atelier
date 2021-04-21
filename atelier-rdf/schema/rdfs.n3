@@ -1,0 +1,318 @@
+@prefix : <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix daml: <http://www.daml.org/2001/03/daml+oil#> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix v: <http://infomesh.net/2001/05/rdflint/vars#> .
+    
+@forAll
+    v:a,
+    v:b,
+    v:c,
+    v:p,
+    v:q,
+    v:r,
+    v:s,
+    v:x,
+    v:y,
+    v:z .
+
+{ v:p = v:q . } => { v:q = v:p . } .
+
+{ v:a v:b v:c . v:d = v:a . } => { v:d v:b v:c . } .
+
+{ v:a v:b v:c . v:d = v:b . } => { v:a v:d v:c . } .
+
+{ v:a v:b v:c . v:d = v:c . } => { v:a v:b v:d . } .
+
+# 2.1: All things described by RDF are called resources, and are instances of the class rdfs:Resource. This is the class
+# of everything. All other classes are subclasses of this class. rdfs:Resource is an instance of rdfs:Class.
+
+:Resource
+    a :Class .
+
+# 2.2: This is the class of resources that are RDF classes. rdfs:Class is an instance of rdfs:Class.
+
+:Class
+    a :Class .
+
+# 2.3: The class rdfs:Literal is the class of literal values such as strings and integers. Property values such as
+# textual strings are examples of RDF literals.
+# rdfs:Literal is an instance of rdfs:Class. rdfs:Literal is a subclass of rdfs:Resource.
+
+:Literal
+    a :Class ;
+    :subClassOf :Resource .
+
+# 2.4: rdfs:Datatype is the class of datatypes. All instances of rdfs:Datatype correspond to the RDF model of a datatype
+# described in the RDF Concepts specification [RDF11-CONCEPTS]. rdfs:Datatype is both an instance of and a subclass
+# of rdfs:Class. Each instance of rdfs:Datatype is a subclass of rdfs:Literal.
+
+:Datatype
+    a :Class ;
+    :subClassOf :Class .
+
+{
+    v:x     a     :Datatype .
+} log:implies {
+    v:x     :subClassOf :Literal .
+} .
+
+# 2.5: The class rdf:langString is the class of language-tagged string values. rdf:langString is an instance of
+# rdfs:Datatype and a subclass of rdfs:Literal.
+
+rdf:langString
+    a :Datatype  .
+
+# 2.6: The class rdf:HTML is the class of HTML literal values. rdf:HTML is an instance of rdfs:Datatype and a
+# subclass of rdfs:Literal.
+
+rdf:HTML
+    a :Datatype .
+
+# 2.7: The class rdf:XMLLiteral is the class of XML literal values. rdf:XMLLiteral is an instance of rdfs:Datatype
+# and a subclass of rdfs:Literal.
+
+rdf:XMLLiteral
+    a :Datatype .
+
+# 2.8: rdf:Property is the class of RDF properties. rdf:Property is an instance of rdfs:Class.
+
+rdf:Property
+    a :Class .
+
+# 3.1: rdfs:range is an instance of rdf:Property that is used to state that the values of a property are instances of
+# one or more classes.
+
+:range
+    a rdf:Property ;
+    :domain rdf:Property ;
+    :range :Class .
+
+{
+    v:x     v:y     v:z .
+    v:y     :range  v:p .
+} log:implies {
+    v:z     a       v:p .
+} .
+
+# 3.2: rdfs:domain is an instance of rdf:Property that is used to state that any resource that has a given property is
+# an instance of one or more classes.
+
+:domain
+    a rdf:Property ;
+    :domain rdf:Property ;
+    :range :Class .
+
+{
+    v:x     v:y     v:z .
+    v:y     :domain v:p .
+} log:implies {
+    v:x     a       v:p .
+} .
+
+# 3.3: rdf:type is an instance of rdf:Property that is used to state that a resource is an instance of a class.
+# The rdfs:domain of rdf:type is rdfs:Resource. The rdfs:range of rdf:type is rdfs:Class.
+
+rdf:type
+    a rdf:Property ;
+    :domain :Resource ;
+    :range  :Class .
+
+# 3.4: The property rdfs:subClassOf is an instance of rdf:Property that is used to state that all the instances of one
+# class are instances of another.
+# The rdfs:domain of rdfs:subClassOf is rdfs:Class. The rdfs:range of rdfs:subClassOf is rdfs:Class.
+
+:subClassOf
+    a rdf:Property ;
+    :domain :Class ;
+    :range  :Class .
+
+{
+    v:x     :subClassOf v:y .
+    v:z     a           v:x .
+} log:implies {
+    v:z     a           v:y .
+} .
+
+{
+    v:a     a           v:b .
+    v:b     :subClassOf v:c .
+} log:implies {
+    v:a     a           v:c .
+} .
+
+# 3.5: The property rdfs:subPropertyOf is an instance of rdf:Property that is used to state that all resources related
+# by one property are also related by another.
+# The rdfs:domain of rdfs:subPropertyOf is rdf:Property. The rdfs:range of rdfs:subPropertyOf is rdf:Property.
+
+:subPropertyOf
+    a rdf:Property ;
+    :domain :Property ;
+    :range  :Property .
+
+{
+    v:p     :domain         v:r .
+    v:q     :subPropertyOf  v:p .
+} log:implies {
+    v:q     :domain         v:r .
+} .
+
+{
+    v:p     :range          v:r .
+    v:q     :subPropertyOf  v:p .
+} log:implies {
+    v:q     :range          v:r .
+} .
+
+# 3.6: rdfs:label is an instance of rdf:Property that may be used to provide a human-readable version of a resource's name.
+# The rdfs:domain of rdfs:label is rdfs:Resource. The rdfs:range of rdfs:label is rdfs:Literal.
+
+:label
+    a rdf:Property ;
+    :domain :Resource ;
+    :range :Literal .
+
+# 3.7: rdfs:comment is an instance of rdf:Property that may be used to provide a human-readable description of a resource.
+# The rdfs:domain of rdfs:comment is rdfs:Resource. The rdfs:range of rdfs:comment is rdfs:Literal.
+
+:comment
+    a rdf:Property ;
+    :domain :Resource ;
+    :range :Literal .
+
+# 5.1.1: The rdfs:Container class is a super-class of the RDF Container classes, i.e. rdf:Bag, rdf:Seq, rdf:Alt.
+
+:Container
+    a :Class .
+
+# 5.1.2: The rdf:Bag class is the class of RDF 'Bag' containers. It is a subclass of rdfs:Container.
+
+rdf:Bag
+    :subClassOf :Container .
+
+# 5.1.3: The rdf:Seq class is the class of RDF 'Sequence' containers. It is a subclass of rdfs:Container.
+
+rdf:Seq
+    :subClassOf :Container .
+
+# 5.1.4: The rdf:Alt class is the class of RDF 'Alternative' containers. It is a subclass of rdfs:Container.
+
+rdf:Alt
+    :subClassOf :Container .
+
+# 5.1.5: The rdfs:ContainerMembershipProperty class has as instances the properties rdf:_1, rdf:_2, rdf:_3 ... that
+# are used to state that a resource is a member of a container. rdfs:ContainerMembershipProperty is a subclass of
+# rdf:Property. Each instance of rdfs:ContainerMembershipProperty is an rdfs:subPropertyOf the rdfs:member property.
+
+:ContainerMembershipProperty
+    :subClassOf rdf:Property .
+
+{
+    v:x     v:y             v:z .
+    v:y     a               :ContainerMembershipProperty .
+} log:implies {
+    v:y     :subPropertyOf  :member .
+} .
+
+{
+    v:x     v:y             v:z .
+    v:y     :subPropertyOf  :member .
+} log:implies {
+    v:y     a               :ContainerMembershipProperty .
+} .
+
+# 5.1.6: rdfs:member is an instance of rdf:Property that is a super-property of all the container membership properties
+# i.e. each container membership property has an rdfs:subPropertyOf relationship to the property rdfs:member.
+# The rdfs:domain of rdfs:member is rdfs:Resource. The rdfs:range of rdfs:member is rdfs:Resource.
+
+:member
+    a rdf:Property ;
+    :domain :Resource ;
+    :range :Resource .
+
+# 5.2.1: rdf:List is an instance of rdfs:Class that can be used to build descriptions of lists and other list-like
+# structures.
+
+rdf:List
+    a :Class .
+
+# 5.2.2: rdf:first is an instance of rdf:Property that can be used to build descriptions of lists and other list-like
+# structures.
+# The rdfs:domain of rdf:first is rdf:List. The rdfs:range of rdf:first is rdfs:Resource.
+
+rdf:first
+    a :Property ;
+    :domain rdf:List ;
+    :range :Resource .
+
+# 5.2.3: rdf:rest is an instance of rdf:Property that can be used to build descriptions of lists and other list-like
+# structures.
+# The rdfs:domain of rdf:rest is rdf:List. The rdfs:range of rdf:rest is rdf:List.
+
+rdf:rest
+    a :Property ;
+    :domain rdf:List ;
+    :range rdf:List .
+
+# 5.2.4: The resource rdf:nil is an instance of rdf:List that can be used to represent an empty list or other list-like
+# structure.
+
+rdf:nil
+    a rdf:List .
+
+# 5.3.1: rdf:Statement is an instance of rdfs:Class. It is intended to represent the class of RDF statements. An RDF
+# statement is the statement made by a token of an RDF triple.
+
+rdf:Statement
+    a :Class .
+
+# 5.3.2: rdf:subject is an instance of rdf:Property that is used to state the subject of a statement.
+# The rdfs:domain of rdf:subject is rdf:Statement. The rdfs:range of rdf:subject is rdfs:Resource.
+
+rdf:subject
+    a :Property ;
+    :domain rdf:Statement ;
+    :range :Resource .
+
+# 5.3.3: rdf:predicate is an instance of rdf:Property that is used to state the predicate of a statement.
+# The rdfs:domain of rdf:predicate is rdf:Statement and the rdfs:range is rdfs:Resource.
+
+rdf:predicate
+    a :Property ;
+    :domain rdf:Statement ;
+    :range :Resource .
+
+# 5.3.4: rdf:object is an instance of rdf:Property that is used to state the object of a statement.
+# The rdfs:domain of rdf:object is rdf:Statement. The rdfs:range of rdf:object is rdfs:Resource.
+
+rdf:object
+    a :Property ;
+    :domain rdf:Statement ;
+    :range :Resource .
+
+# 5.4.1: rdfs:seeAlso is an instance of rdf:Property that is used to indicate a resource that might provide additional
+# information about the subject resource.
+# The rdfs:domain of rdfs:seeAlso is rdfs:Resource. The rdfs:range of rdfs:seeAlso is rdfs:Resource.
+
+:seeAlso
+    a rdf:Property ;
+    :domain :Resource ;
+    :range :Resource .
+
+# 5.4.2: rdfs:isDefinedBy is an instance of rdf:Property that is used to indicate a resource defining the subject
+# resource. This property may be used to indicate an RDF vocabulary in which a resource is described.
+# The rdfs:domain of rdfs:isDefinedBy is rdfs:Resource. The rdfs:range of rdfs:isDefinedBy is rdfs:Resource.
+
+:isDefinedBy
+    a rdf:Property ;
+    :domain :Resource ;
+    :range :Resource .
+
+# 5.4.3: rdf:value is an instance of rdf:Property that may be used in describing structured values.
+# The rdfs:domain of rdf:value is rdfs:Resource. The rdfs:range of rdf:value is rdfs:Resource.
+
+rdf:value
+    a rdf:Property ;
+    :domain :Resource ;
+    :range :Resource .
+
