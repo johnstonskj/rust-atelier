@@ -40,6 +40,12 @@ writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.5**
+
+* New cleaner mapping to RDF.
+* Moved detailed mapping docs to the book.
+* Merged model module into reader and writer.
+
 **Version 0.1.4**
 
 * Added `ModelWriter` implementation
