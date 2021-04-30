@@ -13,10 +13,10 @@ TBD
 */
 
 use crate::core::error::{Error, ErrorKind};
+#[cfg(feature = "describe")]
+use crate::format::document;
 #[cfg(feature = "json")]
 use crate::format::json;
-#[cfg(feature = "uml")]
-use crate::format::plant_uml;
 #[cfg(feature = "smithy")]
 use crate::format::smithy;
 use atelier_core::io::{ModelReader, ModelWriter};
@@ -24,7 +24,7 @@ use atelier_core::model::{Model, NamespaceID};
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::{read_dir, File};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -87,12 +87,12 @@ impl ModelAssembler {
     ///
     /// Add a single file path to the assembler for later processing.
     ///
-    pub fn add_file(&mut self, file_name: PathBuf) -> Result<(), Error> {
+    pub fn add_file(&mut self, file_name: &Path) -> Result<(), Error> {
         if file_name.is_file() && file_name.exists() && file_name.extension().is_some() {
             let extension = file_name.extension().unwrap();
             let extension = extension.to_string_lossy();
             if self.extensions.contains(extension.as_ref()) {
-                self.file_names.insert(file_name);
+                let _ = self.file_names.insert(PathBuf::from(file_name));
             } else {
                 return Err(ErrorKind::InvalidRepresentation(extension.to_string()).into());
             }
@@ -103,11 +103,11 @@ impl ModelAssembler {
     ///
     /// Add all files with known file extensions to the assembler for later processing.
     ///
-    pub fn add_files_in(&mut self, dir_name: PathBuf) -> Result<(), Error> {
+    pub fn add_files_in(&mut self, dir_name: &Path) -> Result<(), Error> {
         if dir_name.is_dir() && dir_name.exists() {
             for entry in read_dir(dir_name)? {
                 let entry = entry?;
-                self.add_file(entry.path())?;
+                self.add_file(&entry.path())?;
             }
         }
         Ok(())
@@ -117,7 +117,7 @@ impl ModelAssembler {
 ///
 /// Read a model from a file, this will only process a single file at a time.
 ///
-pub fn read_model_from_file(path: &PathBuf) -> Result<Model, Error> {
+pub fn read_model_from_file(path: &Path) -> Result<Model, Error> {
     match path.extension() {
         None => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),
         Some(ext) => {
@@ -148,7 +148,7 @@ pub fn read_model_from_file(path: &PathBuf) -> Result<Model, Error> {
 /// Write a model to a file, this will only process a single file at a time.
 ///
 pub fn write_model_to_file(
-    path: &PathBuf,
+    path: &Path,
     model: &Model,
     only_namespace: Option<NamespaceID>,
 ) -> Result<(), Error> {
@@ -159,6 +159,11 @@ pub fn write_model_to_file(
             let mut file = File::open(path).unwrap();
 
             match ext.as_ref() {
+                #[cfg(feature = "describe")]
+                document::FILE_EXTENSION => {
+                    let mut writer = document::writer::DocumentationWriter::default();
+                    writer.write(&mut file, model)
+                }
                 #[cfg(feature = "json")]
                 json::FILE_EXTENSION => {
                     let mut writer = json::JsonWriter::default();
@@ -167,11 +172,6 @@ pub fn write_model_to_file(
                 #[cfg(feature = "smithy")]
                 smithy::FILE_EXTENSION => {
                     let mut writer = smithy::SmithyWriter::new(only_namespace.unwrap());
-                    writer.write(&mut file, model)
-                }
-                #[cfg(feature = "uml")]
-                plant_uml::FILE_EXTENSION => {
-                    let mut writer = plant_uml::PlantUmlWriter::default();
                     writer.write(&mut file, model)
                 }
                 _ => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),

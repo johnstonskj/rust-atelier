@@ -7,7 +7,13 @@ Child modules that implement `ModelReader` and `ModelWriter` for specific repres
 // ------------------------------------------------------------------------------------------------
 
 #[cfg(feature = "describe")]
-pub use atelier_describe as describe;
+pub use atelier_describe::document;
+
+#[cfg(feature = "describe")]
+pub use atelier_describe::graphml;
+
+#[cfg(feature = "describe")]
+pub use atelier_describe::plant_uml;
 
 #[cfg(feature = "json")]
 pub use atelier_json as json;
@@ -20,9 +26,3 @@ pub use atelier_rdf as rdf;
 
 #[cfg(feature = "smithy")]
 pub use atelier_smithy as smithy;
-
-#[cfg(feature = "graphml")]
-pub mod graphml;
-
-#[cfg(feature = "uml")]
-pub mod plant_uml;

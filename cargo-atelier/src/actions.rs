@@ -5,9 +5,9 @@ use atelier_lib::core::error::{Error as ModelError, ErrorKind, Result as ModelRe
 use atelier_lib::core::io::read_model_from_string;
 use atelier_lib::core::io::ModelWriter;
 use atelier_lib::core::model::{Model, NamespaceID};
-use atelier_lib::format::describe::describe_model;
+use atelier_lib::format::document::writer::describe_model;
 use atelier_lib::format::json::{JsonReader, JsonWriter};
-use atelier_lib::format::plant_uml::PlantUmlWriter;
+use atelier_lib::format::plant_uml::writer::PlantUmlWriter;
 use atelier_lib::format::smithy::{SmithyReader, SmithyWriter};
 use somedoc::write::{write_document, OutputFormat};
 use std::error::Error;

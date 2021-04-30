@@ -1,6 +1,6 @@
 use crate::common::make_message_of_the_day_model;
 use atelier_core::io::write_model_to_string;
-use atelier_describe::DocumentationWriter;
+use atelier_describe::document::writer::DocumentationWriter;
 
 pub mod common;
 

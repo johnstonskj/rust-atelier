@@ -108,20 +108,20 @@ For the _message of the day_ model, this writer will generate the following XML.
 
 */
 
-use crate::core::error::{Error as ModelError, Result as ModelResult};
-use crate::core::io::ModelWriter;
-use crate::core::model::shapes::{
+use atelier_core::error::{Error as ModelError, Result as ModelResult};
+use atelier_core::io::ModelWriter;
+use atelier_core::model::shapes::{
     AppliedTraits, ListOrSet, Map, Operation, Resource, Service, Simple, StructureOrUnion,
 };
-use crate::core::model::visitor::{walk_model_mut, MutableModelVisitor};
-use crate::core::model::{Model, ShapeID};
-use crate::core::syntax::{
+use atelier_core::model::visitor::{walk_model_mut, MutableModelVisitor};
+use atelier_core::model::HasIdentity;
+use atelier_core::model::{Model, ShapeID};
+use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_INPUT,
     MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT, MEMBER_PUT,
     MEMBER_READ, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE, SHAPE_LIST, SHAPE_MAP,
     SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET, SHAPE_STRUCTURE, SHAPE_UNION,
 };
-use atelier_core::model::HasIdentity;
 use std::io::Write;
 
 // ------------------------------------------------------------------------------------------------
@@ -131,19 +131,15 @@ use std::io::Write;
 ///
 /// Writes out a model in the [GraphML](http://graphml.graphdrawing.org/index.html) XML form.
 ///
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug)]
 pub struct GraphMLWriter {}
-
-///
-/// The extension to use when reading from, or writing to, files of this type.
-///
-pub const FILE_EXTENSION: &str = "graphml";
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
 // ------------------------------------------------------------------------------------------------
 
-struct WriteVisitor<'a, W: std::io::Write> {
+struct WriteVisitor<'a, W: Write> {
     edge_count: u16,
     writer: &'a mut W,
 }
@@ -242,7 +238,7 @@ impl GraphMLWriter {
 
 // ------------------------------------------------------------------------------------------------
 
-impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
+impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     type Error = ModelError;
 
     fn simple_shape(
@@ -250,7 +246,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Simple,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, &value.to_string())?;
         self.traits(id, traits)?;
         Ok(())
@@ -261,7 +257,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &ListOrSet,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_LIST)?;
         self.traits(id, traits)?;
         self.member(id, value.member().target(), MEMBER_MEMBER)?;
@@ -273,7 +269,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &ListOrSet,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_SET)?;
         self.traits(id, traits)?;
         self.member(id, value.member().target(), MEMBER_MEMBER)?;
@@ -285,7 +281,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Map,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_MAP)?;
         self.traits(id, traits)?;
         self.member(id, value.key().target(), MEMBER_KEY)?;
@@ -298,7 +294,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &StructureOrUnion,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_STRUCTURE)?;
         self.traits(id, traits)?;
         for member in value.members() {
@@ -316,7 +312,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &StructureOrUnion,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_UNION)?;
         self.traits(id, traits)?;
         for member in value.members() {
@@ -334,7 +330,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Operation,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_OPERATION)?;
         self.traits(id, traits)?;
         if let Some(target) = value.input() {
@@ -354,7 +350,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Service,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         writeln!(self.writer, r#"        <node id="{}">"#, id)?;
         writeln!(
             self.writer,
@@ -382,7 +378,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Resource,
-    ) -> std::result::Result<(), Self::Error> {
+    ) -> Result<(), Self::Error> {
         self.node(id, SHAPE_RESOURCE)?;
         self.traits(id, traits)?;
         if let Some(target) = value.create() {
@@ -416,7 +412,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 }
 
-impl<'a, W: std::io::Write> WriteVisitor<'a, W> {
+impl<'a, W: Write> WriteVisitor<'a, W> {
     fn node(&mut self, id: &ShapeID, type_str: &str) -> ModelResult<()> {
         writeln!(self.writer, r#"        <node id="{}">"#, id)?;
         writeln!(
@@ -445,7 +441,7 @@ impl<'a, W: std::io::Write> WriteVisitor<'a, W> {
     }
 
     fn traits(&mut self, id: &ShapeID, traits: &AppliedTraits) -> ModelResult<()> {
-        for (trait_id, _) in traits {
+        for trait_id in traits.keys() {
             let edge_id = self.edge_id();
             writeln!(
                 self.writer,

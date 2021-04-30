@@ -51,6 +51,11 @@ let documentation = writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.5**
+
+* Refactored to have a similar structure to other reader/writer crates.
+* Moved GraphML and PlantUML into this crate from lib.
+
 **Version 0.1.4**
 
 * Updated due to trait API changes in core.

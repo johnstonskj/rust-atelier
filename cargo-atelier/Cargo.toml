@@ -26,7 +26,7 @@ default = ["color"]
 color = ["colored"]
 
 [dependencies]
-atelier_lib = { version = "~0.2", path = "../atelier-lib", features = ["describe", "json", "openapi", "smithy", "uml"]}
+atelier_lib = { version = "~0.2", path = "../atelier-lib", features = ["describe", "json", "openapi", "smithy"]}
 somedoc = "0.2.7"
 structopt = "0.3.15"
 

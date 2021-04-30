@@ -106,19 +106,19 @@ Which would produce an image like the following.
 
 */
 
-use crate::core::io::ModelWriter;
-use crate::core::model::shapes::{Shape, ShapeKind, TopLevelShape};
-use crate::core::model::values::Value;
-use crate::core::model::{Model, NamespaceID, ShapeID};
-use crate::core::prelude::PRELUDE_NAMESPACE;
-use crate::core::syntax::{
+use atelier_core::io::ModelWriter;
+use atelier_core::model::shapes::HasTraits;
+use atelier_core::model::shapes::{Shape, ShapeKind, TopLevelShape};
+use atelier_core::model::values::Value;
+use atelier_core::model::HasIdentity;
+use atelier_core::model::{Model, NamespaceID, ShapeID};
+use atelier_core::prelude::PRELUDE_NAMESPACE;
+use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_OPERATIONS, MEMBER_VERSION, SHAPE_BIG_DECIMAL,
     SHAPE_BIG_INTEGER, SHAPE_BLOB, SHAPE_BOOLEAN, SHAPE_BYTE, SHAPE_DOCUMENT, SHAPE_DOUBLE,
     SHAPE_FLOAT, SHAPE_INTEGER, SHAPE_LONG, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SHORT,
     SHAPE_STRING, SHAPE_TIMESTAMP, SHAPE_UNION,
 };
-use atelier_core::model::shapes::HasTraits;
-use atelier_core::model::HasIdentity;
 use std::collections::HashSet;
 use std::io::Write;
 use std::str::FromStr;
@@ -154,7 +154,7 @@ impl Default for PlantUmlWriter {
 }
 
 impl ModelWriter for PlantUmlWriter {
-    fn write(&mut self, w: &mut impl Write, model: &Model) -> crate::core::error::Result<()> {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> atelier_core::error::Result<()> {
         writeln!(w, "@startuml")?;
         writeln!(w)?;
         writeln!(w, "hide empty members")?;
@@ -198,7 +198,7 @@ impl PlantUmlWriter {
         Self { expand_smithy_api }
     }
 
-    fn write_smithy_model(&self, w: &mut impl Write) -> crate::core::error::Result<()> {
+    fn write_smithy_model(&self, w: &mut impl Write) -> atelier_core::error::Result<()> {
         writeln!(w, "package {} {{", PRELUDE_NAMESPACE)?;
         for name in &[
             SHAPE_BLOB,
@@ -227,7 +227,7 @@ impl PlantUmlWriter {
         w: &mut impl Write,
         service: &TopLevelShape,
         model: &Model,
-    ) -> crate::core::error::Result<()> {
+    ) -> atelier_core::error::Result<()> {
         writeln!(w, "    class {} <<{}>> {{", service.id(), SHAPE_SERVICE)?;
         let notes = self.write_class_traits(w, service, model)?;
         let body = service.body().as_service().unwrap();
@@ -255,7 +255,7 @@ impl PlantUmlWriter {
         w: &mut impl Write,
         resource: &TopLevelShape,
         model: &Model,
-    ) -> crate::core::error::Result<()> {
+    ) -> atelier_core::error::Result<()> {
         writeln!(w, "    class {} <<{}>> {{", resource.id(), SHAPE_RESOURCE)?;
         let notes = self.write_class_traits(w, resource, model)?;
         let body = resource.body().as_resource().unwrap();
@@ -306,7 +306,7 @@ impl PlantUmlWriter {
         w: &mut impl Write,
         structure: &TopLevelShape,
         model: &Model,
-    ) -> crate::core::error::Result<()> {
+    ) -> atelier_core::error::Result<()> {
         let (is_union, body) = match structure.body() {
             ShapeKind::Structure(s) => (false, s),
             ShapeKind::Union(s) => (true, s),
@@ -340,7 +340,7 @@ impl PlantUmlWriter {
         w: &mut impl Write,
         data_type: &TopLevelShape,
         model: &Model,
-    ) -> crate::core::error::Result<()> {
+    ) -> atelier_core::error::Result<()> {
         writeln!(w, "    class {} <<dataType>> {{", data_type.id())?;
         let notes = self.write_class_traits(w, data_type, model)?;
         writeln!(w, "    }}")?;
@@ -365,7 +365,7 @@ impl PlantUmlWriter {
         oper_id: &ShapeID,
         model: &Model,
         other_name: Option<&str>,
-    ) -> crate::core::error::Result<()> {
+    ) -> atelier_core::error::Result<()> {
         let operation = model.shape(oper_id).unwrap();
         let name = operation.id();
         let operation = operation.body().as_operation().unwrap();
@@ -398,7 +398,7 @@ impl PlantUmlWriter {
         w: &mut impl Write,
         shape: &TopLevelShape,
         _model: &Model,
-    ) -> crate::core::error::Result<Vec<String>> {
+    ) -> atelier_core::error::Result<Vec<String>> {
         let mut traits: Vec<String> = Default::default();
         let mut notes: Vec<String> = Default::default();
         for (id, value) in shape.traits() {
@@ -431,7 +431,7 @@ impl PlantUmlWriter {
         w: &mut impl Write,
         shape_id: &ShapeID,
         notes: Vec<String>,
-    ) -> crate::core::error::Result<()> {
+    ) -> atelier_core::error::Result<()> {
         for (idx, note) in notes.iter().enumerate() {
             if note.contains('\n') {
                 writeln!(w, "    note as {}_note_{}", shape_id, idx)?;

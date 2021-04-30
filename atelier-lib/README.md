@@ -28,6 +28,10 @@ assembly is a step often required by tools to build a single semantic model from
 
 ## Changes
 
+**Version 0.2.4**
+
+* Moved GraphML and PlantUML writers to the describe crate.
+
 **Version 0.2.3**
 
 * Removed dependency on deprecated 'select' crate.

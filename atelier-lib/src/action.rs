@@ -4,7 +4,9 @@ points ensure that standard lint and validation actions are always easily access
 */
 
 use atelier_core::action::lint::{run_linter_actions, NamingConventions, UnwelcomeTerms};
-use atelier_core::action::validate::{run_validation_actions, CorrectTypeReferences};
+use atelier_core::action::validate::{
+    run_validation_actions, CorrectTypeReferences, NoUnresolvedReferences,
+};
 use atelier_core::action::ActionIssue;
 use atelier_core::error::Result as ModelResult;
 use atelier_core::model::Model;
@@ -32,7 +34,10 @@ pub fn standard_model_lint(model: &Model, fail_fast: bool) -> ModelResult<Vec<Ac
 ///
 pub fn standard_model_validation(model: &Model, fail_fast: bool) -> ModelResult<Vec<ActionIssue>> {
     run_validation_actions(
-        &mut [Box::new(CorrectTypeReferences::default())],
+        &mut [
+            Box::new(NoUnresolvedReferences::default()),
+            Box::new(CorrectTypeReferences::default()),
+        ],
         model,
         fail_fast,
     )
