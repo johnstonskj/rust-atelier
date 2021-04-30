@@ -28,6 +28,11 @@ assembly is a step often required by tools to build a single semantic model from
 
 ## Changes
 
+**Version 0.2.3**
+
+* Removed dependency on deprecated 'select' crate.
+* Updated due to trait API changes in core.
+
 **Version 0.2.2**
 
 * Support for documentation writer.

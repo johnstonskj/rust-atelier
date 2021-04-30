@@ -111,7 +111,7 @@ For the _message of the day_ model, this writer will generate the following XML.
 use crate::core::error::{Error as ModelError, Result as ModelResult};
 use crate::core::io::ModelWriter;
 use crate::core::model::shapes::{
-    AppliedTrait, ListOrSet, Map, Operation, Resource, Service, Simple, StructureOrUnion,
+    AppliedTraits, ListOrSet, Map, Operation, Resource, Service, Simple, StructureOrUnion,
 };
 use crate::core::model::visitor::{walk_model_mut, MutableModelVisitor};
 use crate::core::model::{Model, ShapeID};
@@ -248,7 +248,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn simple_shape(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &Simple,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, &value.to_string())?;
@@ -259,7 +259,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn list(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &ListOrSet,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_LIST)?;
@@ -271,7 +271,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn set(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &ListOrSet,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_SET)?;
@@ -283,7 +283,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn map(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &Map,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_MAP)?;
@@ -296,7 +296,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn structure(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &StructureOrUnion,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_STRUCTURE)?;
@@ -314,7 +314,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn union(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &StructureOrUnion,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_UNION)?;
@@ -332,7 +332,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn operation(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &Operation,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_OPERATION)?;
@@ -352,7 +352,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn service(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &Service,
     ) -> std::result::Result<(), Self::Error> {
         writeln!(self.writer, r#"        <node id="{}">"#, id)?;
@@ -380,7 +380,7 @@ impl<'a, W: std::io::Write> MutableModelVisitor for WriteVisitor<'a, W> {
     fn resource(
         &mut self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         value: &Resource,
     ) -> std::result::Result<(), Self::Error> {
         self.node(id, SHAPE_RESOURCE)?;
@@ -444,15 +444,13 @@ impl<'a, W: std::io::Write> WriteVisitor<'a, W> {
         Ok(())
     }
 
-    fn traits(&mut self, id: &ShapeID, traits: &[AppliedTrait]) -> ModelResult<()> {
-        for applied in traits {
+    fn traits(&mut self, id: &ShapeID, traits: &AppliedTraits) -> ModelResult<()> {
+        for (trait_id, _) in traits {
             let edge_id = self.edge_id();
             writeln!(
                 self.writer,
                 r#"        <edge id="{}" source="{}" target="{}">"#,
-                edge_id,
-                id,
-                applied.id()
+                edge_id, id, trait_id
             )?;
             writeln!(self.writer, r#"            <data key="trait">true</data>"#)?;
             writeln!(self.writer, r#"        </edge>"#)?;

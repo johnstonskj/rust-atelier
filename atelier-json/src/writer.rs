@@ -2,7 +2,9 @@ use crate::syntax::*;
 use crate::FILE_EXTENSION;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, HasTraits, MemberShape, ShapeKind, TopLevelShape};
+use atelier_core::model::shapes::{
+    AppliedTraits, HasTraits, MemberShape, ShapeKind, TopLevelShape,
+};
 use atelier_core::model::values::{Number, Value as NodeValue};
 use atelier_core::model::{HasIdentity, Model, ShapeID};
 use serde_json::{to_writer, to_writer_pretty, Map, Number as JsonNumber, Value};
@@ -200,12 +202,12 @@ impl<'a> JsonWriter {
         Value::Object(shape_map)
     }
 
-    fn traits(&self, traits: &[AppliedTrait]) -> Value {
+    fn traits(&self, traits: &AppliedTraits) -> Value {
         let mut trait_map: Map<String, Value> = Default::default();
-        for a_trait in traits {
+        for (id, value) in traits {
             let _ = trait_map.insert(
-                a_trait.id().to_string(),
-                match a_trait.value() {
+                id.to_string(),
+                match value {
                     None => Value::Object(Default::default()),
                     Some(value) => self.value(value),
                 },

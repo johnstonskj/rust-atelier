@@ -3,7 +3,7 @@ use crate::FILE_EXTENSION;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelReader;
 use atelier_core::model::shapes::{
-    AppliedTrait, HasTraits, ListOrSet, Map as MapShape, MemberShape, ShapeKind, Simple,
+    AppliedTraits, HasTraits, ListOrSet, Map as MapShape, MemberShape, ShapeKind, Simple,
     StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::{Value as NodeValue, ValueMap};
@@ -108,7 +108,7 @@ impl JsonReader {
                 let mut shape = TopLevelShape::new(id.clone(), inner);
 
                 if let Some(Value::Object(vs)) = v.get(K_TRAITS) {
-                    shape.append_traits(self.traits(vs)?.as_ref())
+                    shape.append_traits(&self.traits(vs)?)?;
                 };
 
                 shapes.push((id.namespace().clone(), shape))
@@ -175,12 +175,12 @@ impl JsonReader {
         .into())
     }
 
-    fn traits(&self, json: &Map<String, Value>) -> ModelResult<Vec<AppliedTrait>> {
-        let mut traits: Vec<AppliedTrait> = Default::default();
+    fn traits(&self, json: &Map<String, Value>) -> ModelResult<AppliedTraits> {
+        let mut traits: AppliedTraits = Default::default();
         for (k, v) in json {
             let id = ShapeID::from_str(k)?;
             let inner = self.value(v)?;
-            traits.push(AppliedTrait::with_value(id, inner))
+            let _ = traits.insert(id, Some(inner));
         }
         Ok(traits)
     }
@@ -206,7 +206,7 @@ impl JsonReader {
                 let mut member =
                     MemberShape::new(parent_id.make_member(Identifier::from_str(k)?), target);
                 if let Some(Value::Object(traits)) = obj.get(K_TRAITS) {
-                    member.append_traits(self.traits(traits)?.as_slice());
+                    member.append_traits(&self.traits(traits)?)?;
                 }
                 members.push(member);
             } else {
@@ -224,7 +224,7 @@ impl JsonReader {
     fn target(&self, member: Option<&Value>) -> ModelResult<ShapeID> {
         if let Some(Value::Object(ms)) = member {
             if let Some(Value::String(member_id)) = ms.get(K_TARGET) {
-                return Ok(ShapeID::from_str(member_id)?);
+                return ShapeID::from_str(member_id);
             }
         }
         Err(ErrorKind::Deserialization(

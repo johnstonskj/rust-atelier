@@ -55,7 +55,7 @@ use crate::vocabulary;
 use atelier_core::error::{Error as ModelError, Result as ModelResult};
 use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{
-    AppliedTrait, HasTraits, ListOrSet, Map, MemberShape, Operation, Resource, Service, Simple,
+    AppliedTraits, HasTraits, ListOrSet, Map, MemberShape, Operation, Resource, Service, Simple,
     StructureOrUnion,
 };
 use atelier_core::model::values::{Number, Value};
@@ -188,7 +188,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn simple_shape(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &Simple,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -220,7 +220,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn list(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &ListOrSet,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -238,7 +238,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn set(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &ListOrSet,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -253,7 +253,7 @@ impl ModelVisitor for RdfModelVisitor {
         from_traits(&mut graph, subject.into(), traits)
     }
 
-    fn map(&self, id: &ShapeID, traits: &[AppliedTrait], shape: &Map) -> Result<(), Self::Error> {
+    fn map(&self, id: &ShapeID, traits: &AppliedTraits, shape: &Map) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
         let mut graph = self.graph.borrow_mut();
         add_shape(&mut graph, self.model_subject.clone(), subject.clone());
@@ -270,7 +270,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn structure(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &StructureOrUnion,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -290,7 +290,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn union(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &StructureOrUnion,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -310,7 +310,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn service(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &Service,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -346,7 +346,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn operation(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &Operation,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -384,7 +384,7 @@ impl ModelVisitor for RdfModelVisitor {
     fn resource(
         &self,
         id: &ShapeID,
-        traits: &[AppliedTrait],
+        traits: &AppliedTraits,
         shape: &Resource,
     ) -> Result<(), Self::Error> {
         let subject: IRIRef = shape_to_iri(id);
@@ -495,7 +495,7 @@ impl ModelVisitor for RdfModelVisitor {
         from_traits(&mut graph, subject.into(), traits)
     }
 
-    fn unresolved_id(&self, _id: &ShapeID, _traits: &[AppliedTrait]) -> Result<(), Self::Error> {
+    fn unresolved_id(&self, _id: &ShapeID, _traits: &AppliedTraits) -> Result<(), Self::Error> {
         Ok(())
     }
 }
@@ -539,9 +539,9 @@ fn from_member(
 fn from_traits(
     graph: &mut RefMut<'_, MemGraph>,
     parent: SubjectNode,
-    traits: &[AppliedTrait],
+    traits: &AppliedTraits,
 ) -> Result<(), ModelError> {
-    for a_trait in traits {
+    for (id, value) in traits {
         let trait_node = SubjectNode::blank();
         graph.insert(Statement::new(
             parent.clone(),
@@ -551,9 +551,9 @@ fn from_traits(
         graph.insert(Statement::new(
             trait_node.clone(),
             vocabulary::trait_shape().clone(),
-            shape_to_iri(a_trait.id()).into(),
+            shape_to_iri(id).into(),
         ));
-        if let Some(value) = a_trait.value() {
+        if let Some(value) = value {
             from_value(
                 graph,
                 trait_node.clone(),

@@ -40,6 +40,10 @@ writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.6**
+
+* Updated due to trait API changes in core.
+
 **Version 0.1.5**
 
 * New cleaner mapping to RDF.

@@ -176,7 +176,7 @@ fn describe_model_shapes(
         .collect();
     if !shape_names.is_empty() {
         let doc = doc.add_heading(Heading::section(&format!("Namespace {}", namespace)));
-        shape_names.sort_by(|l, r| l.to_string().cmp(&r.to_string()));
+        shape_names.sort_by_key(|l| l.to_string());
         for shape in shape_names {
             let _ = describe_shape(model.shape(shape).unwrap(), doc)?;
         }
@@ -219,16 +219,16 @@ fn describe_shape(shape: &TopLevelShape, doc: &mut Document) -> ModelResult<()> 
 }
 
 fn describe_documentation(shape: &impl HasTraits, doc: &mut Document) -> ModelResult<()> {
-    let doc_trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_DOCUMENTATION, None);
-    for doc_value in shape.traits().iter().filter(|t| t.id() == &doc_trait_id) {
-        if let Some(doc_value) = doc_value.value() {
+    let trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_DOCUMENTATION, None);
+    if let Some(trait_value) = shape.trait_named(&trait_id) {
+        if let Some(doc_value) = trait_value {
             let _ = doc.add_paragraph(Paragraph::plain_str(doc_value.as_string().unwrap()));
         }
     }
 
-    let doc_trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_EXTERNALDOCUMENTATION, None);
-    for doc_value in shape.traits().iter().filter(|t| t.id() == &doc_trait_id) {
-        if let Some(Value::Object(value_map)) = doc_value.value() {
+    let trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_EXTERNALDOCUMENTATION, None);
+    if let Some(trait_value) = shape.trait_named(&trait_id) {
+        if let Some(Value::Object(value_map)) = trait_value {
             let mut links: Vec<InlineContent> = value_map
                 .iter()
                 .map(|(k, v)| {
@@ -334,9 +334,9 @@ fn describe_documentation(shape: &impl HasTraits, doc: &mut Document) -> ModelRe
     // TODO: since, value: String
     if shape.is_tagged() {
         let mut tags: Vec<String> = Vec::new();
-        let doc_trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_TAGS, None);
-        for doc_value in shape.traits().iter().filter(|t| t.id() == &doc_trait_id) {
-            match doc_value.value() {
+        let trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_TAGS, None);
+        if let Some(trait_value) = shape.trait_named(&trait_id) {
+            match trait_value {
                 Some(Value::Array(values)) => tags.extend(values.iter().map(|v| v.to_string())),
                 Some(Value::String(value)) => tags.push(value.clone()),
                 _ => {}

@@ -51,6 +51,10 @@ let documentation = writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.4**
+
+* Updated due to trait API changes in core.
+
 **Version 0.1.3**
 
 * Refactored `DocumentationWriter` so that it only emits CommonMark, more closely aligned with Smithy IDL.

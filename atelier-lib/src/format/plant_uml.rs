@@ -401,21 +401,21 @@ impl PlantUmlWriter {
     ) -> crate::core::error::Result<Vec<String>> {
         let mut traits: Vec<String> = Default::default();
         let mut notes: Vec<String> = Default::default();
-        for a_trait in shape.traits() {
-            if a_trait.id() == &ShapeID::from_str("smithy.api#error").unwrap() {
+        for (id, value) in shape.traits() {
+            if id == &ShapeID::from_str("smithy.api#error").unwrap() {
                 // ignore
-            } else if a_trait.id() == &ShapeID::from_str("smithy.api#documentation").unwrap() {
-                if let Some(Value::String(s)) = a_trait.value() {
+            } else if id == &ShapeID::from_str("smithy.api#documentation").unwrap() {
+                if let Some(Value::String(s)) = value {
                     notes.push(s.clone())
                 }
             } else {
-                traits.push(match a_trait.value() {
-                    None | Some(Value::None) => format!("    @{}", a_trait.id()),
-                    Some(Value::String(v)) => format!("    @{} = \"{}\"", a_trait.id(), v),
-                    Some(Value::Number(v)) => format!("    @{} = {}", a_trait.id(), v),
-                    Some(Value::Boolean(v)) => format!("    @{} = {}", a_trait.id(), v),
-                    Some(Value::Array(_)) => format!("    @{} = [ .. ]", a_trait.id()),
-                    Some(Value::Object(_)) => format!("    @{} = {{ .. }}", a_trait.id()),
+                traits.push(match value {
+                    None | Some(Value::None) => format!("    @{}", id),
+                    Some(Value::String(v)) => format!("    @{} = \"{}\"", id, v),
+                    Some(Value::Number(v)) => format!("    @{} = {}", id, v),
+                    Some(Value::Boolean(v)) => format!("    @{} = {}", id, v),
+                    Some(Value::Array(_)) => format!("    @{} = [ .. ]", id),
+                    Some(Value::Object(_)) => format!("    @{} = {{ .. }}", id),
                 });
             }
         }

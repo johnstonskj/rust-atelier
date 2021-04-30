@@ -1,8 +1,8 @@
 use atelier_core::error::Result;
 use atelier_core::io::ModelWriter;
-use atelier_core::model::shapes::{AppliedTrait, HasTraits, MemberShape, ShapeKind};
+use atelier_core::model::shapes::{HasTraits, MemberShape, ShapeKind};
 use atelier_core::model::values::Value;
-use atelier_core::model::{HasIdentity, Model, NamespaceID};
+use atelier_core::model::{HasIdentity, Model, NamespaceID, ShapeID};
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
     MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
@@ -103,8 +103,8 @@ impl SmithyWriter {
             .filter(|shape| shape.id().namespace() == &from_namespace)
         {
             if !shape.body().is_unresolved() {
-                for a_trait in shape.traits() {
-                    self.write_trait(w, a_trait, "")?;
+                for (id, value) in shape.traits() {
+                    self.write_trait(w, id, value, "")?;
                 }
             }
             match shape.body() {
@@ -260,9 +260,9 @@ impl SmithyWriter {
                 }
                 ShapeKind::Unresolved => {
                     if shape.has_traits() {
-                        for a_trait in shape.traits() {
+                        for (id, value) in shape.traits() {
                             write!(w, "{} {} ", SHAPE_APPLY, shape.id())?;
-                            self.write_trait(w, a_trait, "")?;
+                            self.write_trait(w, id, value, "")?;
                         }
                     }
                 }
@@ -275,18 +275,19 @@ impl SmithyWriter {
     fn write_trait(
         &mut self,
         w: &mut impl Write,
-        a_trait: &AppliedTrait,
+        id: &ShapeID,
+        value: &Option<Value>,
         prefix: &str,
     ) -> Result<()> {
-        let trait_namespace = a_trait.id().namespace();
+        let trait_namespace = id.namespace();
         let id = if *trait_namespace == self.namespace || *trait_namespace == self.prelude_namespace
         {
-            a_trait.id().shape_name().to_string()
+            id.shape_name().to_string()
         } else {
-            a_trait.id().to_string()
+            id.to_string()
         };
         write!(w, "{}{}{}", prefix, TRAIT_PREFIX, id)?;
-        match a_trait.value() {
+        match value {
             None => writeln!(w)?,
             Some(Value::Object(map)) => writeln!(
                 w,
@@ -319,8 +320,8 @@ impl SmithyWriter {
         member: &MemberShape,
         prefix: &str,
     ) -> Result<()> {
-        for a_trait in member.traits() {
-            self.write_trait(w, a_trait, prefix)?;
+        for (id, value) in member.traits() {
+            self.write_trait(w, id, value, prefix)?;
         }
         writeln!(
             w,

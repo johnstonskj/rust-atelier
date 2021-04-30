@@ -43,6 +43,10 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.6**
+
+* Updated due to trait API changes in core.
+
 **Version 0.2.5**
 
 * Updated Smithy grammar and parser to match changes in the specification:
