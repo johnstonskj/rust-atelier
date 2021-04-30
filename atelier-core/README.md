@@ -96,6 +96,11 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.8**
+
+* Added test cases for merging metadata, shapes, and traits.
+* Fixed recursion bug in metadata merge.
+
 **Version 0.2.7**
 
 * Reworked the `Model::add_metadata` method to perform the Smithy required merge/conflict checks.

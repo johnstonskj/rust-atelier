@@ -76,7 +76,20 @@ pub trait HasTraits {
         self.apply_with_value(id, None)
     }
 
-    /// Apply a trait with the provided identifier and value to this model element.
+    ///
+    /// Apply a trait with the provided identifier and value to this model element ensuring the
+    /// conflict resolution rules are applied.
+    ///
+    /// From [Trait conflict resolution](https://awslabs.github.io/smithy/1.0/spec/core/model.html#trait-conflict-resolution):
+    ///
+    /// > Duplicate traits applied to shapes are allowed in the following cases:
+    /// >
+    /// > 1. If the trait is a list or set shape, then the conflicting trait values are concatenated
+    /// >    into a single trait value.
+    /// > 1. If both values are exactly equal, then the conflict is ignored.
+    /// >
+    /// > All other instances of trait collisions are prohibited.
+    ///
     fn apply_with_value(&mut self, a_trait: ShapeID, value: TraitValue) -> Result<()>;
 
     /// Add all these elements to this member's collection.
@@ -288,7 +301,9 @@ macro_rules! has_traits_impl {
                 id: ShapeID,
                 value: Option<Value>,
             ) -> $crate::error::Result<()> {
-                if let Some(trait_value) = self.trait_named(&id) {
+                if id.is_member() {
+                    return Err(crate::error::ErrorKind::ShapeIDExpected(id).into());
+                } else if let Some(trait_value) = self.trait_named(&id) {
                     let new_value = $crate::model::shapes::merge_traits(&id, &trait_value, &value)?;
                     let _ = self.$field_name.insert(id, new_value);
                 } else {
@@ -365,6 +380,11 @@ impl NonTraitEq for TopLevelShape {
                 }
                 (ShapeKind::Union(l), ShapeKind::Union(r)) => {
                     l.members.keys().count() == r.members.keys().count()
+                        && l.members.keys().all(|k| {
+                            l.member(k)
+                                .unwrap()
+                                .equal_without_traits(r.member(k).unwrap())
+                        })
                 }
                 (ShapeKind::Service(l), ShapeKind::Service(r)) => l == r,
                 (ShapeKind::Operation(l), ShapeKind::Operation(r)) => l == r,

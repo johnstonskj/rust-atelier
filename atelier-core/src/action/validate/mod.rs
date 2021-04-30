@@ -21,6 +21,8 @@ refer to shapes of the correct type.
 So, a `List` cannot have members that are services and a `Service`'s operations actually have
 to be `Operation` shapes."# }
 
+linter_or_validator_defn! { NoUnresolvedReferences, r#"This validator ensures that the model
+is complete; the model contains no unresolved shape references."# }
 // ------------------------------------------------------------------------------------------------
 // Public Functions
 // ------------------------------------------------------------------------------------------------
@@ -276,5 +278,29 @@ impl CorrectTypeReferences {
                 shape.clone(),
             ));
         }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+
+linter_or_validator_default_impl! { NoUnresolvedReferences }
+
+linter_or_validator_action_impl! { NoUnresolvedReferences, "NoUnresolvedReferences" }
+
+impl Validator for NoUnresolvedReferences {
+    fn validate(&mut self, model: &Model) -> ModelResult<()> {
+        for shape_id in model.shapes().filter_map(|shape| match shape.body() {
+            ShapeKind::Unresolved => Some(shape.id().to_string()),
+            _ => None,
+        }) {
+            self.issues.push(ActionIssue::error(
+                self.label(),
+                &format!(
+                    "The model has an unresolved reference to shape '{}'",
+                    shape_id
+                ),
+            ));
+        }
+        Ok(())
     }
 }

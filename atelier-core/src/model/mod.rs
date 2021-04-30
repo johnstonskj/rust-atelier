@@ -149,22 +149,21 @@ impl Model {
     /// >    values are not equal, then the key is invalid and there is a metadata conflict error.
     ///
     pub fn add_metadata(&mut self, key: String, value: Value) -> ModelResult<Option<Value>> {
-        if let Some(self_value) = self.metadata_value(&key) {
+        Ok(if let Some(self_value) = self.metadata_value(&key) {
             if self_value.is_array() && value.is_array() {
                 let mut self_array = self_value.as_array().unwrap().clone();
                 let other_array = value.as_array().unwrap();
                 self_array.extend(other_array.iter().cloned());
-                let _ = self.add_metadata(key.clone(), Value::Array(self_array));
+                self.metadata.insert(key.clone(), Value::Array(self_array))
             } else if *self_value == value {
                 // name conflict is ignored.
+                None
             } else {
                 return Err(ErrorKind::MergeMetadataConflict(key.clone()).into());
             }
         } else {
-            let _ = self.add_metadata(key.clone(), value.clone());
-        }
-
-        Ok(self.metadata.insert(key, value))
+            self.metadata.insert(key.clone(), value)
+        })
     }
 
     /// Remove the value with the associated key, from this model's **metadata** collection.
@@ -211,7 +210,7 @@ impl Model {
     /// >    1. Conflicting aggregate shapes MUST contain the same members that target the same shapes.
     /// >    1. Conflicting service shapes MUST contain the same properties and target the same shapes.
     ///
-    pub fn add_shape(&mut self, shape: TopLevelShape) -> ModelResult<Option<TopLevelShape>> {
+    pub fn add_shape(&mut self, shape: TopLevelShape) -> ModelResult<()> {
         if shape.id().is_member() {
             return Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into());
         } else if let Some(existing) = self.shape_mut(shape.id()) {
@@ -227,8 +226,10 @@ impl Model {
                     return Err(ErrorKind::MergeShapeConflict(existing.id().clone()).into());
                 }
             }
+        } else {
+            let _ = self.shapes.insert(shape.id().clone(), shape);
         }
-        Ok(self.shapes.insert(shape.id().clone(), shape))
+        Ok(())
     }
 
     /// Remove any element, equal to the provided value, from this model's **shapes** collection.

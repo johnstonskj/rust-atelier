@@ -1,4 +1,6 @@
-use atelier_core::action::validate::{run_validation_actions, CorrectTypeReferences};
+use atelier_core::action::validate::{
+    run_validation_actions, CorrectTypeReferences, NoUnresolvedReferences,
+};
 use atelier_core::builder::{
     ModelBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder, TraitBuilder,
 };
@@ -35,6 +37,33 @@ fn test_correct_type_references() {
     let model: Model = make_model();
     let result = run_validation_actions(
         &mut [Box::new(CorrectTypeReferences::default())],
+        &model,
+        false,
+    );
+    assert!(result.is_ok());
+    let actual = result.unwrap();
+    println!("{:#?}", actual);
+    assert_eq!(actual.len(), expected.len());
+    let actual: Vec<String> = actual
+        .iter()
+        .map(|issue| issue.message())
+        .cloned()
+        .collect();
+    println!("{:#?}", actual);
+    for message in &expected {
+        assert!(actual.contains(&message.to_string()));
+    }
+}
+
+#[test]
+fn test_unresolved_references() {
+    let expected = ["The model has an unresolved reference to shape 'foo.baz#Bar'"];
+    let model: Model = ModelBuilder::new(Version::V10, "smithy.example")
+        .uses("foo.baz#Bar")
+        .simple_shape(SimpleShapeBuilder::boolean("MyBoolean"))
+        .into();
+    let result = run_validation_actions(
+        &mut [Box::new(NoUnresolvedReferences::default())],
         &model,
         false,
     );

@@ -2,10 +2,14 @@
 Provides constant valued names from the prelude model described in the Smithy specification.
 */
 
+use crate::error::Result;
+
 // ------------------------------------------------------------------------------------------------
 // Macros
 // ------------------------------------------------------------------------------------------------
 
+use crate::model::{Identifier, NamespaceID, ShapeID};
+use std::str::FromStr;
 #[doc(hidden)]
 macro_rules! string_const {
     ($name:ident, $value:expr, $comment:expr) => {
@@ -573,3 +577,18 @@ string_const!(
     "length",
     " The identifier for the structure trait `length`"
 );
+
+// ------------------------------------------------------------------------------------------------
+// Public Functions
+// ------------------------------------------------------------------------------------------------
+
+///
+/// Create a ShapeID corresponding to a prelude top-level shape.
+///
+pub fn prelude_shape_named(name: &str) -> Result<ShapeID> {
+    Ok(ShapeID::new(
+        NamespaceID::new_unchecked(PRELUDE_NAMESPACE),
+        Identifier::from_str(name)?,
+        None,
+    ))
+}
