@@ -1,6 +1,7 @@
 use crate::error::{ErrorKind, Result as ModelResult};
 use crate::model::identity::HasIdentity;
-use crate::model::shapes::{AppliedTrait, HasTraits, Shape};
+use crate::model::shapes::{AppliedTraits, HasTraits, NonTraitEq, Shape};
+use crate::model::values::Value;
 use crate::model::{Identifier, ShapeID};
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use std::collections::HashMap;
@@ -16,7 +17,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, PartialEq)]
 pub struct MemberShape {
     id: ShapeID,
-    traits: Vec<AppliedTrait>,
+    traits: AppliedTraits,
     target: ShapeID,
 }
 
@@ -51,6 +52,12 @@ pub struct StructureOrUnion {
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+impl NonTraitEq for MemberShape {
+    fn equal_without_traits(&self, other: &Self) -> bool {
+        self.id() == other.id() && self.target() == other.target()
+    }
+}
 
 impl HasIdentity for MemberShape {
     fn id(&self) -> &ShapeID {
@@ -90,12 +97,12 @@ impl MemberShape {
     }
 
     /// Construct a new Member shape with the given target shape (type).
-    pub fn with_traits(id: ShapeID, target: ShapeID, traits: &[AppliedTrait]) -> Self {
-        Self {
-            id,
-            traits: traits.to_vec(),
-            target,
-        }
+    pub fn with_traits(
+        id: ShapeID,
+        target: ShapeID,
+        traits: HashMap<ShapeID, Option<Value>>,
+    ) -> Self {
+        Self { id, traits, target }
     }
 
     /// Return the shape identifier which is the target type for this member.

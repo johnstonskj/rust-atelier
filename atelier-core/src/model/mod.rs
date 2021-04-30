@@ -5,7 +5,7 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 */
 
 use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::shapes::TopLevelShape;
+use crate::model::shapes::{HasTraits, NonTraitEq, TopLevelShape};
 use crate::model::values::{Value, ValueMap};
 use crate::Version;
 use std::collections::HashMap;
@@ -53,19 +53,40 @@ impl Model {
     // --------------------------------------------------------------------------------------------
 
     ///
-    /// Merge the other model into this one. This follows the rules set out in section 20,
-    /// [Merging models](https://awslabs.github.io/smithy/1.0/spec/core/merging-models.html) of
-    /// the Smithy specification.
+    /// Merge the other model into this one. This follows the rules set out in the
+    /// [Model files](https://awslabs.github.io/smithy/1.0/spec/core/model.html#model-files) section
+    /// of the Smithy specification.
     ///
-    /// > _Smithy models MAY be divided into multiple files so that they are easier to maintain and
-    /// > evolve. Smithy tools MUST take the following steps to merge two models together to form a
-    /// > composite model_:
+    /// > Smithy models MAY be divided into multiple files so that they are easier to maintain and
+    /// > evolve. One or more model files can be assembled (or merged) together to form a semantic
+    /// > model. The model files that form a semantic model are not required to all be defined in
+    /// > the same representation; some models can be defined using the IDL and others can be
+    /// > defined using the JSON AST.
     /// >
-    /// > * _Assert that both models use a version that is compatible with the tool versions specified_.
-    /// > * _Duplicate shape names, if found, MUST cause the model merge to fail. See Shape ID
-    /// >   conflicts for more information_.
-    /// > * _Merge any conflicting trait definitions using trait conflict resolution_.
-    /// > * _Merge the metadata properties of both models using the metadata merge rules_.
+    /// > Model files do not explicitly include other model files; this responsibility is left to
+    /// > tooling to ensure that all necessary model files are merged together to form a valid
+    /// > semantic model.
+    /// >
+    /// > **1.3.1. Merging model files**
+    /// >
+    /// > Implementations MUST take the following steps when merging two or more model files to form
+    /// > a semantic model:
+    /// >
+    /// > 1. Merge the metadata objects of all model files using the steps defined in Merging metadata.
+    /// > 1. Shapes defined in a single model file are added to the semantic model as-is.
+    /// > 1. Shapes with the same shape ID defined in multiple model files are reconciled using the
+    /// >    following rules:
+    /// >    1. All conflicting shapes MUST have the same shape type.
+    /// >    1. Conflicting aggregate shapes MUST contain the same members that target the same shapes.
+    /// >    1. Conflicting service shapes MUST contain the same properties and target the same shapes.
+    /// > 1. Conflicting traits defined in shape definitions or through apply statements are reconciled
+    /// >    using trait conflict resolution.
+    /// >
+    /// > **Note**
+    /// > The following guidance is non-normative. Because the Smithy IDL allows forward references
+    /// > to shapes that have not yet been defined or shapes that are defined in another model file,
+    /// > implementations likely need to defer resolving relative shape IDs to absolute shape IDs
+    /// > until all model files are loaded.
     ///
     pub fn merge(&mut self, other: Model) -> ModelResult<()> {
         // Ensure version match
@@ -73,11 +94,13 @@ impl Model {
             return Err(ErrorKind::InvalidVersionNumber(other.smithy_version.to_string()).into());
         }
 
-        // shape names
+        for (key, value) in other.metadata {
+            let _ = self.add_metadata(key, value)?;
+        }
 
-        // traits
-
-        // metadata
+        for (_, shape) in other.shapes {
+            let _ = self.add_shape(shape)?;
+        }
 
         Ok(())
     }
@@ -106,9 +129,42 @@ impl Model {
         self.metadata.get(key)
     }
 
-    /// Add a key/value pair to this model's **metadata** collection.
-    pub fn add_metadata(&mut self, key: String, metadata_value: Value) -> Option<Value> {
-        self.metadata.insert(key, metadata_value)
+    ///
+    /// Add a key/value pair to this model's **metadata** collection. This performs the Smithy
+    /// conflict resolution to ensure the model is valid.
+    ///
+    /// From [Merging metadata](https://awslabs.github.io/smithy/1.0/spec/core/model.html#merging-metadata):
+    ///
+    /// > When a conflict occurs between top-level metadata key-value pairs, metadata is merged
+    /// > using the following logic:
+    /// >
+    /// > 1. If a metadata key is only present in one model, then the entry is valid and added to
+    /// >    the merged model.
+    /// > 1. If both models contain the same key and both values are arrays, then the entry is
+    /// >    valid; the values of both arrays are concatenated into a single array and added to the
+    /// >    merged model.
+    /// > 1. If both models contain the same key and both values are exactly equal, then the
+    /// >    conflict is ignored and the value is added to the merged model.
+    /// > 1. If both models contain the same key, the values do not both map to arrays, and the
+    /// >    values are not equal, then the key is invalid and there is a metadata conflict error.
+    ///
+    pub fn add_metadata(&mut self, key: String, value: Value) -> ModelResult<Option<Value>> {
+        if let Some(self_value) = self.metadata_value(&key) {
+            if self_value.is_array() && value.is_array() {
+                let mut self_array = self_value.as_array().unwrap().clone();
+                let other_array = value.as_array().unwrap();
+                self_array.extend(other_array.iter().cloned());
+                let _ = self.add_metadata(key.clone(), Value::Array(self_array));
+            } else if *self_value == value {
+                // name conflict is ignored.
+            } else {
+                return Err(ErrorKind::MergeMetadataConflict(key.clone()).into());
+            }
+        } else {
+            let _ = self.add_metadata(key.clone(), value.clone());
+        }
+
+        Ok(self.metadata.insert(key, value))
     }
 
     /// Remove the value with the associated key, from this model's **metadata** collection.
@@ -138,15 +194,41 @@ impl Model {
         self.shapes.get(shape_id)
     }
 
-    /// Add an instance of `TopLevelShape` to  this model's **shapes** collection.
+    /// Returns the shape in this model's **shapes** collection with the provided `ShapeID`.
+    pub fn shape_mut(&mut self, shape_id: &ShapeID) -> Option<&mut TopLevelShape> {
+        self.shapes.get_mut(shape_id)
+    }
+
+    ///
+    /// Add an instance of `TopLevelShape` to  this model's **shapes** collection. This performs
+    /// the Smithy conflict resolution to ensure the model is valid.
+    ///
+    /// From [Merging metadata](https://awslabs.github.io/smithy/1.0/spec/core/model.html#merging-metadata):
+    ///
+    /// > 1. Shapes with the same shape ID defined in multiple model files are reconciled using the
+    /// >    following rules:
+    /// >    1. All conflicting shapes MUST have the same shape type.
+    /// >    1. Conflicting aggregate shapes MUST contain the same members that target the same shapes.
+    /// >    1. Conflicting service shapes MUST contain the same properties and target the same shapes.
+    ///
     pub fn add_shape(&mut self, shape: TopLevelShape) -> ModelResult<Option<TopLevelShape>> {
         if shape.id().is_member() {
-            Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into())
-        } else {
-            // TODO: check for any existing unresolved shape
-            // (https://github.com/johnstonskj/rust-atelier/issues/3)
-            Ok(self.shapes.insert(shape.id().clone(), shape))
+            return Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into());
+        } else if let Some(existing) = self.shape_mut(shape.id()) {
+            if !existing.body().is_unresolved() {
+                // > 1. All conflicting shapes MUST have the same shape type.
+                // > 1. Conflicting aggregate shapes MUST contain the same members that target the same shapes.
+                // > 1. Conflicting service shapes MUST contain the same properties and target the same shapes.
+                if existing.equal_without_traits(&shape) {
+                    for (id, value) in shape.traits() {
+                        existing.apply_with_value(id.clone(), value.clone())?;
+                    }
+                } else {
+                    return Err(ErrorKind::MergeShapeConflict(existing.id().clone()).into());
+                }
+            }
         }
+        Ok(self.shapes.insert(shape.id().clone(), shape))
     }
 
     /// Remove any element, equal to the provided value, from this model's **shapes** collection.

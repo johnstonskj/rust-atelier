@@ -48,11 +48,12 @@
 
 use crate::action::{Action, ActionIssue, IssueLevel, Linter};
 use crate::error::Result as ModelResult;
-use crate::model::shapes::{AppliedTrait, HasTraits, ShapeKind};
+use crate::model::shapes::{HasTraits, ShapeKind};
+use crate::model::values::Value;
 use crate::model::{HasIdentity, Identifier, Model, ShapeID};
 use heck::{CamelCase, MixedCase};
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -189,9 +190,9 @@ impl NamingConventions {
             ));
         }
     }
-    fn check_applied_trait_names(&mut self, traits: &[AppliedTrait]) {
-        for a_trait in traits {
-            self.check_trait_name(a_trait.id());
+    fn check_applied_trait_names(&mut self, ids: &HashMap<ShapeID, Option<Value>>) {
+        for (id, _) in ids {
+            self.check_trait_name(id);
         }
     }
 }
@@ -207,8 +208,8 @@ impl Linter for UnwelcomeTerms {
         for shape in model.shapes() {
             let shape_id = shape.id();
             self.check_shape_id(shape_id);
-            for a_trait in shape.traits() {
-                self.check_shape_id(a_trait.id());
+            for (id, _) in shape.traits() {
+                self.check_shape_id(id);
             }
 
             match shape.body() {
@@ -216,8 +217,8 @@ impl Linter for UnwelcomeTerms {
                     for member in body.members() {
                         self.check_shape_id(member.id());
                         self.check_shape_id(member.target());
-                        for a_trait in member.traits() {
-                            self.check_shape_id(a_trait.id());
+                        for (id, _) in member.traits() {
+                            self.check_shape_id(id);
                         }
                     }
                 }

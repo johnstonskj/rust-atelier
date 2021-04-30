@@ -8,6 +8,7 @@ enumeration, `ShapeBody`, to represent each of the productions referenced by `sh
 
 */
 
+use crate::error::{ErrorKind, Result};
 use crate::model::identity::HasIdentity;
 use crate::model::{values::Value, Identifier, ShapeID};
 use crate::prelude::{
@@ -17,6 +18,8 @@ use crate::prelude::{
     TRAIT_REQUIRESLENGTH, TRAIT_SENSITIVE, TRAIT_SINCE, TRAIT_STREAMING, TRAIT_TAGS, TRAIT_TITLE,
     TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
 };
+use std::collections::HashMap;
+use std::ops::Deref;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -24,40 +27,97 @@ use std::str::FromStr;
 // ------------------------------------------------------------------------------------------------
 
 ///
+/// This trait defines an equality operation that compares the structure of a shape without
+/// any comparison of applied traits.
+///
+pub trait NonTraitEq {
+    /// Returns `true` if the two shapes are equal in structure, else `false`.
+    fn equal_without_traits(&self, other: &Self) -> bool;
+}
+
+///
+/// The value of an applied trait, this is optional for some traits.
+///
+pub type TraitValue = Option<Value>;
+
+///
+/// The set of traits applied to a shape.
+///
+pub type AppliedTraits = HashMap<ShapeID, TraitValue>;
+
+///
 /// This trait is implemented by model elements that may have Smithy traits applied.
 ///
 pub trait HasTraits {
     /// Returns `true` if the model element has any applied traits, else `false`.
-    fn has_traits(&self) -> bool;
+    fn has_traits(&self) -> bool {
+        !self.traits().is_empty()
+    }
 
     /// Returns `true` if the model element has any applied traits with the associated id,
     /// else `false`.
-    fn has_trait(&self, id: &ShapeID) -> bool;
+    fn has_trait(&self, id: &ShapeID) -> bool {
+        self.traits().contains_key(id)
+    }
 
     /// Return an iterator over all traits applied to this model element
-    fn traits(&self) -> &Vec<AppliedTrait>;
+    fn traits(&self) -> &AppliedTraits;
+
+    /// Return an iterator over all traits applied to this model element
+    fn traits_mut(&mut self) -> &mut AppliedTraits;
 
     /// Returns all traits applied to this shape with the provided id.
-    fn traits_named(&self, id: &ShapeID) -> Vec<&AppliedTrait>;
-
-    /// Apply a trait to this model element.
-    fn apply_trait(&mut self, a_trait: AppliedTrait);
+    fn trait_named(&self, id: &ShapeID) -> Option<&TraitValue> {
+        self.traits().get(id)
+    }
 
     /// Apply a trait with the provided identifier to this model element.
-    fn apply(&mut self, a_trait: ShapeID) {
-        self.apply_trait(AppliedTrait::new(a_trait));
+    fn apply(&mut self, id: ShapeID) -> Result<()> {
+        self.apply_with_value(id, None)
     }
 
     /// Apply a trait with the provided identifier and value to this model element.
-    fn apply_with_value(&mut self, a_trait: ShapeID, value: Value) {
-        self.apply_trait(AppliedTrait::with_value(a_trait, value));
-    }
+    fn apply_with_value(&mut self, a_trait: ShapeID, value: TraitValue) -> Result<()>;
 
     /// Add all these elements to this member's collection.
-    fn append_traits(&mut self, traits: &[AppliedTrait]);
+    fn append_traits(&mut self, traits: &AppliedTraits) -> Result<()> {
+        for (id, value) in traits {
+            self.apply_with_value(id.clone(), value.clone())?;
+        }
+        Ok(())
+    }
 
     /// Add all the traits to this model element.
-    fn remove_trait(&mut self, id: &ShapeID);
+    fn remove_trait(&mut self, id: &ShapeID) {
+        let _ = self.traits_mut().remove(id);
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    /// Returns `true` if the model element has the prelude trait `documentation` applied.
+    fn has_documentation(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_DOCUMENTATION))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `external_documentation` applied.
+    fn has_external_documentation(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_EXTERNALDOCUMENTATION))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `length` applied.
+    fn has_length(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_LENGTH))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `pattern` applied.
+    fn has_pattern(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_PATTERN))
+    }
+
+    /// Returns `true` if the model element has the prelude trait `requiresLength` applied.
+    fn has_required_length(&self) -> bool {
+        self.has_trait(&prelude_name(TRAIT_REQUIRESLENGTH))
+    }
 
     // --------------------------------------------------------------------------------------------
 
@@ -71,29 +131,14 @@ pub trait HasTraits {
         self.has_trait(&prelude_name(TRAIT_DEPRECATED))
     }
 
-    /// Returns `true` if the model element has the prelude trait `documentation` applied.
-    fn is_documentation(&self) -> bool {
-        self.has_trait(&prelude_name(TRAIT_DOCUMENTATION))
-    }
-
     /// Returns `true` if the model element has the prelude trait `error` applied.
     fn is_error(&self) -> bool {
         self.has_trait(&prelude_name(TRAIT_ERROR))
     }
 
-    /// Returns `true` if the model element has the prelude trait `external_documentation` applied.
-    fn is_external_documentation(&self) -> bool {
-        self.has_trait(&prelude_name(TRAIT_EXTERNALDOCUMENTATION))
-    }
-
     /// Returns `true` if the model element has the prelude trait `idempotent` applied.
     fn is_idempotent(&self) -> bool {
         self.has_trait(&prelude_name(TRAIT_IDEMPOTENT))
-    }
-
-    /// Returns `true` if the model element has the prelude trait `length` applied.
-    fn has_length(&self) -> bool {
-        self.has_trait(&prelude_name(TRAIT_LENGTH))
     }
 
     /// Returns `true` if the model element has the prelude trait `no_replace` applied.
@@ -104,11 +149,6 @@ pub trait HasTraits {
     /// Returns `true` if the model element has the prelude trait `paginated` applied.
     fn is_paginated(&self) -> bool {
         self.has_trait(&prelude_name(TRAIT_PAGINATED))
-    }
-
-    /// Returns `true` if the model element has the prelude trait `pattern` applied.
-    fn has_pattern(&self) -> bool {
-        self.has_trait(&prelude_name(TRAIT_PATTERN))
     }
 
     /// Returns `true` if the model element has the prelude trait `private` applied.
@@ -129,11 +169,6 @@ pub trait HasTraits {
     /// Returns `true` if the model element has the prelude trait `required` applied.
     fn is_required(&self) -> bool {
         self.has_trait(&prelude_name(TRAIT_REQUIRED))
-    }
-
-    /// Returns `true` if the model element has the prelude trait `requiresLength` applied.
-    fn has_required_length(&self) -> bool {
-        self.has_trait(&prelude_name(TRAIT_REQUIRESLENGTH))
     }
 
     /// Returns `true` if the model element has the prelude trait `sensitive` applied.
@@ -180,7 +215,7 @@ pub trait HasTraits {
 ///
 /// A common trait shared by `TopLevelShape` and `MemberShape`.
 ///
-pub trait Shape: HasIdentity + HasTraits {
+pub trait Shape: NonTraitEq + HasIdentity + HasTraits {
     /// Returns `true` if this shape is defined in the prelude.
     fn is_prelude_shape(&self) -> bool {
         self.id().namespace().to_string() == *PRELUDE_NAMESPACE
@@ -198,7 +233,7 @@ pub trait Shape: HasIdentity + HasTraits {
 #[derive(Clone, Debug, PartialEq)]
 pub struct TopLevelShape {
     id: ShapeID,
-    traits: Vec<AppliedTrait>,
+    traits: HashMap<ShapeID, Option<Value>>,
     body: ShapeKind,
 }
 
@@ -233,16 +268,6 @@ pub enum ShapeKind {
     Unresolved,
 }
 
-///
-/// A Trait applied to a shape or member including any value associated with the trait for this
-/// instance.
-///
-#[derive(Clone, Debug, PartialEq)]
-pub struct AppliedTrait {
-    id: ShapeID,
-    value: Option<Value>,
-}
-
 // ------------------------------------------------------------------------------------------------
 // Macros
 // ------------------------------------------------------------------------------------------------
@@ -250,36 +275,26 @@ pub struct AppliedTrait {
 macro_rules! has_traits_impl {
     ($struct_name:ident . $field_name:ident) => {
         impl HasTraits for $struct_name {
-            fn has_traits(&self) -> bool {
-                !self.$field_name.is_empty()
-            }
-
-            fn has_trait(&self, id: &ShapeID) -> bool {
-                self.$field_name.iter().any(|t| t.id() == id)
-            }
-
-            fn traits(&self) -> &Vec<AppliedTrait> {
+            fn traits(&self) -> &HashMap<ShapeID, Option<Value>> {
                 &self.$field_name
             }
 
-            fn traits_named(&self, id: &ShapeID) -> Vec<&AppliedTrait> {
-                self.$field_name.iter().filter(|t| t.id() == id).collect()
+            fn traits_mut(&mut self) -> &mut HashMap<ShapeID, Option<Value>> {
+                &mut self.$field_name
             }
 
-            fn apply_trait(&mut self, a_trait: AppliedTrait) {
-                // TODO: apply trait duplicate rules.
-                // (https://github.com/johnstonskj/rust-atelier/issues/5)
-                self.$field_name.push(a_trait);
-            }
-
-            fn append_traits(&mut self, traits: &[AppliedTrait]) {
-                for a_trait in traits {
-                    self.apply_trait(a_trait.clone());
+            fn apply_with_value(
+                &mut self,
+                id: ShapeID,
+                value: Option<Value>,
+            ) -> $crate::error::Result<()> {
+                if let Some(trait_value) = self.trait_named(&id) {
+                    let new_value = $crate::model::shapes::merge_traits(&id, &trait_value, &value)?;
+                    let _ = self.$field_name.insert(id, new_value);
+                } else {
+                    let _ = self.$field_name.insert(id, value);
                 }
-            }
-
-            fn remove_trait(&mut self, id: &ShapeID) {
-                self.$field_name.retain(|t| t.id() != id);
+                Ok(())
             }
         }
     };
@@ -328,6 +343,38 @@ impl ShapeKind {
 
 // ------------------------------------------------------------------------------------------------
 
+impl NonTraitEq for TopLevelShape {
+    fn equal_without_traits(&self, other: &Self) -> bool {
+        self.id() == other.id()
+            && match (self.body(), other.body()) {
+                (ShapeKind::Simple(l), ShapeKind::Simple(r)) => l == r,
+                (ShapeKind::List(l), ShapeKind::List(r)) => {
+                    l.member.equal_without_traits(&r.member)
+                }
+                (ShapeKind::Set(l), ShapeKind::Set(r)) => l.member.equal_without_traits(&r.member),
+                (ShapeKind::Map(l), ShapeKind::Map(r)) => {
+                    l.key.equal_without_traits(&r.key) && l.value.equal_without_traits(&r.value)
+                }
+                (ShapeKind::Structure(l), ShapeKind::Structure(r)) => {
+                    l.members.keys().count() == r.members.keys().count()
+                        && l.members.keys().all(|k| {
+                            l.member(k)
+                                .unwrap()
+                                .equal_without_traits(r.member(k).unwrap())
+                        })
+                }
+                (ShapeKind::Union(l), ShapeKind::Union(r)) => {
+                    l.members.keys().count() == r.members.keys().count()
+                }
+                (ShapeKind::Service(l), ShapeKind::Service(r)) => l == r,
+                (ShapeKind::Operation(l), ShapeKind::Operation(r)) => l == r,
+                (ShapeKind::Resource(l), ShapeKind::Resource(r)) => l == r,
+                (ShapeKind::Unresolved, ShapeKind::Unresolved) => true,
+                (_, _) => false,
+            }
+    }
+}
+
 impl HasIdentity for TopLevelShape {
     fn id(&self) -> &ShapeID {
         &self.id
@@ -367,12 +414,12 @@ impl TopLevelShape {
     ///
     /// Construct a new shape with the given identifier (shape name) and shape-specific data.
     ///
-    pub fn with_traits(id: ShapeID, body: ShapeKind, traits: &[AppliedTrait]) -> Self {
-        Self {
-            id,
-            traits: traits.to_vec(),
-            body,
-        }
+    pub fn with_traits(
+        id: ShapeID,
+        body: ShapeKind,
+        traits: HashMap<ShapeID, Option<Value>>,
+    ) -> Self {
+        Self { id, traits, body }
     }
 
     ///
@@ -465,60 +512,50 @@ impl TopLevelShape {
 }
 
 // ------------------------------------------------------------------------------------------------
-
-impl AppliedTrait {
-    /// Construct a new trait with the given identity but no value.
-    pub fn new(id: ShapeID) -> Self {
-        Self { id, value: None }
-    }
-
-    /// Construct a new trait with the given identity and a value.
-    pub fn with_value(id: ShapeID, value: Value) -> Self {
-        Self {
-            id,
-            value: Some(value),
-        }
-    }
-
-    /// Returns `true` if this trait is defined in the prelude.
-    pub fn is_prelude_trait(&self) -> bool {
-        self.id().namespace().to_string() == *PRELUDE_NAMESPACE
-    }
-
-    /// Returns the identifier of the shape that this trait refers to.
-    pub fn id(&self) -> &ShapeID {
-        &self.id
-    }
-
-    /// Returns `true` if this applied trait has an associated value.
-    pub fn has_value(&self) -> bool {
-        self.value.is_some()
-    }
-
-    /// Return a reference to the current value, if set.
-    pub fn value(&self) -> &Option<Value> {
-        &self.value
-    }
-
-    /// Return a mutable reference to the current value, if set.
-    pub fn value_mut(&mut self) -> &mut Option<Value> {
-        &mut self.value
-    }
-
-    /// Set the current value.
-    pub fn set_value(&mut self, value: Value) {
-        self.value = Some(value);
-    }
-
-    /// Set the current value to None.
-    pub fn unset_value(&mut self) {
-        self.value = None;
-    }
-}
+// Private Functions
+// ------------------------------------------------------------------------------------------------
 
 #[inline]
 fn prelude_name(name: &str) -> ShapeID {
     ShapeID::new_unchecked(PRELUDE_NAMESPACE, name, None)
+}
+
+///
+/// From [Trait conflict resolution](https://awslabs.github.io/smithy/1.0/spec/core/model.html#trait-conflict-resolution):
+///
+/// > Duplicate traits applied to shapes are allowed in the following cases:
+/// >
+/// > 1. If the trait is a list or set shape, then the conflicting trait values are concatenated
+/// >    into a single trait value.
+/// > 1. If both values are exactly equal, then the conflict is ignored.
+/// >
+/// > All other instances of trait collisions are prohibited.
+///
+pub(crate) fn merge_traits(
+    id: &ShapeID,
+    left: &TraitValue,
+    right: &TraitValue,
+) -> Result<TraitValue> {
+    match (left, right) {
+        (Some(Value::Array(left)), Some(Value::Array(right))) => {
+            if left.is_empty() {
+                Ok(Some(Value::Array(right.clone())))
+            } else if right.is_empty() {
+                Ok(Some(Value::Array(left.clone())))
+            } else {
+                let mut result = left.clone();
+                result.extend(right.iter().cloned());
+                Ok(Some(Value::Array(result)))
+            }
+        }
+        (left, right) => {
+            if left == right {
+                Ok(left.clone())
+            } else {
+                Err(ErrorKind::MergeTraitConflict(id.clone()).into())
+            }
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -536,4 +573,3 @@ pub use aggregate::{ListOrSet, Map, MemberShape, StructureOrUnion};
 #[doc(hidden)]
 pub mod service;
 pub use service::{Operation, Resource, Service};
-use std::ops::Deref;

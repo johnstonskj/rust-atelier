@@ -1,6 +1,6 @@
 use atelier_core::model::shapes::{
-    AppliedTrait, HasTraits, MemberShape, Operation, Resource, Service, ShapeKind, Simple,
-    StructureOrUnion, TopLevelShape,
+    HasTraits, MemberShape, Operation, Resource, Service, ShapeKind, Simple, StructureOrUnion,
+    TopLevelShape,
 };
 use atelier_core::model::values::Value;
 use atelier_core::model::{HasIdentity, Identifier, Model, NamespaceID};
@@ -16,9 +16,11 @@ pub fn main() {
         namespace.make_shape("Date".parse().unwrap()),
         ShapeKind::Simple(Simple::String),
     );
-    let mut pattern_trait = AppliedTrait::new(prelude.make_shape("pattern".parse().unwrap()));
-    pattern_trait.set_value(Value::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()));
-    date.apply_trait(pattern_trait);
+    date.apply_with_value(
+        prelude.make_shape("pattern".parse().unwrap()),
+        Value::String(r"^\d\d\d\d\-\d\d-\d\d$".to_string()).into(),
+    )
+    .unwrap();
 
     // ----------------------------------------------------------------------------------------
     let shape_name = namespace.make_shape("BadDateValue".parse().unwrap());
@@ -28,11 +30,12 @@ pub fn main() {
         prelude.make_shape("String".parse().unwrap()),
     );
     let mut error = TopLevelShape::new(shape_name, ShapeKind::Structure(body));
-    let error_trait = AppliedTrait::with_value(
-        prelude.make_shape("error".parse().unwrap()),
-        "client".to_string().into(),
-    );
-    error.apply_trait(error_trait);
+    error
+        .apply_with_value(
+            prelude.make_shape("error".parse().unwrap()),
+            Some("client".to_string().into()),
+        )
+        .unwrap();
 
     // ----------------------------------------------------------------------------------------
     let shape_name = namespace.make_shape("GetMessageOutput".parse().unwrap());
@@ -41,8 +44,9 @@ pub fn main() {
         shape_name.make_member("message".parse().unwrap()),
         prelude.make_shape("String".parse().unwrap()),
     );
-    let required = AppliedTrait::new(prelude.make_shape("required".parse().unwrap()));
-    message.apply_trait(required);
+    message
+        .apply(prelude.make_shape("required".parse().unwrap()))
+        .unwrap();
     let _ = output.add_a_member(message);
     let output = TopLevelShape::new(
         namespace.make_shape("GetMessageOutput".parse().unwrap()),
@@ -70,8 +74,9 @@ pub fn main() {
         namespace.make_shape("GetMessage".parse().unwrap()),
         ShapeKind::Operation(get_message),
     );
-    let required = AppliedTrait::new(prelude.make_shape("readonly".parse().unwrap()));
-    get_message.apply_trait(required);
+    get_message
+        .apply(prelude.make_shape("readonly".parse().unwrap()))
+        .unwrap();
 
     // ----------------------------------------------------------------------------------------
     let mut message = Resource::default();
@@ -89,11 +94,12 @@ pub fn main() {
         namespace.make_shape("MessageOfTheDay".parse().unwrap()),
         ShapeKind::Service(service),
     );
-    let documentation = AppliedTrait::with_value(
-        prelude.make_shape("documentation".parse().unwrap()),
-        Value::String("Provides a Message of the day.".to_string()),
-    );
-    service.apply_trait(documentation);
+    service
+        .apply_with_value(
+            prelude.make_shape("documentation".parse().unwrap()),
+            Value::String("Provides a Message of the day.".to_string()).into(),
+        )
+        .unwrap();
 
     // ----------------------------------------------------------------------------------------
     let mut model = Model::new(Version::V10);

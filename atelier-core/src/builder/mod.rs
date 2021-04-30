@@ -18,14 +18,14 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 
 use crate::error::ErrorKind;
 use crate::model::shapes::{
-    AppliedTrait, ListOrSet, Map, MemberShape, Operation, Resource, Service, ShapeKind,
-    StructureOrUnion, TopLevelShape,
+    ListOrSet, Map, MemberShape, Operation, Resource, Service, ShapeKind, StructureOrUnion,
+    TopLevelShape,
 };
 use crate::model::values::{Value, ValueMap};
 use crate::model::{Identifier, Model, NamespaceID, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
 use crate::Version;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_name,
             ShapeKind::Simple(builder.simple_shape.clone()),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -271,9 +271,9 @@ impl ModelBuilder {
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
                 shape_name.make_member(builder.member.member_name.parse().unwrap()),
                 self.resolve_shape_name(&builder.member.target),
-                &self.make_traits(&builder.member.applied_traits),
+                self.make_traits(&builder.member.applied_traits),
             ))),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -284,9 +284,9 @@ impl ModelBuilder {
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
                 shape_name.make_member(builder.member.member_name.parse().unwrap()),
                 self.resolve_shape_name(&builder.member.target),
-                &self.make_traits(&builder.member.applied_traits),
+                self.make_traits(&builder.member.applied_traits),
             ))),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -299,15 +299,15 @@ impl ModelBuilder {
                 MemberShape::with_traits(
                     shape_name.make_member(builder.key.member_name.parse().unwrap()),
                     self.resolve_shape_name(&builder.key.target),
-                    &self.make_traits(&builder.key.applied_traits),
+                    self.make_traits(&builder.key.applied_traits),
                 ),
                 MemberShape::with_traits(
                     shape_name.make_member(builder.value.member_name.parse().unwrap()),
                     self.resolve_shape_name(&builder.value.target),
-                    &self.make_traits(&builder.value.applied_traits),
+                    self.make_traits(&builder.value.applied_traits),
                 ),
             )),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -320,7 +320,7 @@ impl ModelBuilder {
                 MemberShape::with_traits(
                     shape_name.make_member(mb.member_name.parse().unwrap()),
                     self.resolve_shape_name(&mb.target),
-                    &self.make_traits(&mb.applied_traits),
+                    self.make_traits(&mb.applied_traits),
                 )
             })
             .collect();
@@ -328,7 +328,7 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_name,
             ShapeKind::Structure(structure),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -341,7 +341,7 @@ impl ModelBuilder {
                 MemberShape::with_traits(
                     shape_name.make_member(mb.member_name.parse().unwrap()),
                     self.resolve_shape_name(&mb.target),
-                    &self.make_traits(&mb.applied_traits),
+                    self.make_traits(&mb.applied_traits),
                 )
             })
             .collect();
@@ -349,7 +349,7 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_name,
             ShapeKind::Union(structure),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -365,7 +365,7 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_name,
             ShapeKind::Service(service),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -384,7 +384,7 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_name,
             ShapeKind::Operation(operation),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -425,7 +425,7 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_name,
             ShapeKind::Resource(resource),
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
@@ -435,20 +435,15 @@ impl ModelBuilder {
         TopLevelShape::with_traits(
             shape_id,
             ShapeKind::Unresolved,
-            &self.make_traits(&builder.applied_traits),
+            self.make_traits(&builder.applied_traits),
         )
     }
 
-    fn make_traits(&self, builders: &[TraitBuilder]) -> Vec<AppliedTrait> {
+    fn make_traits(&self, builders: &[TraitBuilder]) -> HashMap<ShapeID, Option<Value>> {
         builders
             .iter()
-            .map(|builder| match &builder.value {
-                None => AppliedTrait::new(self.resolve_shape_name(&builder.shape_id)),
-                Some(value) => AppliedTrait::with_value(
-                    self.resolve_shape_name(&builder.shape_id),
-                    value.clone(),
-                ),
-            })
+            .cloned()
+            .map(|builder| (self.resolve_shape_name(&builder.shape_id), builder.value))
             .collect()
     }
 }

@@ -96,6 +96,15 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.7**
+
+* Reworked the `Model::add_metadata` method to perform the Smithy required merge/conflict checks.
+* Reworked the `Model::add_shape` method to perform the Smithy required shape merge/conflict checks.
+* Reworked the `HasTraits::apply_with_value` method to perform the Smithy required trait merge/conflict checks.
+  * Reworked how traits are applied, these are now a `HashMap` not `Vec` as Smithy only allows the
+    same trait to be applied once.
+* Implemented the Model::merge method.
+
 **Version 0.2.6**
 
 * Refactored the prelude module, moved the lazy statics out to builder where they are used.

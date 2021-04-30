@@ -94,7 +94,22 @@ error_chain! {
         #[doc("The selector expression(s) failed to parse.")]
         InvalidSelector {
             description("The selector expression(s) failed to parse.")
-            display("RepThe selector expression(s) failed to parse.")
+            display("The selector expression(s) failed to parse.")
+        }
+        #[doc("A merge conflict occurred between two shapes.")]
+        MergeShapeConflict(id: ShapeID) {
+            description("A merge conflict occurred between two shapes.")
+            display("A merge conflict occurred between two shapes named '{}'.", id)
+        }
+        #[doc("A merge conflict occurred between two applied traits.")]
+        MergeTraitConflict(id: ShapeID) {
+            description("A merge conflict occurred between two applied traits.")
+            display("A merge conflict occurred between two applied traits named '{}'.", id)
+        }
+        #[doc("A merge conflict occurred between two metadata values.")]
+        MergeMetadataConflict(key: String) {
+            description("A merge conflict occurred between two metadata values.")
+            display("A merge conflict occurred between two metadata values keyed '{}'.", key)
         }
     }
 

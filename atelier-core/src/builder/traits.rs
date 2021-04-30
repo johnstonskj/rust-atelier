@@ -1,6 +1,7 @@
 use crate::builder::values::ObjectBuilder;
 use crate::error::ErrorKind;
 use crate::error::ErrorSource;
+use crate::model::shapes::TraitValue;
 use crate::model::values::{Number, Value, ValueMap};
 use crate::model::ShapeID;
 use crate::prelude::{
@@ -20,7 +21,7 @@ use crate::syntax::SHAPE_ID_ABSOLUTE_SEPARATOR;
 #[derive(Clone, Debug)]
 pub struct TraitBuilder {
     pub(crate) shape_id: String,
-    pub(crate) value: Option<Value>,
+    pub(crate) value: TraitValue,
 }
 
 // ------------------------------------------------------------------------------------------------

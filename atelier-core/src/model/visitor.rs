@@ -6,7 +6,7 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 */
 
 use crate::model::shapes::{
-    AppliedTrait, HasTraits, ListOrSet, Map, Operation, Resource, Service, ShapeKind, Simple,
+    AppliedTraits, HasTraits, ListOrSet, Map, Operation, Resource, Service, ShapeKind, Simple,
     StructureOrUnion,
 };
 use crate::model::values::Value;
@@ -23,7 +23,7 @@ macro_rules! visit_fn {
         fn $fn_name(
             &mut self,
             id: &ShapeID,
-            traits: &[AppliedTrait],
+            traits: &AppliedTraits,
             shape: &$shape_type,
         ) -> Result<(), Self::Error> {
             Ok(())
@@ -32,7 +32,7 @@ macro_rules! visit_fn {
     (mut $fn_name:ident, $doc:expr) => {
         #[doc = $doc]
         #[allow(unused_variables)]
-        fn $fn_name(&mut self, id: &ShapeID, traits: &[AppliedTrait]) -> Result<(), Self::Error> {
+        fn $fn_name(&mut self, id: &ShapeID, traits: &AppliedTraits) -> Result<(), Self::Error> {
             Ok(())
         }
     };
@@ -42,7 +42,7 @@ macro_rules! visit_fn {
         fn $fn_name(
             &self,
             id: &ShapeID,
-            traits: &[AppliedTrait],
+            traits: &AppliedTraits,
             shape: &$shape_type,
         ) -> Result<(), Self::Error> {
             Ok(())
@@ -51,7 +51,7 @@ macro_rules! visit_fn {
     ($fn_name:ident, $doc:expr) => {
         #[doc = $doc]
         #[allow(unused_variables)]
-        fn $fn_name(&self, id: &ShapeID, traits: &[AppliedTrait]) -> Result<(), Self::Error> {
+        fn $fn_name(&self, id: &ShapeID, traits: &AppliedTraits) -> Result<(), Self::Error> {
             Ok(())
         }
     };

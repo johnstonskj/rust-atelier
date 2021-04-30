@@ -1,5 +1,5 @@
 use atelier_core::model::shapes::{
-    AppliedTrait, Operation, Resource, Service, Simple, StructureOrUnion,
+    AppliedTraits, Operation, Resource, Service, Simple, StructureOrUnion,
 };
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
 use atelier_core::model::ShapeID;
@@ -39,7 +39,7 @@ impl ModelVisitor for ExampleVisitor {
     fn simple_shape(
         &self,
         id: &ShapeID,
-        _: &[AppliedTrait],
+        _: &AppliedTraits,
         simple: &Simple,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -53,7 +53,7 @@ impl ModelVisitor for ExampleVisitor {
     fn structure(
         &self,
         id: &ShapeID,
-        _: &[AppliedTrait],
+        _: &AppliedTraits,
         _: &StructureOrUnion,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -67,7 +67,7 @@ impl ModelVisitor for ExampleVisitor {
     fn service(
         &self,
         id: &ShapeID,
-        _: &[AppliedTrait],
+        _: &AppliedTraits,
         _: &Service,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -81,7 +81,7 @@ impl ModelVisitor for ExampleVisitor {
     fn operation(
         &self,
         id: &ShapeID,
-        _: &[AppliedTrait],
+        _: &AppliedTraits,
         _: &Operation,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
@@ -95,7 +95,7 @@ impl ModelVisitor for ExampleVisitor {
     fn resource(
         &self,
         id: &ShapeID,
-        _: &[AppliedTrait],
+        _: &AppliedTraits,
         _: &Resource,
     ) -> std::result::Result<(), Self::Error> {
         let mut expected = self.expected.borrow_mut();
