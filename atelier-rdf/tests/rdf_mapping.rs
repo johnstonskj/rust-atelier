@@ -1,5 +1,5 @@
 use atelier_rdf::writer::model_to_rdf;
-use rdftk_io::turtle::TurtleWriter;
+use rdftk_io::turtle::writer::TurtleWriter;
 use rdftk_io::GraphWriter;
 
 pub mod common;

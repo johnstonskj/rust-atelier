@@ -43,6 +43,7 @@ writer.write(&mut stdout(), &model).unwrap();
 **Version 0.1.6**
 
 * Updated due to trait API changes in core.
+* Updated rdftk dependencies.
 
 **Version 0.1.5**
 

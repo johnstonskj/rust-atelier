@@ -52,7 +52,7 @@ let mut writer = RdfWriter::new(
 
 use crate::urn::shape_to_iri;
 use crate::vocabulary;
-use atelier_core::error::{Error as ModelError, Result as ModelResult};
+use atelier_core::error::{Error as ModelError, ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{
     AppliedTraits, HasTraits, ListOrSet, Map, MemberShape, Operation, Resource, Service, Simple,
@@ -64,7 +64,8 @@ use atelier_core::model::{HasIdentity, Model, ShapeID};
 use rdftk_core::graph::MutableGraph;
 use rdftk_core::PrefixMappings;
 use rdftk_core::{DataType, Graph, Literal, ObjectNode, Statement, SubjectNode};
-use rdftk_io::turtle::TurtleWriter;
+use rdftk_io::turtle::writer::TurtleWriter;
+use rdftk_io::turtle::NAME;
 use rdftk_io::GraphWriter;
 use rdftk_iri::{IRIRef, IRI};
 use rdftk_memgraph::{Mappings, MemGraph};
@@ -159,7 +160,9 @@ impl ModelWriter for RdfWriter {
         let rdf_graph = model_to_rdf(model, self.model_iri.clone())?;
 
         let writer = TurtleWriter::default();
-        writer.write(w, &rdf_graph)?;
+        writer
+            .write(w, &rdf_graph)
+            .chain_err(|| ErrorKind::Serialization(NAME.to_string()))?;
 
         Ok(())
     }
