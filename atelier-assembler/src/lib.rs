@@ -1,7 +1,8 @@
 /*!
-Provides the model assembly capability, to merge files into a single in-memory `Model`. A tool can
-add files one-by-one, or from a directory, and then process them all into a single model. This
-implementation understands the different registered file extensions so that it can read files
+This crate provides the model assembly capability, to merge files into a single in-memory `Model`.
+
+A tool can add files one-by-one, or from a directory, and then process them all into a single model.
+This implementation understands the different registered file extensions so that it can read files
 in different representations and assemble them seamlessly.
 
 For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/assembly.html).
@@ -12,15 +13,31 @@ TBD
 
 */
 
-use crate::core::error::{Error, ErrorKind};
-#[cfg(feature = "describe")]
-use crate::format::document;
-#[cfg(feature = "json")]
-use crate::format::json;
-#[cfg(feature = "smithy")]
-use crate::format::smithy;
-use atelier_core::io::{ModelReader, ModelWriter};
-use atelier_core::model::{Model, NamespaceID};
+#![warn(
+    // ---------- Stylistic
+    future_incompatible,
+    nonstandard_style,
+    rust_2018_idioms,
+    trivial_casts,
+    trivial_numeric_casts,
+    // ---------- Public
+    missing_debug_implementations,
+    missing_docs,
+    unreachable_pub,
+    // ---------- Unsafe
+    unsafe_code,
+    // ---------- Unused
+    unused_extern_crates,
+    unused_import_braces,
+    unused_qualifications,
+    unused_results,
+)]
+
+use atelier_core::error::{Error, ErrorKind};
+use atelier_core::io::ModelReader;
+use atelier_core::model::Model;
+use atelier_json as json;
+use atelier_smithy as smithy;
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::{read_dir, File};
@@ -46,15 +63,10 @@ pub struct ModelAssembler {
 impl Default for ModelAssembler {
     fn default() -> Self {
         Self {
-            extensions: [
-                #[cfg(feature = "json")]
-                json::FILE_EXTENSION,
-                #[cfg(feature = "smithy")]
-                smithy::FILE_EXTENSION,
-            ]
-            .iter()
-            .map(|s| s.to_string())
-            .collect::<HashSet<String>>(),
+            extensions: [json::FILE_EXTENSION, smithy::FILE_EXTENSION]
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<HashSet<String>>(),
             file_names: Default::default(),
         }
     }
@@ -65,7 +77,7 @@ impl TryInto<Model> for ModelAssembler {
 
     fn try_into(self) -> Result<Model, Self::Error> {
         assert!(!self.file_names.is_empty());
-        let models: Result<Vec<Model>, Error> = self
+        let models: Result<Vec<Model>, Self::Error> = self
             .file_names
             .iter()
             .map(|file_name| read_model_from_file(&file_name))
@@ -114,23 +126,17 @@ impl ModelAssembler {
     }
 }
 
-///
-/// Read a model from a file, this will only process a single file at a time.
-///
-pub fn read_model_from_file(path: &Path) -> Result<Model, Error> {
+fn read_model_from_file(path: &Path) -> Result<Model, Error> {
     match path.extension() {
-        None => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),
         Some(ext) => {
             let ext = ext.to_string_lossy();
             let mut file = File::open(path).unwrap();
 
             match ext.as_ref() {
-                #[cfg(feature = "json")]
                 json::FILE_EXTENSION => {
                     let mut reader = json::JsonReader::default();
                     reader.read(&mut file)
                 }
-                #[cfg(feature = "smithy")]
                 smithy::FILE_EXTENSION => {
                     let mut reader = smithy::SmithyReader::default();
                     reader.read(&mut file)
@@ -141,41 +147,6 @@ pub fn read_model_from_file(path: &Path) -> Result<Model, Error> {
                 }
             }
         }
-    }
-}
-
-///
-/// Write a model to a file, this will only process a single file at a time.
-///
-pub fn write_model_to_file(
-    path: &Path,
-    model: &Model,
-    only_namespace: Option<NamespaceID>,
-) -> Result<(), Error> {
-    match path.extension() {
-        None => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),
-        Some(ext) => {
-            let ext = ext.to_string_lossy();
-            let mut file = File::open(path).unwrap();
-
-            match ext.as_ref() {
-                #[cfg(feature = "describe")]
-                document::FILE_EXTENSION => {
-                    let mut writer = document::writer::DocumentationWriter::default();
-                    writer.write(&mut file, model)
-                }
-                #[cfg(feature = "json")]
-                json::FILE_EXTENSION => {
-                    let mut writer = json::JsonWriter::default();
-                    writer.write(&mut file, model)
-                }
-                #[cfg(feature = "smithy")]
-                smithy::FILE_EXTENSION => {
-                    let mut writer = smithy::SmithyWriter::new(only_namespace.unwrap());
-                    writer.write(&mut file, model)
-                }
-                _ => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),
-            }
-        }
+        _ => Err(ErrorKind::InvalidRepresentation("unknown".to_string()).into()),
     }
 }

@@ -1,0 +1,22 @@
+[package]
+name = "atelier_assembler"
+description = "Implements the Smithy model assembler pattern, to merge files into a single in-memory Model."
+version = "0.1.0"
+authors = ["Simon Johnston <johnstonskj@gmail.com>"]
+edition = "2018"
+documentation = "https://docs.rs/atelier_assembler/"
+repository = "https://github.com/johnstonskj/rust-atelier.git"
+license = "MIT"
+readme = "README.md"
+publish = true
+
+[package.metadata.docs.rs]
+# This sets the default target to `x86_64-unknown-linux-gnu`
+# and only builds that target for documentation.
+targets = ["x86_64-unknown-linux-gnu"]
+all-features = true
+
+[dependencies]
+atelier_core = { version = "~0.2", path = "../atelier-core" }
+atelier_json = { version = "~0.2", path = "../atelier-json" }
+atelier_smithy = { version = "~0.2", path = "../atelier-smithy" }

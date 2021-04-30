@@ -26,19 +26,18 @@ This repo contains a number of crates that provide different aspects, or capabil
 clients that wish to use a number of features but don't want to track individual version compatibility the `atelier_lib` 
 crate incorporates all, except the cargo command, using features to select the different capabilities.
 
-| crate                                    | Content                                                | Status                                 |
-|------------------------------------------|--------------------------------------------------------|----------------------------------------|
-| [`atelier_core`](./atelier-core)         | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: OK  |
-| [`atelier_describe`](./atelier-describe) | Model documentation writer, uses `somedoc` crate.      | Writer: 75%, Tests: Low                |
-| [`atelier_json`](./atelier-json)         | The serializer/de-serializer for the JSON AST          | Reader/Writer: Done, Tests: Low        |
-| [`atelier_lib`](./atelier-lib)           | Re-export structures from previous crates.             | Done.                                  |
-| [`atelier_openapi`](./atelier-openapi)   | A Serializer only to OpenAPI                           | Not Started                            |
-| [`atelier_query`](./atelier-query)       | Evaluator for Smithy select expressions.               | Not Started                            |
-| [`atelier_rdf`](./atelier-rdf)           | The serializer/de-serializer to RDF                    | Model: Done, Writer: Done, Tests: Low  |
-| [`atelier_smithy`](./atelier-smithy)     | The serializer/de-serializer for native Smithy.        | Reader/Writer: Done, Tests: Low        |
-| [`cargo_atelier`](./cargo-atelier)       | Cargo command to lint, validate, and convert models.   | Commands working correctly.            |
-
-The 'lib' crate also adds two documentation formats, GraphML and PlantUML as well as the model assembler.
+| crate                                      | Content                                                | Status                                 |
+|--------------------------------------------|--------------------------------------------------------|----------------------------------------|
+| [`atelier_core`](./atelier-core)           | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: OK  |
+| [`atelier_assembler`](./atelier-assembler) | merge files into a single in-memory Model.             | Model: Done, Tests: None               |
+| [`atelier_describe`](./atelier-describe)   | Model documentation writer, uses `somedoc` crate.      | Writer: 75%, Tests: Low                |
+| [`atelier_json`](./atelier-json)           | The serializer/de-serializer for the JSON AST.         | Reader/Writer: Done, Tests: Low        |
+| [`atelier_lib`](./atelier-lib)             | Re-export structures from previous crates.             | Done.                                  |
+| [`atelier_openapi`](./atelier-openapi)     | A Serializer only to OpenAPI.                          | Not Started                            |
+| [`atelier_query`](./atelier-query)         | Evaluator for Smithy select expressions.               | Not Started                            |
+| [`atelier_rdf`](./atelier-rdf)             | The serializer/de-serializer to RDF.                   | Model: Done, Writer: Done, Tests: Low  |
+| [`atelier_smithy`](./atelier-smithy)       | The serializer/de-serializer for native Smithy.        | Reader/Writer: Done, Tests: Low        |
+| [`cargo_atelier`](./cargo-atelier)         | Cargo command to lint, validate, and convert models.   | Commands working correctly.            |
 
 ## Book
 

@@ -12,21 +12,26 @@ different Atelier capabilities. The following table shows the mapping from indiv
 combined module path in this library. The column _Default_ indicates those that are included in the 
 default feature, although the core will be included regardless of any feature selection.
 
-| Feature name | Default | Individual crate                                    | Target module path                | Purpose                                               |
-|--------------|---------|-----------------------------------------------------|-----------------------------------|-------------------------------------------------------|
-| N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)        | `atelier_lib::core`               | Core models only.                                     |
-| "describe"   | Yes     | [atelier_describe](https://docs.rs/atelier_describe)| `atelier_lib::format::describe`   | Writing model documentation.                          |
-| "json"       | Yes     | [atelier_json](https://docs.rs/atelier_json)        | `atelier_lib::format::json`       | Reading and Writing JSON AST representation.          |
-| "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)  | `atelier_lib::format::openapi`    | Reading and Writing OpenAPI representations.          |
-| "rdf"        | No      | [atelier_rdf](https://docs.rs/atelier_rdf)          | `atelier_lib::format::rdf`        | Reading and Writing RDF representations.              |
-| "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)    | `atelier_lib::format::smithy`     | Reading and Writing the Smithy native representation. |
-| "graphml"    | No      | Included in lib code                                | `atelier_lib::format::graphml`    | Writing GraphML XML.                                  |
-| "uml"        | No      | Included in lib code                                | `atelier_lib::format::uml`        | Writing PlantUML source.                              |
+| Feature name | Default | Individual crate                                     | Target module path     | Purpose                                               |
+|--------------|---------|------------------------------------------------------|------------------------|-------------------------------------------------------|
+| N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)         | `::core`               | Semantic model, builders, and API traits.             |
+| "assembler"  | **Yes** | [atelier_assembler](https://docs.rs/atelier_assembler) | `::assembler`        | Model assembly from multiple files.                   |
+| "describe"   | **Yes** | [atelier_describe](https://docs.rs/atelier_describe) | `::format::document`   | Writing markdown documentation.                       |
+|              |         |                                                      | `::format::graphml`    | Writing GraphML visualizations.                       |
+|              |         |                                                      | `::format::plant_uml`  | Writing UML visualizations.                           |
+| "json"       | **Yes** | [atelier_json](https://docs.rs/atelier_json)         | `::format::json`       | Reading and Writing JSON AST representation.          |
+| "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)   | `::format::openapi`    | Reading and Writing OpenAPI representations.          |
+| "rdf"        | No      | [atelier_rdf](https://docs.rs/atelier_rdf)           | `::format::rdf`        | Reading and Writing RDF representations.              |
+| "smithy"     | **Yes** | [atelier_smithy](https://docs.rs/atelier_smithy)     | `::format::smithy`     | Reading and Writing the Smithy native representation. |
 
-As shown in the table, the feature "uml" is implemented in this crate, as is the _model assembler_ feature. Model
-assembly is a step often required by tools to build a single semantic model from a set of file representations.
+This crate also provides some pre-defined action functions for linting and
+validating models.
 
 ## Changes
+
+**Version 0.2.5**
+
+* Moved the assembler into it's own crate, added it as a new feature.
 
 **Version 0.2.4**
 

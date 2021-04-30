@@ -13,14 +13,14 @@ default feature, although the core will be included regardless of any feature se
 | Feature name | Default | Individual crate                                     | Target module path     | Purpose                                               |
 |--------------|---------|------------------------------------------------------|------------------------|-------------------------------------------------------|
 | N/A          | **Yes** | [atelier_core](https://docs.rs/atelier_core)         | `::core`               | Semantic model, builders, and API traits.             |
-| N/A          | **Yes** | [atelier_select](https://docs.rs/atelier_select)     | `::select`             | Core _select_ model.                                  |
-| "describe"   | Yes     | [atelier_describe](https://docs.rs/atelier_describe) | `::format::document`   | Writing markdown documentation.                       |
+| "assembler"  | **Yes** | [atelier_assembler](https://docs.rs/atelier_assembler) | `::assembler`        | Model assembly from multiple files.                   |
+| "describe"   | **Yes** | [atelier_describe](https://docs.rs/atelier_describe) | `::format::document`   | Writing markdown documentation.                       |
 |              |         |                                                      | `::format::graphml`    | Writing GraphML visualizations.                       |
 |              |         |                                                      | `::format::plant_uml`  | Writing UML visualizations.                           |
-| "json"       | Yes     | [atelier_json](https://docs.rs/atelier_json)         | `::format::json`       | Reading and Writing JSON AST representation.          |
+| "json"       | **Yes** | [atelier_json](https://docs.rs/atelier_json)         | `::format::json`       | Reading and Writing JSON AST representation.          |
 | "openapi"    | No      | [atelier_openapi](https://docs.rs/atelier_openapi)   | `::format::openapi`    | Reading and Writing OpenAPI representations.          |
 | "rdf"        | No      | [atelier_rdf](https://docs.rs/atelier_rdf)           | `::format::rdf`        | Reading and Writing RDF representations.              |
-| "smithy"     | Yes     | [atelier_smithy](https://docs.rs/atelier_smithy)     | `::format::smithy`     | Reading and Writing the Smithy native representation. |
+| "smithy"     | **Yes** | [atelier_smithy](https://docs.rs/atelier_smithy)     | `::format::smithy`     | Reading and Writing the Smithy native representation. |
 
 This crate also provides some pre-defined [action](actions/index.html) functions for linting and
 validating models.
@@ -49,9 +49,10 @@ validating models.
 
 pub use atelier_core as core;
 
-pub mod action;
+pub mod actions;
 
-pub mod assembler;
+#[cfg(feature = "assembler")]
+pub use atelier_assembler as assembler;
 
 #[cfg(any(
     feature = "describe",

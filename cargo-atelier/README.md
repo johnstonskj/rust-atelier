@@ -161,6 +161,10 @@ Smith Version: 1.0
 
 ## Changes
 
+**Version 0.2.4**
+
+* Change to lib API.
+
 **Version 0.2.3**
 
 * Fixed: bumped somedoc dependency version.

@@ -1,5 +1,5 @@
 use crate::{DocumentCommand, File as FileArg, FileCommand, FileFormat, TransformCommand};
-use atelier_lib::action::{standard_model_lint, standard_model_validation};
+use atelier_lib::actions::{standard_model_lint, standard_model_validation};
 use atelier_lib::core::action::ActionIssue;
 use atelier_lib::core::error::{Error as ModelError, ErrorKind, Result as ModelResult};
 use atelier_lib::core::io::read_model_from_string;

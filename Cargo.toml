@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "atelier-assembler",
     "atelier-core",
     "atelier-describe",
     "atelier-json",
