@@ -15,10 +15,11 @@ the environment variable "`SMITHY_PATH`".
 use atelier_assembler::ModelAssembler;
 use atelier_core::error::Result;
 use atelier_core::model::Model;
+use std::convert::TryFrom;
 
 let env_assembler = ModelAssembler::default();
 
-let model: Result<Model> = env_assembler.into();
+let model: Result<Model> = Model::try_from(env_assembler);
 ```
 
 For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/assembly.html).
