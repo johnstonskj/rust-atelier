@@ -13,6 +13,13 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 
 ## Changes
 
+**Version 0.1.1**
+
+* Refactored to produce:
+  * A FileReader function type that parses a file type.
+  * A FileType that matches a name, reader, and MIME type.
+  * A FileTypeRegistry that matches one or more file extensions to a file type.
+
 **Version 0.1.0**
 
 * Extracted from the atelier_lib crate.
