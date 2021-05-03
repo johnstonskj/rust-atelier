@@ -17,8 +17,6 @@ fn merge_good_models() {
     let _ = assembler.push(&path);
 
     let model = Model::try_from(assembler);
-    assert!(model.is_ok());
-
-    let model = model.unwrap();
     println!("{:#?}", model);
+    assert!(model.is_ok());
 }
