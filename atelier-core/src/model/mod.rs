@@ -212,6 +212,7 @@ impl Model {
     ///
     pub fn add_shape(&mut self, shape: TopLevelShape) -> ModelResult<()> {
         if shape.id().is_member() {
+            error!("Model::add_shape '{}' is a member ID", shape.id());
             return Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into());
         } else if let Some(existing) = self.shape_mut(shape.id()) {
             if !existing.body().is_unresolved() {
@@ -223,6 +224,7 @@ impl Model {
                         existing.apply_with_value(id.clone(), value.clone())?;
                     }
                 } else {
+                    error!("Model::add_shape {:?} != {:?}", existing, shape);
                     return Err(ErrorKind::MergeShapeConflict(existing.id().clone()).into());
                 }
             }

@@ -24,6 +24,7 @@ use crate::model::shapes::{
 use crate::model::values::{Value, ValueMap};
 use crate::model::{Identifier, Model, NamespaceID, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
+use crate::syntax::SHAPE_ID_NAMESPACE_SEPARATOR;
 use crate::Version;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
@@ -196,6 +197,14 @@ impl ModelBuilder {
 
     /// Create and add a new resource shape to this model using the `ResourceBuilder` instance.
     pub fn reference(&mut self, builder: ReferenceBuilder) -> &mut Self {
+        let namespace = format!(
+            "{}{}",
+            self.default_namespace.to_string(),
+            SHAPE_ID_NAMESPACE_SEPARATOR
+        );
+        if builder.shape_id.starts_with(&namespace) {
+            self.push_shape_name(&builder.shape_id[namespace.len()..].to_string());
+        }
         self.shapes.push(TopLevelShapeBuilder::Reference(builder));
         self
     }
