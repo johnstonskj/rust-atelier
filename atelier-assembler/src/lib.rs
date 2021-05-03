@@ -331,10 +331,13 @@ impl ModelAssembler {
             "ModelAssembler::with_registry({:?})",
             file_types.extensions().collect::<Vec<&String>>()
         );
-        Self::init(Self {
-            file_types,
-            paths: Default::default(),
-        })
+        Self::init(
+            Self {
+                file_types,
+                paths: Default::default(),
+            },
+            ENV_PATH_NAME,
+        )
     }
 
     ///
@@ -382,9 +385,9 @@ impl ModelAssembler {
 
     // --------------------------------------------------------------------------------------------
 
-    fn init(self) -> Self {
+    fn init(self, search_path: &str) -> Self {
         let mut mut_self = self;
-        if let Ok(search_path) = env::var(ENV_PATH_NAME) {
+        if let Ok(search_path) = env::var(search_path) {
             info!("ModelAssembler::init() - {}", search_path);
             for path in search_path.split(':') {
                 let path = path.trim();

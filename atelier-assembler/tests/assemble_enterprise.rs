@@ -1,6 +1,7 @@
 use atelier_assembler::ModelAssembler;
 use atelier_core::model::Model;
 use std::convert::TryFrom;
+use std::path::PathBuf;
 
 const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 
@@ -8,9 +9,11 @@ const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 fn merge_good_models() {
     pretty_env_logger::try_init().expect("Could not initialize logger.");
 
-    let base_dir = format!("{}/tests/good", MANIFEST_DIR);
+    let mut path = PathBuf::from(MANIFEST_DIR);
+    path.push("tests/good");
+
     let mut assembler = ModelAssembler::default();
-    let _ = assembler.push(base_dir.as_ref());
+    let _ = assembler.push(&path);
 
     let model = Model::try_from(assembler);
     assert!(model.is_ok());
