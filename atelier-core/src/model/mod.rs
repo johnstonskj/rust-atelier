@@ -215,17 +215,27 @@ impl Model {
             error!("Model::add_shape '{}' is a member ID", shape.id());
             return Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into());
         } else if let Some(existing) = self.shape_mut(shape.id()) {
-            if !existing.body().is_unresolved() {
-                // > 1. All conflicting shapes MUST have the same shape type.
-                // > 1. Conflicting aggregate shapes MUST contain the same members that target the same shapes.
-                // > 1. Conflicting service shapes MUST contain the same properties and target the same shapes.
-                if existing.equal_without_traits(&shape) {
-                    for (id, value) in shape.traits() {
-                        existing.apply_with_value(id.clone(), value.clone())?;
+            // > 1. All conflicting shapes MUST have the same shape type.
+            // > 1. Conflicting aggregate shapes MUST contain the same members that target the same shapes.
+            // > 1. Conflicting service shapes MUST contain the same properties and target the same shapes.
+            match (
+                existing.body().is_unresolved(),
+                shape.body().is_unresolved(),
+            ) {
+                (false, false) => {
+                    if existing.equal_without_traits(&shape) {
+                        copy_traits(existing, &shape)?;
+                    } else {
+                        error!("Model::add_shape {:?} != {:?}", existing, shape);
+                        return Err(ErrorKind::MergeShapeConflict(existing.id().clone()).into());
                     }
-                } else {
-                    error!("Model::add_shape {:?} != {:?}", existing, shape);
-                    return Err(ErrorKind::MergeShapeConflict(existing.id().clone()).into());
+                }
+                (true, false) => {
+                    existing.set_body(shape.body().clone());
+                    copy_traits(existing, &shape)?;
+                }
+                _ => {
+                    copy_traits(existing, &shape)?;
                 }
             }
         } else {
@@ -270,6 +280,18 @@ impl Model {
     pub fn is_complete(&self) -> bool {
         !self.shapes.values().any(|shape| shape.is_unresolved())
     }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Private Functions
+// ------------------------------------------------------------------------------------------------
+
+#[inline]
+fn copy_traits(to_shape: &mut TopLevelShape, from_shape: &TopLevelShape) -> ModelResult<()> {
+    for (id, value) in from_shape.traits() {
+        to_shape.apply_with_value(id.clone(), value.clone())?;
+    }
+    Ok(())
 }
 
 // ------------------------------------------------------------------------------------------------
