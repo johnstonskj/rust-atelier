@@ -20,3 +20,7 @@ all-features = true
 atelier_core = { version = "~0.2", path = "../atelier-core" }
 atelier_json = { version = "~0.2", path = "../atelier-json" }
 atelier_smithy = { version = "~0.2", path = "../atelier-smithy" }
+log = "0.4.14"
+
+[dev-dependencies]
+pretty_env_logger = "0.4.0"
