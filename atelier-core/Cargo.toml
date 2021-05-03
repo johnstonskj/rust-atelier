@@ -1,7 +1,7 @@
 [package]
 name = "atelier_core"
 description = "Rust native core model for the AWS Smithy IDL."
-version = "0.2.8"
+version = "0.2.9"
 authors = ["Simon Johnston <johnstonskj@gmail.com>"]
 edition = "2018"
 documentation = "https://docs.rs/atelier_core/"

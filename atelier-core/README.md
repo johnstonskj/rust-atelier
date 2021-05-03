@@ -96,6 +96,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.9**
+
+* Fixed a bug in Model::add_shape for unresolved shapes.
+
 **Version 0.2.8**
 
 * Added test cases for merging metadata, shapes, and traits.
