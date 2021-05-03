@@ -425,7 +425,6 @@ impl ModelAssembler {
 
     fn read_model(&self, path: &Path) -> Result<Model> {
         info!("ModelAssembler::read_model({:?})", path);
-        println!("{:?}", path);
         if let Some(extension) = path.extension() {
             let extension = extension.to_string_lossy().to_lowercase();
             if let Some(file_type) = self.file_types.get(extension.as_ref()) {

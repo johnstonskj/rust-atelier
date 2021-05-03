@@ -7,10 +7,12 @@ const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 
 #[test]
 fn merge_good_models() {
+    std::env::set_var("RUST_LOG", "debug");
     pretty_env_logger::try_init().expect("Could not initialize logger.");
 
     let mut path = PathBuf::from(MANIFEST_DIR);
-    path.push("tests/good");
+    path.push("tests");
+    path.push("good");
 
     let mut assembler = ModelAssembler::default();
     let _ = assembler.push(&path);

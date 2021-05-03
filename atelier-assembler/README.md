@@ -9,6 +9,23 @@ A tool can add files one-by-one, or from a directory, and then process them all 
 implementation understands the different registered file extensions so that it can read files
 in different representations and assemble them seamlessly.
 
+# Example
+
+The following is the simple, and most common, method of using the assembler. This uses the
+default `FileTypeRegistry` and will search for all models in the set of paths specified in
+the environment variable "`SMITHY_PATH`".
+
+```rust
+use atelier_assembler::ModelAssembler;
+use atelier_core::error::Result;
+use atelier_core::model::Model;
+use std::convert::TryFrom;
+
+let env_assembler = ModelAssembler::default();
+
+let model: Result<Model> = Model::try_from(env_assembler);
+```
+
 For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/assembly.html).
 
 ## Changes
