@@ -23,6 +23,9 @@ jobs:
         run: cargo build --verbose
 
       - name: Run tests
+        env:
+          RUST_LOG: debug
+          RUST_BACKTRACE: Full
         run: cargo test --all-features --verbose
 
       - name: Docs

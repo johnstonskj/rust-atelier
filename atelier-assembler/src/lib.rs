@@ -375,7 +375,7 @@ impl ModelAssembler {
     /// supported file extensions as well as finding files recursively in directory paths.
     ///
     pub fn expand_file_paths(&self) -> Vec<PathBuf> {
-        info!("ModelAssembler::into_file_paths()");
+        info!("ModelAssembler::expand_file_paths()");
         let mut results = Vec::default();
         for path in &self.paths {
             self.expand_path(path, &mut results);
