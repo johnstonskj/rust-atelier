@@ -1,4 +1,4 @@
-use atelier_core::builder::traits::{pattern, range, range_min};
+use atelier_core::builder::traits::{documentation, pattern, range, range_min};
 use atelier_core::builder::{ModelBuilder, ShapeTraits, SimpleShapeBuilder};
 use atelier_core::model::Model;
 use atelier_core::Version;
@@ -40,6 +40,27 @@ fn simple_shape_only() {
         integer WaiterDelay"##,
         ModelBuilder::new(Version::default(), "smithy.waiters")
             .simple_shape(SimpleShapeBuilder::integer("WaiterDelay"))
+            .into(),
+    )
+}
+
+#[test]
+fn simple_shape_with_block_text() {
+    model_test(
+        r##"namespace example.foo
+        @documentation("""
+            A wait time for "foo" to happen
+        """)
+        integer FooDelay"##,
+        ModelBuilder::new(Version::default(), "example.foo")
+            .simple_shape(
+                SimpleShapeBuilder::integer("FooDelay")
+                    .apply_trait(documentation(
+                        r##"A wait time for "foo" to happen
+        "##,
+                    ))
+                    .into(),
+            )
             .into(),
     )
 }

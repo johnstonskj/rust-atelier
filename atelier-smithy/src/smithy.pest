@@ -143,7 +143,7 @@ text_block =
 //     _{ DQUOTE ~ DQUOTE ~ DQUOTE }
 
 block_quoted_chars =
-    @{ ( sp | NEWLINE | '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFF}' | escaped_char | preserved_double)* }
+    @{ ( !("\"\"\"") ~ DQUOTE | sp | NEWLINE | '\u{20}'..'\u{21}' | '\u{23}'..'\u{5B}' | '\u{5D}'..'\u{10FFF}' | escaped_char | preserved_double)* }
 
 DQUOTE =
     _{ "\"" }
