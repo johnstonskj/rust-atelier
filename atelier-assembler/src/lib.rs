@@ -308,13 +308,24 @@ impl TryFrom<&mut ModelAssembler> for Model {
                 .iter()
                 .map(|file_name| value.read_model(&file_name))
                 .collect();
+            debug!(
+                "Model::try_from::<ModelAssembler>(...): found models => {:#?}",
+                &models
+            );
             match models {
                 Ok(mut models) => {
-                    let mut merged = models.remove(0);
-                    for other in models {
-                        merged.merge(other)?;
+                    if models.len() == 0 {
+                        warn!(
+                            "Model::try_from::<ModelAssembler>(...): No models found to assemble!"
+                        );
+                        Ok(Model::default())
+                    } else {
+                        let mut merged = models.remove(0);
+                        for other in models {
+                            merged.merge(other)?;
+                        }
+                        Ok(merged)
                     }
-                    Ok(merged)
                 }
                 Err(err) => Err(err),
             }
