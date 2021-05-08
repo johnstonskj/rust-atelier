@@ -11,10 +11,10 @@ The example below is pretty much the implementation of the `debug` module, it wr
 using the `Debug` implementation associated with those objects.
 
 ```rust
-# use atelier_core::io::ModelWriter;
-# use atelier_core::model::Model;
-# use atelier_core::error::Result as ModelResult;
-# use std::io::Write;
+use atelier_core::io::ModelWriter;
+use atelier_core::model::Model;
+use atelier_core::error::Result as ModelResult;
+use std::io::Write;
 
 #[derive(Debug)]
 pub struct Debugger {}
@@ -121,3 +121,5 @@ pub fn write_model_to_file(
 // ------------------------------------------------------------------------------------------------
 
 pub mod debug;
+
+pub mod lines;

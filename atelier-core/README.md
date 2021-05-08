@@ -96,6 +96,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.10**
+
+* Added new io::lines module with LineOrientedWriter.
+
 **Version 0.2.9**
 
 * Fixed a bug in Model::add_shape for unresolved shapes.

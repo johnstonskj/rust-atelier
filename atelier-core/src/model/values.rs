@@ -20,7 +20,7 @@ use std::fmt::{Display, Formatter};
 ///   [Node values](https://awslabs.github.io/smithy/1.0/spec/core/lexical-structure.html#node-values),
 ///   of the Smithy 1.0 Specification.
 ///
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum Number {
     /// An integer value
     Integer(i64),
