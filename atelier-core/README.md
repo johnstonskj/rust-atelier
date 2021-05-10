@@ -8,11 +8,12 @@ Definition Language.
 
 This crate is the foundation for the Atelier set of crates, and provides the following components:
 
-1. The model structures themselves that represents a Smithy model This is the in-memory representation shared by all 
-   Atelier crates and tools.
+1. The model structures themselves that represents a Smithy model This is the in-memory representation shared by all Atelier crates and tools.
 1. The model builder structures that allow for a fluent and easy construction of a core model.
 1. The prelude model containing the set of shapes defined in the Smithy specification.
 1. Traits for reading/writing models in different representations.
+   1. A model writer that emits a stable line-oriented format useful for capturing test results.
+   1. A model writer using Rust's Debug trait.
 1. A common `error` module to be used by all Atelier crates.
 
 # Example

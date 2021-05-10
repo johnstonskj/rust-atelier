@@ -7,7 +7,7 @@ is the core representation used by tools in the Smithy build process.
 This crate provides an implementation of the semantic model the for the Atelier set of crates, and
 core traits for other crates. Specifically it provides:
 
-1. The semantic [model](model/index.html) itself  that represents a Smithy model. This API is the
+1. The semantic [model](model/index.html) itself that represents a Smithy model. This API is the
    in-memory representation shared by all Atelier crates and tools.
 1. A set of model [builder](builder/index.html)s that allow for a more _fluent_ and less repetative
    construction of a core model.
@@ -15,8 +15,10 @@ core traits for other crates. Specifically it provides:
 1. The [prelude](prelude/index.html) module contains the set of shapes defined in the Smithy specification.
 1. Traits for model [actions](action/index.html) used to implement linters, validators, and transformations.
 1. Traits for [reading/writing](io/index.html) model files in different representations.
+   1. A model writer that emits a stable [line-oriented format](io/lines/index.html)) useful for
+      capturing test results.
+   1. A model writer using Rust's [debug](io/debug/index.html) trait.
 1. A common [error](error/index.html) module to be used by all Atelier crates.
-
 
 # The Semantic Model API Example
 
