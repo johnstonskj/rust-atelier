@@ -40,6 +40,10 @@ writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.7**
+
+* Updated due to API changes in rdftk_core.
+
 **Version 0.1.6**
 
 * Updated due to trait API changes in core.

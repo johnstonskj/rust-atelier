@@ -40,7 +40,10 @@ pub struct RdfReader {}
 ///
 /// Convert an RDF graph into a Smithy semantic model.
 ///
-pub fn rdf_to_model(_rdf_graph: &impl Graph, _model_iri: Option<IRIRef>) -> ModelResult<Model> {
+pub fn rdf_to_model<'a>(
+    _rdf_graph: &impl Graph<'a>,
+    _model_iri: Option<IRIRef>,
+) -> ModelResult<Model> {
     unimplemented!()
 }
 
