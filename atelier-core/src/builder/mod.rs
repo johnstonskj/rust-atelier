@@ -205,10 +205,30 @@ impl ModelBuilder {
             self.default_namespace.to_string(),
             SHAPE_ID_NAMESPACE_SEPARATOR
         );
+
+        if cfg!(debug_assertions) {
+            debug!("namespace = {}", namespace);
+            debug!("shape_id  = {}", builder.shape_id);
+        }
+
+        // see if this shape is in the current namespace
         if builder.shape_id.starts_with(&namespace) {
+            trace!(
+                "shape_id({}) starts with namespace({}), pushing shape name",
+                builder.shape_id,
+                namespace
+            );
             self.push_shape_name(&builder.shape_id[namespace.len()..].to_string());
         }
+
+        // add the shapes to the list of shapes in the current file
         self.shapes.push(TopLevelShapeBuilder::Reference(builder));
+
+        if cfg!(debug_assertions) {
+            debug!("after pushing new reference, shapes = {:#?}", self.shapes);
+        }
+
+        // return our updated self
         self
     }
 
@@ -245,18 +265,22 @@ impl ModelBuilder {
             {
                 self.prelude_namespace.make_shape(shape_name)
             } else {
-                // we couldn't find this shape name
-                let mut known_shape_names = prelude::prelude_model_shape_ids(&self.smithy_version)
-                    .iter()
-                    .map(|s| format!("{}", s))
-                    .collect::<Vec<String>>();
-                known_shape_names.sort();
-                debug!(
-                    "\n*** Can't find referenced ShapeID: {}\n*** self.shape_names = {:#?}\n*** Known Shape IDS: {:#?}",
-                    name,
-                    self.shape_names,
-                    known_shape_names
-                );
+                if cfg!(debug_assertions) {
+                    // we couldn't find this shape name
+                    let mut known_shape_names =
+                        prelude::prelude_model_shape_ids(&self.smithy_version)
+                            .iter()
+                            .map(|s| format!("{}", s))
+                            .collect::<Vec<String>>();
+                    known_shape_names.sort();
+                    error!(
+                        "\n*** Can't find referenced ShapeID: {}\n*** self.shape_names = {:#?}\n*** self.shapes = {:#?}\n*** Known Shape IDS: {:#?}",
+                        name,
+                        self.shape_names,
+                        self.shapes,
+                        known_shape_names
+                    );
+                }
                 panic!("{:?}", ErrorKind::UnknownShape(name.to_string()))
             }
         } else {
