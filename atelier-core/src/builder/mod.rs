@@ -108,6 +108,7 @@ impl ModelBuilder {
     // --------------------------------------------------------------------------------------------
 
     fn push_shape_name(&mut self, id: &str) {
+        trace!("ModelBuilder::push_shape_name(\"{}\")", id);
         if ShapeID::is_valid(id) {
             let id: ShapeID = id.parse().unwrap();
             if id.namespace() == &self.default_namespace {
@@ -185,6 +186,7 @@ impl ModelBuilder {
 
     /// Short-cut method, this creates a new `ShapeKind::Unresolved` in the model.
     pub fn uses(&mut self, shape: &str) -> &mut Self {
+        trace!("ModelBuilder::uses(\"{}\")", shape);
         self.reference(ReferenceBuilder::new(shape))
     }
 
@@ -197,6 +199,7 @@ impl ModelBuilder {
 
     /// Create and add a new resource shape to this model using the `ResourceBuilder` instance.
     pub fn reference(&mut self, builder: ReferenceBuilder) -> &mut Self {
+        trace!("ModelBuilder::reference(\"{}\")", builder.shape_id);
         let namespace = format!(
             "{}{}",
             self.default_namespace.to_string(),
@@ -242,6 +245,18 @@ impl ModelBuilder {
             {
                 self.prelude_namespace.make_shape(shape_name)
             } else {
+                // we couldn't find this shape name
+                let mut known_shape_names = prelude::prelude_model_shape_ids(&self.smithy_version)
+                    .iter()
+                    .map(|s| format!("{}", s))
+                    .collect::<Vec<String>>();
+                known_shape_names.sort();
+                debug!(
+                    "\n*** Can't find referenced ShapeID: {}\n*** self.shape_names = {:#?}\n*** Known Shape IDS: {:#?}",
+                    name,
+                    self.shape_names,
+                    known_shape_names
+                );
                 panic!("{:?}", ErrorKind::UnknownShape(name.to_string()))
             }
         } else {

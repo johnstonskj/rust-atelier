@@ -20,7 +20,7 @@ macro_rules! expecting {
 
 macro_rules! entry {
     ($fn_name:expr, $pair:expr) => {
-        debug!("{}({:?})", $fn_name, &$pair.as_rule());
+        trace!("{}({:?})", $fn_name, &$pair.as_rule());
     };
 }
 

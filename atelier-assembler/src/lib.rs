@@ -299,7 +299,7 @@ impl TryFrom<&mut ModelAssembler> for Model {
     type Error = Error;
 
     fn try_from(value: &mut ModelAssembler) -> std::result::Result<Self, Self::Error> {
-        info!("Model::try_from::<ModelAssembler>(...)");
+        trace!("Model::try_from::<ModelAssembler>(...)");
         if value.is_empty() {
             Ok(Model::default())
         } else {
@@ -355,7 +355,7 @@ impl ModelAssembler {
     /// Add a single file path to the assembler for later processing.
     ///
     pub fn push(&mut self, path: &Path) -> &mut Self {
-        info!("ModelAssembler::push({:?})", path);
+        trace!("ModelAssembler::push({:?})", path);
         let _ = self.paths.insert(PathBuf::from(path));
         self
     }
@@ -386,7 +386,7 @@ impl ModelAssembler {
     /// supported file extensions as well as finding files recursively in directory paths.
     ///
     pub fn expand_file_paths(&self) -> Vec<PathBuf> {
-        info!("ModelAssembler::expand_file_paths()");
+        trace!("ModelAssembler::expand_file_paths()");
         let mut results = Vec::default();
         for path in &self.paths {
             self.expand_path(path, &mut results);
@@ -416,17 +416,17 @@ impl ModelAssembler {
     }
 
     fn expand_path(&self, path: &PathBuf, results: &mut Vec<PathBuf>) {
-        info!("ModelAssembler::expand_path({:?})", path);
+        trace!("ModelAssembler::expand_path({:?})", path);
         if path.is_file() {
             if let Some(extension) = path.extension() {
                 let extension = extension.to_string_lossy();
                 if self.file_types.contains(extension.as_ref()) {
-                    debug!("ModelAssembler::expand_path - adding file path {:?}", path);
+                    trace!("ModelAssembler::expand_path - adding file path {:?}", path);
                     let _ = results.push(path.clone());
                 }
             }
         } else if path.is_dir() {
-            debug!("ModelAssembler::expand_path - reading dir path {:?}", path);
+            trace!("ModelAssembler::expand_path - reading dir path {:?}", path);
             for entry in read_dir(path).unwrap() {
                 let entry = entry.unwrap();
                 self.expand_path(&entry.path(), results);
@@ -435,7 +435,7 @@ impl ModelAssembler {
     }
 
     fn read_model(&self, path: &Path) -> Result<Model> {
-        info!("ModelAssembler::read_model({:?})", path);
+        trace!("ModelAssembler::read_model({:?})", path);
         if let Some(extension) = path.extension() {
             let extension = extension.to_string_lossy().to_lowercase();
             if let Some(file_type) = self.file_types.get(extension.as_ref()) {
