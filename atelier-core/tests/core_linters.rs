@@ -5,6 +5,7 @@ use atelier_core::builder::{
 use atelier_core::model::Model;
 use atelier_core::Version;
 use pretty_assertions::assert_eq;
+use std::convert::TryInto;
 
 fn make_model() -> Model {
     ModelBuilder::new(Version::V10, "smithy.example")
@@ -23,7 +24,8 @@ fn make_model() -> Model {
                 .apply_trait(TraitBuilder::new("amazon.fashion#BadTraitName"))
                 .into(),
         )
-        .into()
+        .try_into()
+        .unwrap()
 }
 
 #[test]

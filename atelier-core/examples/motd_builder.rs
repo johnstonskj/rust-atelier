@@ -5,6 +5,7 @@ use atelier_core::builder::{
 use atelier_core::error::ErrorSource;
 use atelier_core::model::Model;
 use atelier_core::Version;
+use std::convert::TryInto;
 
 pub fn main() {
     let model: Model = ModelBuilder::new(Version::V10, "example.motd")
@@ -49,6 +50,7 @@ pub fn main() {
                 .add_member(MemberBuilder::string("errorMessage").required().into())
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     println!("{:#?}", model);
 }

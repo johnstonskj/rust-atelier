@@ -2,6 +2,7 @@ use atelier_core::builder::ModelBuilder;
 use atelier_core::model::values::{Value, ValueMap};
 use atelier_core::model::Model;
 use atelier_core::Version;
+use std::convert::TryInto;
 
 // ------------------------------------------------------------------------------------------------
 // Merge succeeds
@@ -14,7 +15,8 @@ fn merge_concat_arrays() {
             "name".into(),
             Value::Array(vec![Value::Number(101.into()), Value::Number(102.into())]),
         )
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata(
             "name".into(),
@@ -37,7 +39,8 @@ fn merge_concat_arrays() {
 fn merge_same_string() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::String("example-model".into()))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::String("example-model".into()))
         .is_ok());
@@ -49,7 +52,8 @@ fn merge_same_string() {
 fn merge_same_number() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::Number(101.into()))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::Number(101.into()))
         .is_ok());
@@ -61,7 +65,8 @@ fn merge_same_number() {
 fn merge_same_boolean() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::Boolean(true))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::Boolean(true))
         .is_ok());
@@ -76,7 +81,8 @@ fn merge_same_object() {
     object.insert("name".into(), Value::String("example-model".into()));
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::Object(object.clone()))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::Object(object.clone()))
         .is_ok());
@@ -92,7 +98,8 @@ fn merge_same_object() {
 fn merge_conflict_types() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::String("example-model".into()))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::Boolean(false))
         .is_err());
@@ -102,7 +109,8 @@ fn merge_conflict_types() {
 fn merge_conflict_string() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::String("example-model".into()))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::String("another-name".into()))
         .is_err());
@@ -114,7 +122,8 @@ fn merge_conflict_string() {
 fn merge_conflict_number() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::Number(101.into()))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::Number(202.into()))
         .is_err());
@@ -126,7 +135,8 @@ fn merge_conflict_number() {
 fn merge_conflict_boolean() {
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::Boolean(true))
-        .into();
+        .try_into()
+        .unwrap();
     assert!(model
         .add_metadata("name".into(), Value::Boolean(false))
         .is_err());
@@ -141,7 +151,8 @@ fn merge_conflict_object() {
     object.insert("name".into(), Value::String("example-model".into()));
     let mut model: Model = ModelBuilder::new(Version::V10, "smithy.example")
         .meta_data("name".into(), Value::Object(object))
-        .into();
+        .try_into()
+        .unwrap();
 
     let mut object = ValueMap::new();
     object.insert("bool".into(), Value::Boolean(false));

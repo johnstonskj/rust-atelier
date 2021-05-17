@@ -1,6 +1,5 @@
 use atelier_core::io::lines::make_line_oriented_form;
-
-pub mod common;
+use atelier_test::examples::{motd::make_message_of_the_day_model, weather::make_weather_model};
 
 const MOTD_LINES: &[&str] = &[
     "operation::example.motd#GetMessage",
@@ -108,7 +107,7 @@ const WEATHER_LINES: &[&str] = &[
 
 #[test]
 fn test_motd_to_lines() {
-    let model = common::make_message_of_the_day_model();
+    let model = make_message_of_the_day_model();
     let lines = make_line_oriented_form(&model);
     println!("{:#?}", lines);
     assert_eq!(lines, MOTD_LINES.to_vec());
@@ -116,7 +115,7 @@ fn test_motd_to_lines() {
 
 #[test]
 fn test_weather_to_lines() {
-    let model = common::make_weather_model();
+    let model = make_weather_model();
     let lines = make_line_oriented_form(&model);
     println!("{:#?}", lines);
     assert_eq!(lines, WEATHER_LINES.to_vec());

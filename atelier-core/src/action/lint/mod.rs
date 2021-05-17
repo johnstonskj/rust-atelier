@@ -21,6 +21,7 @@
 * };
 * use atelier_core::model::{NamespaceID, Model};
 * use atelier_core::Version;
+* use std::convert::TryInto;
 *
 * let model: Model = ModelBuilder::new(Version::V10, "smithy.example")
 *     .uses("amazon.fashion#BadTraitName")
@@ -38,7 +39,7 @@
 *             .apply_trait(TraitBuilder::new("amazon.fashion#BadTraitName"))
 *             .into(),
 *     )
-*     .into();
+*     .try_into().unwrap();
 * let result = run_linter_actions(&mut [
 *         Box::new(NamingConventions::default()),
 *     ], &model, false);

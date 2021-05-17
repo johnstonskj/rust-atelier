@@ -1,3 +1,4 @@
+use crate::builder::id::ShapeName;
 use crate::builder::values::ObjectBuilder;
 use crate::error::ErrorKind;
 use crate::error::ErrorSource;
@@ -12,6 +13,7 @@ use crate::prelude::{
     TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
 };
 use crate::syntax::SHAPE_ID_ABSOLUTE_SEPARATOR;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -20,7 +22,7 @@ use crate::syntax::SHAPE_ID_ABSOLUTE_SEPARATOR;
 /// Builder for `AppliedTrait` model elements.
 #[derive(Clone, Debug)]
 pub struct TraitBuilder {
-    pub(crate) shape_id: String,
+    pub(crate) shape_id: ShapeName,
     pub(crate) value: TraitValue,
 }
 
@@ -231,7 +233,7 @@ impl TraitBuilder {
     /// Construct a new `TraitBuilder` with the given shape identifier.
     pub fn new(id: &str) -> Self {
         Self {
-            shape_id: id.to_string(),
+            shape_id: ShapeName::from_str(id).unwrap(),
             value: None,
         }
     }
@@ -239,7 +241,7 @@ impl TraitBuilder {
     /// Construct a new `TraitBuilder` with the given shape identifier and value.
     pub fn with_value(id: &str, value: Value) -> Self {
         Self {
-            shape_id: id.to_string(),
+            shape_id: ShapeName::from_str(id).unwrap(),
             value: Some(value),
         }
     }

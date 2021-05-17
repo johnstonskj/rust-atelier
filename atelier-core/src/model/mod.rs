@@ -263,6 +263,15 @@ impl Model {
             .map(|shape| shape.id())
     }
 
+    /// Return an iterator over all names for shapes defined outside this model; this includes
+    /// only shapes in the model's **shapes** collection with kind `ShapeKind::Unresolved`.
+    pub fn unresolved_shape_names(&self) -> impl Iterator<Item = &ShapeID> {
+        self.shapes
+            .values()
+            .filter(|shape| shape.is_unresolved())
+            .map(|shape| shape.id())
+    }
+
     /// Return a vector containing all the namespaces used in defining shapes in this model.
     pub fn namespaces(&self) -> Vec<&NamespaceID> {
         let mut result: Vec<&NamespaceID> = self.shape_names().map(|id| id.namespace()).collect();

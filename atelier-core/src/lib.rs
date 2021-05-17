@@ -183,6 +183,7 @@ use atelier_core::builder::{
 };
 use atelier_core::model::{Identifier, Model, ShapeID};
 use atelier_core::Version;
+use std::convert::TryInto;
 
 let model: Model = ModelBuilder::new(Version::V10, "example.motd")
     .service(
@@ -226,7 +227,7 @@ let model: Model = ModelBuilder::new(Version::V10, "example.motd")
             .add_member(MemberBuilder::string("errorMessage").required().into())
             .into(),
     )
-    .into();
+    .try_into().unwrap();
 ```
 */
 
@@ -298,7 +299,7 @@ impl FromStr for Version {
     type Err = error::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "1.0" {
+        if s == "1" || s == "1.0" {
             Ok(Self::V10)
         } else {
             Err(error::ErrorKind::InvalidVersionNumber(s.to_string()).into())

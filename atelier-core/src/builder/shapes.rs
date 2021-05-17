@@ -1,7 +1,8 @@
-use crate::builder::{traits, TraitBuilder};
+use crate::builder::id::ShapeName;
+use crate::builder::{traits, TopLevelShapeBuilder, TraitBuilder};
 use crate::error::ErrorSource;
 use crate::model::shapes::Simple;
-use crate::model::ShapeID;
+use crate::model::{Identifier, ShapeID};
 use crate::prelude::{
     PRELUDE_NAMESPACE, SHAPE_BIGDECIMAL, SHAPE_BIGINTEGER, SHAPE_BLOB, SHAPE_BOOLEAN, SHAPE_BYTE,
     SHAPE_DOCUMENT, SHAPE_DOUBLE, SHAPE_FLOAT, SHAPE_INTEGER, SHAPE_LONG, SHAPE_SHORT,
@@ -10,6 +11,7 @@ use crate::prelude::{
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use std::collections::HashMap;
 use std::ops::Deref;
+use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Macros
@@ -41,7 +43,16 @@ macro_rules! add_trait {
     // };
 }
 
-macro_rules! from_mut {
+macro_rules! from_impls {
+    ($builder:ident, $variant:ident) => {
+        from_impls! { $builder }
+
+        impl From<$builder> for TopLevelShapeBuilder {
+            fn from(inner: $builder) -> Self {
+                TopLevelShapeBuilder::$variant(inner)
+            }
+        }
+    };
     ($builder:ident) => {
         impl From<&mut $builder> for $builder {
             fn from(v: &mut $builder) -> Self {
@@ -69,7 +80,7 @@ macro_rules! shape_traits_impl {
 /// Builder for `ShapeKind::Simple` shapes.
 #[derive(Clone, Debug)]
 pub struct SimpleShapeBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
     pub(super) simple_shape: Simple,
 }
@@ -77,7 +88,7 @@ pub struct SimpleShapeBuilder {
 /// Builder for `ShapeKind::List` shapes.
 #[derive(Clone, Debug)]
 pub struct ListBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
     pub(super) member: MemberBuilder,
 }
@@ -85,7 +96,7 @@ pub struct ListBuilder {
 /// Builder for `ShapeKind::Map` shapes.
 #[derive(Clone, Debug)]
 pub struct MapBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
     pub(super) key: MemberBuilder,
     pub(super) value: MemberBuilder,
@@ -94,7 +105,7 @@ pub struct MapBuilder {
 /// Builder for `ShapeKind::Structure` shapes.
 #[derive(Clone, Debug)]
 pub struct StructureBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
     pub(super) members: Vec<MemberBuilder>,
 }
@@ -102,52 +113,52 @@ pub struct StructureBuilder {
 /// Builder for `ShapeKind::Service` shapes.
 #[derive(Clone, Debug)]
 pub struct ServiceBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
     pub(super) version: String,
-    pub(super) operations: Vec<String>,
-    pub(super) resources: Vec<String>,
+    pub(super) operations: Vec<ShapeName>,
+    pub(super) resources: Vec<ShapeName>,
 }
 
 /// Builder for `ShapeKind::Operation` shapes.
 #[derive(Clone, Debug)]
 pub struct OperationBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
-    pub(super) input: Option<String>,
-    pub(super) output: Option<String>,
-    pub(super) errors: Vec<String>,
+    pub(super) input: Option<ShapeName>,
+    pub(super) output: Option<ShapeName>,
+    pub(super) errors: Vec<ShapeName>,
 }
 
 /// Builder for `ShapeKind::Resource` shapes.
 #[derive(Clone, Debug)]
 pub struct ResourceBuilder {
-    pub(super) shape_name: String,
+    pub(super) shape_name: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
-    pub(super) identifiers: HashMap<String, String>,
-    pub(super) create: Option<String>,
-    pub(super) put: Option<String>,
-    pub(super) read: Option<String>,
-    pub(super) update: Option<String>,
-    pub(super) delete: Option<String>,
-    pub(super) list: Option<String>,
-    pub(super) operations: Vec<String>,
-    pub(super) collection_operations: Vec<String>,
-    pub(super) resources: Vec<String>,
+    pub(super) identifiers: HashMap<Identifier, ShapeName>,
+    pub(super) create: Option<ShapeName>,
+    pub(super) put: Option<ShapeName>,
+    pub(super) read: Option<ShapeName>,
+    pub(super) update: Option<ShapeName>,
+    pub(super) delete: Option<ShapeName>,
+    pub(super) list: Option<ShapeName>,
+    pub(super) operations: Vec<ShapeName>,
+    pub(super) collection_operations: Vec<ShapeName>,
+    pub(super) resources: Vec<ShapeName>,
 }
 /// Builder for `ShapeKind::Unresolved` shapes.
 #[derive(Clone, Debug)]
 pub struct ReferenceBuilder {
-    pub(super) shape_id: String,
+    pub(super) shape_id: ShapeName,
     pub(super) applied_traits: Vec<TraitBuilder>,
 }
 
 /// Builder for `MemberShape` shapes.
 #[derive(Clone, Debug)]
 pub struct MemberBuilder {
-    pub(super) member_name: String,
+    pub(super) member_name: Identifier,
     pub(super) applied_traits: Vec<TraitBuilder>,
-    pub(super) target: String,
+    pub(super) target: ShapeName,
 }
 
 ///
@@ -219,7 +230,7 @@ pub trait ShapeTraits {
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { SimpleShapeBuilder }
+from_impls! { SimpleShapeBuilder, SimpleShape }
 
 shape_traits_impl! { SimpleShapeBuilder }
 
@@ -227,7 +238,7 @@ impl SimpleShapeBuilder {
     ///Construct a new simple shape builder.
     pub fn new(shape_name: &str, simple_shape: Simple) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             simple_shape,
         }
@@ -309,7 +320,7 @@ impl SimpleShapeBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { ListBuilder }
+from_impls! { ListBuilder }
 
 shape_traits_impl! { ListBuilder }
 
@@ -317,9 +328,18 @@ impl ListBuilder {
     ///Construct a new list or set shape builder.
     pub fn new(shape_name: &str, member_target: &str) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             member: MemberBuilder::new(MEMBER_MEMBER, member_target),
+        }
+    }
+
+    ///Construct a new list or set shape builder.
+    pub fn with_target(shape_name: &str, member_target: ShapeName) -> Self {
+        Self {
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
+            applied_traits: Default::default(),
+            member: MemberBuilder::with_target(MEMBER_MEMBER, member_target),
         }
     }
 
@@ -337,7 +357,7 @@ impl ListBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { MapBuilder }
+from_impls! { MapBuilder, Map }
 
 shape_traits_impl! { MapBuilder }
 
@@ -345,7 +365,7 @@ impl MapBuilder {
     ///Construct a new map shape builder.
     pub fn new(shape_name: &str, key_target: &str, value_target: &str) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             key: MemberBuilder::new(MEMBER_KEY, key_target),
             value: MemberBuilder::new(MEMBER_VALUE, value_target),
@@ -365,7 +385,7 @@ impl MapBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { StructureBuilder }
+from_impls! { StructureBuilder }
 
 shape_traits_impl! { StructureBuilder }
 
@@ -373,7 +393,7 @@ impl StructureBuilder {
     ///Construct a new structure or union shape builder.
     pub fn new(shape_name: &str) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             members: Default::default(),
         }
@@ -465,14 +485,14 @@ impl StructureBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { ServiceBuilder }
+from_impls! { ServiceBuilder, Service }
 
 shape_traits_impl! { ServiceBuilder }
 
 impl ServiceBuilder {
     pub fn new(shape_name: &str, version: &str) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             version: version.to_string(),
             operations: Default::default(),
@@ -488,7 +508,7 @@ impl ServiceBuilder {
 
     /// Add an operation by reference to this service
     pub fn operation(&mut self, shape_id: &str) -> &mut Self {
-        self.operations.push(shape_id.to_string());
+        self.operations.push(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
@@ -502,7 +522,7 @@ impl ServiceBuilder {
 
     /// Add a resource by reference to this service
     pub fn resource(&mut self, shape_id: &str) -> &mut Self {
-        self.resources.push(shape_id.to_string());
+        self.resources.push(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
@@ -529,14 +549,14 @@ impl ServiceBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { OperationBuilder }
+from_impls! { OperationBuilder, Operation }
 
 shape_traits_impl! { OperationBuilder }
 
 impl OperationBuilder {
     pub fn new(shape_name: &str) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             input: None,
             output: None,
@@ -546,19 +566,19 @@ impl OperationBuilder {
 
     /// Set the input type for this operation.
     pub fn input(&mut self, shape_id: &str) -> &mut Self {
-        self.input = Some(shape_id.to_string());
+        self.input = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set the output type for this operation.
     pub fn output(&mut self, shape_id: &str) -> &mut Self {
-        self.output = Some(shape_id.to_string());
+        self.output = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set an error type for this operation.
     pub fn error(&mut self, shape_id: &str) -> &mut Self {
-        self.errors.push(shape_id.to_string());
+        self.errors.push(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
@@ -587,14 +607,14 @@ impl OperationBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { ResourceBuilder }
+from_impls! { ResourceBuilder, Resource }
 
 shape_traits_impl! { ResourceBuilder }
 
 impl ResourceBuilder {
     pub fn new(shape_name: &str) -> Self {
         Self {
-            shape_name: shape_name.to_string(),
+            shape_name: ShapeName::from_str(shape_name).unwrap(),
             applied_traits: Default::default(),
             identifiers: Default::default(),
             create: None,
@@ -612,51 +632,52 @@ impl ResourceBuilder {
     /// Add an identifier to this resource; this represents the local member name and shape
     /// identifier for the member's type.
     pub fn identifier(&mut self, id: &str, shape_id: &str) -> &mut Self {
-        let _ = self
-            .identifiers
-            .insert(id.to_string(), shape_id.to_string());
+        let _ = self.identifiers.insert(
+            Identifier::from_str(id).unwrap(),
+            ShapeName::from_str(shape_id).unwrap(),
+        );
         self
     }
 
     /// Set the operation identifier that handles **create** actions.
     pub fn create(&mut self, shape_id: &str) -> &mut Self {
-        self.create = Some(shape_id.to_string());
+        self.create = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set the operation identifier that handles **put** actions.
     pub fn put(&mut self, shape_id: &str) -> &mut Self {
-        self.put = Some(shape_id.to_string());
+        self.put = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set the operation identifier that handles **read** actions.
     pub fn read(&mut self, shape_id: &str) -> &mut Self {
-        self.read = Some(shape_id.to_string());
+        self.read = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set the operation identifier that handles **update** actions.
     pub fn update(&mut self, shape_id: &str) -> &mut Self {
-        self.update = Some(shape_id.to_string());
+        self.update = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set the operation identifier that handles **delete** actions.
     pub fn delete(&mut self, shape_id: &str) -> &mut Self {
-        self.delete = Some(shape_id.to_string());
+        self.delete = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Set the operation identifier that handles **list** actions.
     pub fn list(&mut self, shape_id: &str) -> &mut Self {
-        self.list = Some(shape_id.to_string());
+        self.list = Some(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
     /// Add an operation by reference to this service
     pub fn operation(&mut self, shape_id: &str) -> &mut Self {
-        self.operations.push(shape_id.to_string());
+        self.operations.push(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
@@ -670,7 +691,8 @@ impl ResourceBuilder {
 
     /// Add a collection operation by reference to this service
     pub fn collection_operation(&mut self, shape_id: &str) -> &mut Self {
-        self.collection_operations.push(shape_id.to_string());
+        self.collection_operations
+            .push(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
@@ -684,7 +706,7 @@ impl ResourceBuilder {
 
     /// Add a resource by reference to this service
     pub fn resource(&mut self, shape_id: &str) -> &mut Self {
-        self.resources.push(shape_id.to_string());
+        self.resources.push(ShapeName::from_str(shape_id).unwrap());
         self
     }
 
@@ -707,15 +729,17 @@ impl ResourceBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { ReferenceBuilder }
+from_impls! { ReferenceBuilder, Reference }
 
 shape_traits_impl! { ReferenceBuilder }
 
 impl ReferenceBuilder {
     /// Construct a new `ShapeKind::Unresolved` builder, with id.
-    pub fn new(id: &str) -> Self {
+    pub fn new(shape_name: &str) -> Self {
+        // MUST be a qualified name.
+        let shape_id = ShapeID::from_str(shape_name).unwrap();
         Self {
-            shape_id: id.to_string(),
+            shape_id: ShapeName::from(shape_id),
             applied_traits: Default::default(),
         }
     }
@@ -723,7 +747,7 @@ impl ReferenceBuilder {
 
 // ------------------------------------------------------------------------------------------------
 
-from_mut! { MemberBuilder }
+from_impls! { MemberBuilder }
 
 shape_traits_impl! { MemberBuilder }
 
@@ -731,27 +755,39 @@ impl MemberBuilder {
     /// Construct a new member shape builder, with id target
     pub fn new(member_name: &str, target: &str) -> Self {
         Self {
-            member_name: member_name.to_string(),
+            member_name: Identifier::from_str(member_name).unwrap(),
             applied_traits: Default::default(),
-            target: target.to_string(),
+            target: ShapeName::from_str(target).unwrap(),
+        }
+    }
+    /// Construct a new member shape builder, with id target
+    pub fn with_target(member_name: &str, target: ShapeName) -> Self {
+        Self {
+            member_name: Identifier::from_str(member_name).unwrap(),
+            applied_traits: Default::default(),
+            target,
         }
     }
 
     fn new_unchecked(member_name: &str, target_namespace: &str, target_shape_name: &str) -> Self {
         Self {
-            member_name: member_name.to_string(),
+            member_name: Identifier::from_str(member_name).unwrap(),
             applied_traits: Default::default(),
-            target: ShapeID::new_unchecked(target_namespace, target_shape_name, None).to_string(),
+            target: ShapeName::Qualified(ShapeID::new_unchecked(
+                target_namespace,
+                target_shape_name,
+                None,
+            )),
         }
     }
 
     /// Return the name of this member.
-    pub fn name(&self) -> &String {
+    pub fn name(&self) -> &Identifier {
         &self.member_name
     }
 
     /// Return the target type of this member.
-    pub fn target(&self) -> &String {
+    pub fn target(&self) -> &ShapeName {
         &self.target
     }
 

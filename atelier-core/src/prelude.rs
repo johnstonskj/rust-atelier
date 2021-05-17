@@ -2,6 +2,8 @@
 Provides constant valued names from the prelude model described in the Smithy specification.
 */
 
+use std::collections::HashSet;
+
 use crate::error::Result;
 
 // ------------------------------------------------------------------------------------------------
@@ -19,6 +21,42 @@ macro_rules! string_const {
 }
 
 // ------------------------------------------------------------------------------------------------
+// Public Functions
+// ------------------------------------------------------------------------------------------------
+
+///
+/// Return the prelude namespace as a `NamespaceID`.
+/// 
+pub fn prelude_namespace_id() -> &'static NamespaceID {
+    &PRELUDE_NAMESPACE_ID
+}
+
+///
+/// Return a set of `ShapeID`s for all the prelude defined shapes.
+/// 
+pub fn defined_prelude_shapes() -> &'static HashSet<&'static str> {
+    &PRELUDE_SHAPES
+}
+
+///
+/// Return a set of `ShapeID`s for all the prelude defined traits.
+/// 
+pub fn defined_prelude_traits() -> &'static HashSet<&'static str> {
+    &PRELUDE_TRAITS
+}
+
+///
+/// Create a ShapeID corresponding to a prelude top-level shape.
+///
+pub fn prelude_shape_named(name: &str) -> Result<ShapeID> {
+    Ok(ShapeID::new(
+        NamespaceID::new_unchecked(PRELUDE_NAMESPACE),
+        Identifier::from_str(name)?,
+        None,
+    ))
+}
+
+// ------------------------------------------------------------------------------------------------
 // Public Names
 // ------------------------------------------------------------------------------------------------
 
@@ -27,6 +65,119 @@ string_const!(
     "smithy.api",
     "The namespace for the Smithy prelude model."
 );
+
+// ------------------------------------------------------------------------------------------------
+
+lazy_static! {
+    static ref PRELUDE_NAMESPACE_ID: NamespaceID = NamespaceID::new_unchecked(PRELUDE_NAMESPACE);
+}
+
+lazy_static! {
+    static ref PRELUDE_SHAPES: HashSet<&'static str> = [
+        SHAPE_STRING,
+        SHAPE_BLOB,
+        SHAPE_BIGINTEGER,
+        SHAPE_BIGDECIMAL,
+        SHAPE_TIMESTAMP,
+        SHAPE_DOCUMENT,
+        SHAPE_BOOLEAN,
+        SHAPE_PRIMITIVEBOOLEAN,
+        SHAPE_BYTE,
+        SHAPE_PRIMITIVEBYTE,
+        SHAPE_SHORT,
+        SHAPE_PRIMITIVESHORT,
+        SHAPE_INTEGER,
+        SHAPE_PRIMITIVEINTEGER,
+        SHAPE_LONG,
+        SHAPE_PRIMITIVELONG,
+        SHAPE_FLOAT,
+        SHAPE_PRIMITIVEFLOAT,
+        SHAPE_DOUBLE,
+        SHAPE_PRIMITIVEDOUBLE,
+    ]
+    .iter()
+    .cloned()
+    .collect();
+}
+
+lazy_static! {
+    static ref PRELUDE_TRAITS: HashSet<&'static str> = [
+        TRAIT_XMLFLATTENED,
+        TRAIT_REFERENCES,
+        TRAIT_STRUCTURALLYEXCLUSIVE,
+        TRAIT_STREAMING,
+        TRAIT_REQUIRESLENGTH,
+        TRAIT_UNIQUEITEMS,
+        TRAIT_EXAMPLES,
+        TRAIT_TIMESTAMPFORMAT,
+        TRAIT_HTTPERROR,
+        TRAIT_HTTPBASICAUTH,
+        TRAIT_DOCUMENTATION,
+        TRAIT_HTTPQUERY,
+        TRAIT_SUPPRESS,
+        TRAIT_SINCE,
+        TRAIT_TRAIT,
+        TRAIT_HTTPBEARERAUTH,
+        TRAIT_HTTPPAYLOAD,
+        TRAIT_HTTPAPIKEYAUTH,
+        TRAIT_CORS,
+        TRAIT_IDREF,
+        TRAIT_UNSTABLE,
+        TRAIT_HOSTLABEL,
+        TRAIT_NONEMPTYSTRING,
+        TRAIT_PRIVATE,
+        TRAIT_TITLE,
+        TRAIT_REQUIRED,
+        TRAIT_ENUM,
+        TRAIT_IDEMPOTENCYTOKEN,
+        TRAIT_TAGS,
+        TRAIT_HTTPAPIKEYLOCATIONS,
+        TRAIT_OPTIONALAUTH,
+        TRAIT_XMLATTRIBUTE,
+        TRAIT_XMLNAME,
+        TRAIT_HTTPHEADER,
+        TRAIT_AUTHDEFINITION,
+        TRAIT_RESOURCEIDENTIFIER,
+        TRAIT_EXAMPLE,
+        TRAIT_MEDIATYPE,
+        TRAIT_HTTPCHECKSUMREQUIRED,
+        TRAIT_IDEMPOTENT,
+        TRAIT_ENDPOINT,
+        TRAIT_EVENTHEADER,
+        TRAIT_SENSITIVE,
+        TRAIT_TRAITSHAPEIDLIST,
+        TRAIT_ERROR,
+        TRAIT_ENUMDEFINITION,
+        TRAIT_PROTOCOLDEFINITION,
+        TRAIT_ENUMCONSTANTBODYNAME,
+        TRAIT_DEPRECATED,
+        TRAIT_HTTPPREFIXHEADERS,
+        TRAIT_EVENTPAYLOAD,
+        TRAIT_NOREPLACE,
+        TRAIT_HTTP,
+        TRAIT_EXTERNALDOCUMENTATION,
+        TRAIT_JSONNAME,
+        TRAIT_AUTH,
+        TRAIT_RETRYABLE,
+        TRAIT_HTTPDIGESTAUTH,
+        TRAIT_RANGE,
+        TRAIT_BOX,
+        TRAIT_TRAITSHAPEID,
+        TRAIT_REFERENCE,
+        TRAIT_NONEMPTYSTRINGMAP,
+        TRAIT_PAGINATED,
+        TRAIT_NONEMPTYSTRINGLIST,
+        TRAIT_PATTERN,
+        TRAIT_READONLY,
+        TRAIT_HTTPLABEL,
+        TRAIT_AUTHTRAITREFERENCE,
+        TRAIT_XMLNAMESPACE,
+        TRAIT_LENGTH,
+    ]
+    .iter()
+    .cloned()
+    .collect();
+}
 
 // ------------------------------------------------------------------------------------------------
 
@@ -577,18 +728,3 @@ string_const!(
     "length",
     " The identifier for the structure trait `length`"
 );
-
-// ------------------------------------------------------------------------------------------------
-// Public Functions
-// ------------------------------------------------------------------------------------------------
-
-///
-/// Create a ShapeID corresponding to a prelude top-level shape.
-///
-pub fn prelude_shape_named(name: &str) -> Result<ShapeID> {
-    Ok(ShapeID::new(
-        NamespaceID::new_unchecked(PRELUDE_NAMESPACE),
-        Identifier::from_str(name)?,
-        None,
-    ))
-}

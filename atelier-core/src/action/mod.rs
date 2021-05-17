@@ -24,6 +24,7 @@
 * };
 * use atelier_core::model::Model;
 * use atelier_core::Version;
+* use std::convert::TryInto;
 *
 * let model: Model = ModelBuilder::new(Version::V10, "smithy.example")
 *     .uses("foo.baz#Bar")
@@ -32,7 +33,6 @@
 *             .member("a", "MyString")
 *             .member("b", "smithy.example#MyString")
 *             .member("d", "foo.baz#Bar")
-*             .member("e", "foo.baz#MyString")
 *             .member("f", "String")
 *             .member("g", "MyBoolean")
 *             .apply_trait(TraitBuilder::new("documentation"))
@@ -40,7 +40,7 @@
 *     )
 *     .simple_shape(SimpleShapeBuilder::string("MyString"))
 *     .simple_shape(SimpleShapeBuilder::boolean("MyBoolean"))
-*     .into();
+*     .try_into().unwrap();
 * let result = run_validation_actions(&mut [
 *         Box::new(CorrectTypeReferences::default()),
 *     ], &model, false);
@@ -80,26 +80,6 @@
 *                     "MyString",
 *                 ),
 *                 member_name: None,
-*             },
-*         ),
-*     },
-*     ActionIssue {
-*         reporter: "CorrectTypeReferences",
-*         level: Warning,
-*         message: "Structure member's type (foo.baz#MyString) cannot be resolved to a shape in this model.",
-*         locus: Some(
-*             ShapeID {
-*                 namespace: NamespaceID(
-*                     "smithy.example",
-*                 ),
-*                 shape_name: Identifier(
-*                     "MyStructure",
-*                 ),
-*                 member_name: Some(
-*                     Identifier(
-*                         "e",
-*                     ),
-*                 ),
 *             },
 *         ),
 *     },

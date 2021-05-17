@@ -6,6 +6,7 @@ use atelier_core::model::values::{Value, ValueMap};
 use atelier_core::model::{Model, ShapeID};
 use atelier_core::prelude::{prelude_shape_named, TRAIT_SINCE, TRAIT_TAGS};
 use atelier_core::Version;
+use std::convert::TryInto;
 
 // ------------------------------------------------------------------------------------------------
 // Merge succeeds
@@ -19,7 +20,8 @@ fn merge_concat_arrays() {
                 .tagged(&["tag-1", "tag-2"])
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = prelude_shape_named(TRAIT_TAGS).unwrap();
@@ -49,7 +51,8 @@ fn merge_same_string() {
                 .since("2021-04-30")
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = prelude_shape_named(TRAIT_SINCE).unwrap();
@@ -72,7 +75,8 @@ fn merge_same_number() {
                 )
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = ShapeID::new_unchecked("smithy.example", "revision", None);
@@ -95,7 +99,8 @@ fn merge_same_boolean() {
                 )
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = ShapeID::new_unchecked("smithy.example", "revised", None);
@@ -122,7 +127,8 @@ fn merge_same_object() {
                 )
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = ShapeID::new_unchecked("smithy.example", "someTrait", None);
@@ -145,7 +151,8 @@ fn merge_conflict_types() {
                 .since("2021-04-30")
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = prelude_shape_named(TRAIT_SINCE).unwrap();
@@ -164,7 +171,8 @@ fn merge_conflict_string() {
                 .since("2021-04-30")
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = prelude_shape_named(TRAIT_SINCE).unwrap();
@@ -187,7 +195,8 @@ fn merge_conflict_number() {
                 )
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = ShapeID::new_unchecked("smithy.example", "revision", None);
@@ -210,7 +219,8 @@ fn merge_conflict_boolean() {
                 )
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = ShapeID::new_unchecked("smithy.example", "revised", None);
@@ -237,7 +247,8 @@ fn merge_conflict_object() {
                 )
                 .into(),
         )
-        .into();
+        .try_into()
+        .unwrap();
     let shape_id = ShapeID::new_unchecked("smithy.example", "counter", None);
     let shape = model.shape_mut(&shape_id).unwrap();
     let trait_id = ShapeID::new_unchecked("smithy.example", "someTrait", None);

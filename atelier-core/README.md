@@ -97,6 +97,12 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.11**
+
+* All model builders now use TryFrom instead of From to report errors rather than panic.
+* Implemented the full Smithy unqualified name resolution, added tests from the core documentation.
+* Using new shared atelier-test crate.
+
 **Version 0.2.10**
 
 * Added new io::lines module with LineOrientedWriter.

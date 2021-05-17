@@ -14,6 +14,7 @@ use atelier_core::io::debug::DebugWriter;
 use atelier_core::io::write_model_to_string;
 use atelier_core::model::Model;
 use atelier_core::Version;
+use std::convert::TryInto;
 
 fn main() {
     let mut writer = DebugWriter::default();
@@ -155,5 +156,6 @@ fn make_weather_model() -> Model {
                 .float("chanceOfRain")
                 .into(),
         )
-        .into()
+        .try_into()
+        .unwrap()
 }

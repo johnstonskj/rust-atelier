@@ -86,6 +86,11 @@ error_chain! {
             description("An unknown type-as-string encountered")
             display("An unknown type-as-string encountered: {}", s)
         }
+        #[doc("A shape name resolved to multiple shape IDs")]
+        AmbiguousShape(s: String) {
+            description("A shape name resolved to multiple shape IDs")
+            display("A shape name resolved to multiple shape IDs: {}", s)
+        }
         #[doc("Reporting issues found by an Action.")]
         ActionIssue(reasons: Vec<ActionIssue>) {
             description("Reporting issues found by an Action.")
