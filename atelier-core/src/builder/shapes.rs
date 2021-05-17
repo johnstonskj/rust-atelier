@@ -731,6 +731,15 @@ impl ResourceBuilder {
 
 from_impls! { ReferenceBuilder, Reference }
 
+impl From<ShapeID> for ReferenceBuilder {
+    fn from(shape_id: ShapeID) -> Self {
+        Self {
+            shape_id: ShapeName::from(shape_id),
+            applied_traits: Default::default(),
+        }
+    }
+}
+
 shape_traits_impl! { ReferenceBuilder }
 
 impl ReferenceBuilder {
@@ -738,10 +747,7 @@ impl ReferenceBuilder {
     pub fn new(shape_name: &str) -> Self {
         // MUST be a qualified name.
         let shape_id = ShapeID::from_str(shape_name).unwrap();
-        Self {
-            shape_id: ShapeName::from(shape_id),
-            applied_traits: Default::default(),
-        }
+        Self::from(shape_id)
     }
 }
 

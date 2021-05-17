@@ -28,7 +28,7 @@ use crate::prelude::{
     defined_prelude_shapes, defined_prelude_traits, prelude_namespace_id, PRELUDE_NAMESPACE,
 };
 use crate::Version;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::iter::FromIterator;
 
@@ -47,7 +47,6 @@ pub struct ModelBuilder {
     smithy_version: Version,
     metadata: ValueMap,
     shapes: HashMap<ShapeName, TopLevelShapeBuilder>,
-    references: HashSet<ShapeName>,
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -103,7 +102,6 @@ impl ModelBuilder {
             smithy_version,
             metadata: Default::default(),
             shapes: Default::default(),
-            references: Default::default(),
         }
     }
 
@@ -181,51 +179,13 @@ impl ModelBuilder {
     /// a new reference builder is created and the trait applied to it. This is similar to the
     /// way the `apply` statement works in the Smithy IDL.
     pub fn apply(&mut self, shape: &str, a_trait: TraitBuilder) -> &mut Self {
-        let mut builder = ReferenceBuilder::new(shape);
-        if let Some(shape) = self.shapes.get_mut(&builder.shape_id) {
-            match shape {
-                TopLevelShapeBuilder::SimpleShape(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::List(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Set(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Map(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Structure(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Union(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Service(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Operation(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Resource(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-                TopLevelShapeBuilder::Reference(shape) => {
-                    let _ = shape.apply_trait(a_trait);
-                }
-            }
-        } else {
-            let _ = builder.apply_trait(a_trait);
-            let _ = self.reference(builder);
-        }
-        self
+        let shape_name = ShapeName::from_str(shape).unwrap();
+        self.apply_to(&shape_name, a_trait)
     }
 
     /// Create and add a new resource shape to this model using the `ResourceBuilder` instance.
     pub fn reference(&mut self, builder: ReferenceBuilder) -> &mut Self {
         let shape_id = &builder.shape_id;
-        let _ = self.references.insert(shape_id.clone());
         self.insert(shape_id.clone(), builder.into())
     }
 
@@ -253,11 +213,11 @@ impl ModelBuilder {
         self
     }
 
-    fn find_references(&self, local_name: &Identifier) -> Vec<&ShapeName> {
-        self.references
+    fn reference_names(&self) -> impl Iterator<Item = &ShapeName> {
+        self.shapes
             .iter()
-            .filter(|shape_name| shape_name.shape_name() == local_name)
-            .collect()
+            .filter(|(_, builder)| matches!(builder, TopLevelShapeBuilder::Reference(_)))
+            .map(|(id, _)| id)
     }
 
     ///
@@ -285,7 +245,10 @@ impl ModelBuilder {
                 }
             }
             ShapeName::Local(local) => {
-                let references: Vec<&ShapeName> = self.find_references(local);
+                let references: Vec<&ShapeName> = self
+                    .reference_names()
+                    .filter(|shape_name| shape_name.shape_name() == local)
+                    .collect();
                 match references.len() {
                     1 => {
                         // 1. a `use_statement` has imported a shape with the same name
@@ -308,6 +271,36 @@ impl ModelBuilder {
                     }
                     _ => Err(ErrorKind::AmbiguousShape(local.to_string()).into()),
                 }
+            }
+        }
+    }
+
+    fn apply_to(&mut self, shape_name: &ShapeName, a_trait: TraitBuilder) -> &mut Self {
+        match shape_name {
+            ShapeName::Qualified(shape_id) => {
+                if let Some(member_name) = shape_id.member_name() {
+                    let parent_shape = ShapeName::from(shape_id.shape_only());
+                    if let Some(shape) = self.shapes.get_mut(&parent_shape) {
+                        apply_to_member(shape, member_name, a_trait);
+                    } else {
+                        panic!("No shape named {} for member {}", parent_shape, member_name);
+                    }
+                } else if let Some(shape) = self.shapes.get_mut(&shape_name) {
+                    apply_to_shape(shape, a_trait);
+                } else {
+                    let mut builder = ReferenceBuilder::from(shape_id.clone());
+                    let _ = builder.apply_trait(a_trait);
+                    let _ = self.reference(builder);
+                }
+                self
+            }
+            ShapeName::Local(local) => {
+                // This is disallowed in the Smithy IDL which requires apply statements to take
+                // qualified names.
+                let shape_id = self
+                    .resolve_shape_name(&local.clone().into(), false)
+                    .unwrap();
+                self.apply_to(&shape_id.into(), a_trait)
             }
         }
     }
@@ -525,6 +518,109 @@ impl ModelBuilder {
 }
 
 // ------------------------------------------------------------------------------------------------
+// Private Functions
+// ------------------------------------------------------------------------------------------------
+
+fn apply_to_member(
+    shape: &mut TopLevelShapeBuilder,
+    member_name: &Identifier,
+    a_trait: TraitBuilder,
+) {
+    let ok = match shape {
+        TopLevelShapeBuilder::List(shape) => {
+            if member_name.to_string() == MEMBER_MEMBER {
+                let _ = shape.member.apply_trait(a_trait);
+                true
+            } else {
+                false
+            }
+        }
+        TopLevelShapeBuilder::Set(shape) => {
+            if member_name.to_string() == MEMBER_MEMBER {
+                let _ = shape.member.apply_trait(a_trait);
+                true
+            } else {
+                false
+            }
+        }
+        TopLevelShapeBuilder::Map(shape) => {
+            if member_name.to_string() == MEMBER_KEY {
+                let _ = shape.key.apply_trait(a_trait);
+                true
+            } else if member_name.to_string() == MEMBER_VALUE {
+                let _ = shape.value.apply_trait(a_trait);
+                true
+            } else {
+                false
+            }
+        }
+        TopLevelShapeBuilder::Structure(shape) => {
+            if let Some(member) = shape
+                .members
+                .iter_mut()
+                .find(|m| &m.member_name == member_name)
+            {
+                let _ = member.apply_trait(a_trait);
+                true
+            } else {
+                false
+            }
+        }
+        TopLevelShapeBuilder::Union(shape) => {
+            if let Some(member) = shape
+                .members
+                .iter_mut()
+                .find(|m| &m.member_name == member_name)
+            {
+                let _ = member.apply_trait(a_trait);
+                true
+            } else {
+                false
+            }
+        }
+        _ => false,
+    };
+    if !ok {
+        panic!("Shape does not have a traitable member {}", member_name);
+    }
+}
+
+fn apply_to_shape(shape: &mut TopLevelShapeBuilder, a_trait: TraitBuilder) {
+    match shape {
+        TopLevelShapeBuilder::SimpleShape(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::List(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Set(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Map(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Structure(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Union(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Service(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Operation(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Resource(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+        TopLevelShapeBuilder::Reference(shape) => {
+            let _ = shape.apply_trait(a_trait);
+        }
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
 
@@ -546,4 +642,6 @@ pub use traits::TraitBuilder;
 
 #[doc(hidden)]
 pub mod values;
+use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
+use std::str::FromStr;
 pub use values::{ArrayBuilder, ObjectBuilder, ValueBuilder};

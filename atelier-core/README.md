@@ -97,6 +97,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.12**
+
+* Altered builder logic around "apply" of traits to existing shapes, references, and members.
+
 **Version 0.2.11**
 
 * All model builders now use TryFrom instead of From to report errors rather than panic.
