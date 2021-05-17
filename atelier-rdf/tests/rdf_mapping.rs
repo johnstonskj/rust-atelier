@@ -1,12 +1,11 @@
 use atelier_rdf::writer::model_to_rdf;
+use atelier_test::examples::motd::make_message_of_the_day_model;
 use rdftk_io::turtle::writer::TurtleWriter;
 use rdftk_io::GraphWriter;
 
-pub mod common;
-
 #[test]
 fn test_smithy_to_rdf() {
-    let model = common::make_message_of_the_day_model();
+    let model = make_message_of_the_day_model();
 
     let result = model_to_rdf(&model, None);
     assert!(result.is_ok());

@@ -40,6 +40,11 @@ writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.8**
+
+* Supporting the core model builders which now use TryFrom instead of From.
+* Using new shared atelier-test crate.
+
 **Version 0.1.7**
 
 * Updated due to API changes in rdftk_core.
