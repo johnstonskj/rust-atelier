@@ -10,5 +10,6 @@ members = [
     "atelier-query",
     "atelier-rdf",
     "atelier-smithy",
+    "atelier-test",
     "cargo-atelier"
     ]
