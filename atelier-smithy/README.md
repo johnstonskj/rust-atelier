@@ -43,6 +43,11 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.7**
+
+* Supporting the core model builders which now use TryFrom instead of From.
+* Using new shared atelier-test crate.
+
 **Version 0.2.6**
 
 * Updated due to trait API changes in core.

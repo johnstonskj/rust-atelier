@@ -8,6 +8,7 @@ use atelier_core::io::write_model_to_string;
 use atelier_core::model::{Model, NamespaceID};
 use atelier_core::Version;
 use atelier_smithy::SmithyWriter;
+use std::convert::TryInto;
 use std::str::FromStr;
 
 fn main() {
@@ -150,5 +151,6 @@ fn make_weather_model() -> Model {
                 .float("chanceOfRain")
                 .into(),
         )
-        .into()
+        .try_into()
+        .unwrap()
 }

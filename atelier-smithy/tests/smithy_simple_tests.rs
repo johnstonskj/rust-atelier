@@ -1,8 +1,7 @@
-use atelier_core::builder::traits::{documentation, pattern, range, range_min};
-use atelier_core::builder::{ModelBuilder, ShapeTraits, SimpleShapeBuilder};
+use atelier_core::io::lines::make_line_oriented_form;
 use atelier_core::model::Model;
-use atelier_core::Version;
 use atelier_smithy::parser::parse_model;
+use atelier_test::parts as model_part;
 
 fn model_test(input_str: &str, expected: Model) {
     println!("input:\n{}", input_str);
@@ -13,7 +12,8 @@ fn model_test(input_str: &str, expected: Model) {
         Ok(actual) => {
             println!("actual:\n{:#?}", actual);
             println!("------------------------------------------------------------------------------------------------");
-            assert_eq!(actual, expected)
+            assert_eq!(actual, expected);
+            println!("{:#?}", make_line_oriented_form(&actual));
         }
         Err(err) => panic!("error: {:#?}", err),
     }
@@ -26,10 +26,7 @@ fn empty_file() {
 
 #[test]
 fn namespace_only() {
-    model_test(
-        "namespace smithy.waiters",
-        ModelBuilder::new(Version::default(), "smithy.waiters").into(),
-    )
+    model_test("namespace smithy.waiters", model_part::namespace_only())
 }
 
 #[test]
@@ -38,9 +35,7 @@ fn simple_shape_only() {
         r##"namespace smithy.waiters
         
         integer WaiterDelay"##,
-        ModelBuilder::new(Version::default(), "smithy.waiters")
-            .simple_shape(SimpleShapeBuilder::integer("WaiterDelay"))
-            .into(),
+        model_part::simple_shape_only(),
     )
 }
 
@@ -52,16 +47,17 @@ fn simple_shape_with_block_text() {
             A wait time for "foo" to happen
         """)
         integer FooDelay"##,
-        ModelBuilder::new(Version::default(), "example.foo")
-            .simple_shape(
-                SimpleShapeBuilder::integer("FooDelay")
-                    .apply_trait(documentation(
-                        r##"A wait time for "foo" to happen
-        "##,
-                    ))
-                    .into(),
-            )
-            .into(),
+        model_part::simple_shape_with_block_text(),
+    )
+}
+
+#[test]
+fn simple_shape_with_block_text_2() {
+    model_test(
+        r##"namespace example.foo
+        @documentation("""Do empty "" quotes work too?""")
+        integer FooDelay"##,
+        model_part::simple_shape_with_block_text_2(),
     )
 }
 
@@ -73,14 +69,7 @@ fn simple_shape_with_traits() {
         @box
         @range(min: 1)
         integer WaiterDelay"##,
-        ModelBuilder::new(Version::default(), "smithy.waiters")
-            .simple_shape(
-                SimpleShapeBuilder::integer("WaiterDelay")
-                    .boxed()
-                    .apply_trait(range(Some(1), None))
-                    .into(),
-            )
-            .into(),
+        model_part::simple_shape_with_traits(),
     )
 }
 
@@ -93,14 +82,7 @@ fn simple_shape_with_traits_and_comments() {
         @box // it's a boxed, not atomic, value
         @range(min: 1) // set the minimum value
         integer WaiterDelay"##,
-        ModelBuilder::new(Version::default(), "smithy.waiters")
-            .simple_shape(
-                SimpleShapeBuilder::integer("WaiterDelay")
-                    .boxed()
-                    .apply_trait(range_min(1))
-                    .into(),
-            )
-            .into(),
+        model_part::simple_shape_with_traits_and_comments(),
     )
 }
 
@@ -112,13 +94,6 @@ fn simple_shape_with_traits_and_documentation() {
         /// The name, or identifier, of a waiter.
         @pattern("^[A-Z]+[A-Za-z0-9]*$")
         string WaiterName"##,
-        ModelBuilder::new(Version::default(), "smithy.waiters")
-            .simple_shape(
-                SimpleShapeBuilder::string("WaiterName")
-                    .documentation("The name, or identifier, of a waiter.")
-                    .apply_trait(pattern("^[A-Z]+[A-Za-z0-9]*$"))
-                    .into(),
-            )
-            .into(),
+        model_part::simple_shape_with_traits_and_documentation(),
     )
 }

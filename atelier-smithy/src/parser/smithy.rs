@@ -9,7 +9,7 @@ use atelier_core::builder::{
 use atelier_core::error::{Error, ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::model::shapes::Simple;
 use atelier_core::model::values::{Number, Value as NodeValue, ValueMap};
-use atelier_core::model::Model;
+use atelier_core::model::{Identifier, Model};
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
     MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
@@ -20,6 +20,7 @@ use pest::error::Error as PestError;
 use pest::iterators::Pair;
 use pest::Parser;
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::io::Write;
 use std::str::FromStr;
 
@@ -87,7 +88,7 @@ fn parse_idl(input_pair: Pair<'_, Rule>) -> ModelResult<Model> {
             });
             match builder {
                 None => Ok(Model::default()),
-                Some(mut builder) => Ok(builder.meta_data_from(meta_data).into()),
+                Some(mut builder) => Ok(builder.meta_data_from(meta_data).try_into().unwrap()),
             }
         }
         _ => unexpected!("parse_idl", input_pair),
@@ -401,8 +402,8 @@ fn parse_list_statement(input_pair: Pair<'_, Rule>) -> ModelResult<ListBuilder> 
     entry!("parse_list_statement", input_pair);
     let (id, members) = parse_membered_statement(input_pair)?;
     if let Some(member) = members.get(0) {
-        if members.len() == 1 && member.name() == MEMBER_MEMBER {
-            Ok(ListBuilder::new(&id, member.target()))
+        if members.len() == 1 && member.name() == &Identifier::new_unchecked(MEMBER_MEMBER) {
+            Ok(ListBuilder::with_target(&id, member.target().clone()))
         } else {
             ParserError::new("parse_list_statement")
                 .unreachable_rule()
@@ -423,9 +424,9 @@ fn parse_map_statement(input_pair: Pair<'_, Rule>) -> ModelResult<MapBuilder> {
     let mut key: Option<String> = None;
     let mut value: Option<String> = None;
     for member in members {
-        if member.name() == MEMBER_KEY {
+        if member.name() == &Identifier::new_unchecked(MEMBER_KEY) {
             key = Some(member.target().to_string())
-        } else if member.name() == MEMBER_VALUE {
+        } else if member.name() == &Identifier::new_unchecked(MEMBER_VALUE) {
             value = Some(member.target().to_string())
         } else {
             return ParserError::new("parse_map_statement")
