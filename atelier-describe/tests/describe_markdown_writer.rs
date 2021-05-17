@@ -1,8 +1,6 @@
-use crate::common::make_message_of_the_day_model;
 use atelier_core::io::write_model_to_string;
 use atelier_describe::document::writer::DocumentationWriter;
-
-pub mod common;
+use atelier_test::examples::motd::make_message_of_the_day_model;
 
 #[test]
 pub fn test_documentation_writer() {

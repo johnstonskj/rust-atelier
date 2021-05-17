@@ -51,6 +51,11 @@ let documentation = writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.6**
+
+* Supporting the core model builders which now use TryFrom instead of From.
+* Using new shared atelier-test crate.
+
 **Version 0.1.5**
 
 * Refactored to have a similar structure to other reader/writer crates.
