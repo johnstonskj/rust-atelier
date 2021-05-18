@@ -7,7 +7,7 @@ use rdftk_io::GraphWriter;
 fn test_smithy_to_rdf() {
     let model = make_message_of_the_day_model();
 
-    let result = model_to_rdf(&model, None);
+    let result = model_to_rdf(&model.model, None);
     assert!(result.is_ok());
     let rdf = result.unwrap();
 
