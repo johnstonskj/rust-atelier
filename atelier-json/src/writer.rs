@@ -7,6 +7,13 @@ use atelier_core::model::shapes::{
 };
 use atelier_core::model::values::{Number, Value as NodeValue};
 use atelier_core::model::{HasIdentity, Model, ShapeID};
+use atelier_core::syntax::{
+    MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
+    MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
+    MEMBER_PUT, MEMBER_READ, MEMBER_RENAME, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE,
+    MEMBER_VERSION, MODEL_METADATA, MODEL_SHAPES, SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP,
+    SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET, SHAPE_STRUCTURE, SHAPE_UNION,
+};
 use serde_json::{to_writer, to_writer_pretty, Map, Number as JsonNumber, Value};
 use std::io::Write;
 
@@ -39,11 +46,11 @@ impl ModelWriter for JsonWriter {
         let mut top: Map<String, Value> = Default::default();
 
         let _ = top.insert(
-            K_SMITHY.to_string(),
+            ADD_MODEL_SMITHY_VERSION.to_string(),
             Value::String(model.smithy_version().to_string()),
         );
 
-        let _ = top.insert(K_SHAPES.to_string(), self.shapes(model));
+        let _ = top.insert(MODEL_SHAPES.to_string(), self.shapes(model));
 
         if self.pretty_print {
             to_writer_pretty(w, &Value::Object(top))
@@ -70,7 +77,7 @@ impl<'a> JsonWriter {
             for (key, value) in model.metadata() {
                 let _ = meta_map.insert(key.to_string(), self.value(value));
             }
-            let _ = shape_map.insert(K_METADATA.to_string(), Value::Object(meta_map));
+            let _ = shape_map.insert(MODEL_METADATA.to_string(), Value::Object(meta_map));
         }
         Value::Object(shape_map)
     }
@@ -78,109 +85,151 @@ impl<'a> JsonWriter {
     fn shape(&self, shape: &TopLevelShape) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
         if shape.has_traits() {
-            let _ = shape_map.insert(K_TRAITS.to_string(), self.traits(shape.traits()));
+            let _ = shape_map.insert(
+                ADD_SHAPE_KEY_TRAITS.to_string(),
+                self.traits(shape.traits()),
+            );
         }
         match shape.body() {
             ShapeKind::Simple(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(v.to_string()));
+                let _ =
+                    shape_map.insert(ADD_SHAPE_KEY_TYPE.to_string(), Value::String(v.to_string()));
             }
             ShapeKind::List(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_LIST.to_string()));
-                let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member().target()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_LIST.to_string()),
+                );
+                let _ = shape_map.insert(
+                    MEMBER_MEMBER.to_string(),
+                    self.reference(v.member().target()),
+                );
             }
             ShapeKind::Set(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SET.to_string()));
-                let _ = shape_map.insert(K_MEMBER.to_string(), self.reference(v.member().target()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_SET.to_string()),
+                );
+                let _ = shape_map.insert(
+                    MEMBER_MEMBER.to_string(),
+                    self.reference(v.member().target()),
+                );
             }
             ShapeKind::Map(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_MAP.to_string()));
-                let _ = shape_map.insert(K_KEY.to_string(), self.reference(v.key().target()));
-                let _ = shape_map.insert(K_VALUE.to_string(), self.reference(v.value().target()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_MAP.to_string()),
+                );
+                let _ = shape_map.insert(MEMBER_KEY.to_string(), self.reference(v.key().target()));
+                let _ =
+                    shape_map.insert(MEMBER_VALUE.to_string(), self.reference(v.value().target()));
             }
             ShapeKind::Structure(v) => {
-                let _ =
-                    shape_map.insert(K_TYPE.to_string(), Value::String(V_STRUCTURE.to_string()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_STRUCTURE.to_string()),
+                );
                 if v.has_members() {
-                    let _ = shape_map.insert(K_MEMBERS.to_string(), self.members(v.members()));
+                    let _ = shape_map
+                        .insert(ADD_SHAPE_KEY_MEMBERS.to_string(), self.members(v.members()));
                 }
             }
             ShapeKind::Union(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_UNION.to_string()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_UNION.to_string()),
+                );
                 if v.has_members() {
-                    let _ = shape_map.insert(K_MEMBERS.to_string(), self.members(v.members()));
+                    let _ = shape_map
+                        .insert(ADD_SHAPE_KEY_MEMBERS.to_string(), self.members(v.members()));
                 }
             }
             ShapeKind::Service(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_SERVICE.to_string()));
                 let _ = shape_map.insert(
-                    K_VERSION.to_string(),
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_SERVICE.to_string()),
+                );
+                let _ = shape_map.insert(
+                    MEMBER_VERSION.to_string(),
                     Value::String(v.version().to_string()),
                 );
                 if v.has_operations() {
                     let _ = shape_map.insert(
-                        K_OPERATIONS.to_string(),
+                        MEMBER_OPERATIONS.to_string(),
                         Value::Array(v.operations().map(|o| self.reference(o)).collect()),
                     );
                 }
                 if v.has_resources() {
                     let _ = shape_map.insert(
-                        K_RESOURCES.to_string(),
+                        MEMBER_RESOURCES.to_string(),
                         Value::Array(v.resources().map(|o| self.reference(o)).collect()),
                     );
                 }
+                if v.has_renames() {
+                    let mut rename_map: Map<String, Value> = Default::default();
+                    for (k, v) in v.renames() {
+                        let _ = rename_map.insert(k.to_string(), Value::String(v.to_string()));
+                    }
+                    let _ = shape_map.insert(MEMBER_RENAME.to_string(), Value::Object(rename_map));
+                }
             }
             ShapeKind::Operation(v) => {
-                let _ =
-                    shape_map.insert(K_TYPE.to_string(), Value::String(V_OPERATION.to_string()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_OPERATION.to_string()),
+                );
                 if let Some(v) = v.input() {
-                    let _ = shape_map.insert(K_INPUT.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_INPUT.to_string(), self.reference(v));
                 }
                 if let Some(v) = v.output() {
-                    let _ = shape_map.insert(K_OUTPUT.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_OUTPUT.to_string(), self.reference(v));
                 }
                 if v.has_errors() {
                     let _ = shape_map.insert(
-                        K_ERRORS.to_string(),
+                        MEMBER_ERRORS.to_string(),
                         Value::Array(v.errors().map(|o| self.reference(o)).collect()),
                     );
                 }
             }
             ShapeKind::Resource(v) => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_RESOURCE.to_string()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_RESOURCE.to_string()),
+                );
                 if v.has_identifiers() {
                     let mut id_map: Map<String, Value> = Default::default();
                     for (id, ref_id) in v.identifiers() {
                         let _ = id_map.insert(id.to_string(), Value::String(ref_id.to_string()));
                     }
-                    let _ = shape_map.insert(K_IDENTIFIERS.to_string(), Value::Object(id_map));
+                    let _ = shape_map.insert(MEMBER_IDENTIFIERS.to_string(), Value::Object(id_map));
                 }
                 if let Some(v) = v.create() {
-                    let _ = shape_map.insert(K_CREATE.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_CREATE.to_string(), self.reference(v));
                 }
                 if let Some(v) = v.put() {
-                    let _ = shape_map.insert(K_PUT.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_PUT.to_string(), self.reference(v));
                 }
                 if let Some(v) = v.read() {
-                    let _ = shape_map.insert(K_READ.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_READ.to_string(), self.reference(v));
                 }
                 if let Some(v) = v.update() {
-                    let _ = shape_map.insert(K_UPDATE.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_UPDATE.to_string(), self.reference(v));
                 }
                 if let Some(v) = v.delete() {
-                    let _ = shape_map.insert(K_DELETE.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_DELETE.to_string(), self.reference(v));
                 }
                 if let Some(v) = v.list() {
-                    let _ = shape_map.insert(K_LIST.to_string(), self.reference(v));
+                    let _ = shape_map.insert(MEMBER_LIST.to_string(), self.reference(v));
                 }
                 if v.has_operations() {
                     let _ = shape_map.insert(
-                        K_OPERATIONS.to_string(),
+                        MEMBER_OPERATIONS.to_string(),
                         Value::Array(v.operations().map(|o| self.reference(o)).collect()),
                     );
                 }
                 if v.has_collection_operations() {
                     let _ = shape_map.insert(
-                        K_OPERATIONS.to_string(),
+                        MEMBER_COLLECTION_OPERATIONS.to_string(),
                         Value::Array(
                             v.collection_operations()
                                 .map(|o| self.reference(o))
@@ -190,13 +239,16 @@ impl<'a> JsonWriter {
                 }
                 if v.has_resources() {
                     let _ = shape_map.insert(
-                        K_COLLECTION_OPERATIONS.to_string(),
+                        MEMBER_RESOURCES.to_string(),
                         Value::Array(v.resources().map(|o| self.reference(o)).collect()),
                     );
                 }
             }
             ShapeKind::Unresolved => {
-                let _ = shape_map.insert(K_TYPE.to_string(), Value::String(V_APPLY.to_string()));
+                let _ = shape_map.insert(
+                    ADD_SHAPE_KEY_TYPE.to_string(),
+                    Value::String(SHAPE_APPLY.to_string()),
+                );
             }
         }
         Value::Object(shape_map)
@@ -221,10 +273,13 @@ impl<'a> JsonWriter {
         for member in members {
             let mut member_map: Map<String, Value> = Default::default();
             if member.has_traits() {
-                let _ = member_map.insert(K_TRAITS.to_string(), self.traits(member.traits()));
+                let _ = member_map.insert(
+                    ADD_SHAPE_KEY_TRAITS.to_string(),
+                    self.traits(member.traits()),
+                );
             }
             let _ = member_map.insert(
-                K_TARGET.to_string(),
+                ADD_SHAPE_KEY_TARGET.to_string(),
                 Value::String(member.target().to_string()),
             );
             let _ = members_map.insert(member.id().to_string(), Value::Object(member_map));
@@ -254,7 +309,10 @@ impl<'a> JsonWriter {
 
     fn reference(&self, id: &'a ShapeID) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
-        let _ = shape_map.insert(K_TARGET.to_string(), Value::String(id.to_string()));
+        let _ = shape_map.insert(
+            ADD_SHAPE_KEY_TARGET.to_string(),
+            Value::String(id.to_string()),
+        );
         Value::Object(shape_map)
     }
 }

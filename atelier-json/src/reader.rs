@@ -1,15 +1,24 @@
+use crate::syntax::ADD_MODEL_SMITHY_VERSION;
 use crate::syntax::*;
-use crate::FILE_EXTENSION;
+use crate::REPRESENTATION_NAME;
 use atelier_core::error::{ErrorKind, Result as ModelResult, ResultExt};
 use atelier_core::io::ModelReader;
 use atelier_core::model::shapes::{
-    AppliedTraits, HasTraits, ListOrSet, Map as MapShape, MemberShape, ShapeKind, Simple,
-    StructureOrUnion, TopLevelShape,
+    AppliedTraits, HasTraits, ListOrSet, Map as MapShape, MemberShape, Operation, Resource,
+    Service, ShapeKind, Simple, StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::{Value as NodeValue, ValueMap};
 use atelier_core::model::{Identifier, Model, NamespaceID, ShapeID};
+use atelier_core::syntax::{
+    MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_IDENTIFIERS,
+    MEMBER_INPUT, MEMBER_KEY, MEMBER_LIST, MEMBER_MEMBER, MEMBER_OPERATIONS, MEMBER_OUTPUT,
+    MEMBER_PUT, MEMBER_READ, MEMBER_RENAME, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE,
+    MEMBER_VERSION, MODEL_METADATA, MODEL_SHAPES, SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP,
+    SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET, SHAPE_STRUCTURE, SHAPE_UNION,
+};
 use atelier_core::Version;
 use serde_json::{from_reader, Map, Value};
+use std::collections::HashMap;
 use std::io::Read;
 use std::str::FromStr;
 
@@ -37,7 +46,7 @@ impl ModelReader for JsonReader {
     fn read(&mut self, r: &mut impl Read) -> ModelResult<Model> {
         let json: Value = from_reader(r).chain_err(|| {
             ErrorKind::Deserialization(
-                FILE_EXTENSION.to_string(),
+                REPRESENTATION_NAME.to_string(),
                 "ModelReader::read".to_string(),
                 None,
             )
@@ -50,26 +59,23 @@ impl ModelReader for JsonReader {
 impl JsonReader {
     fn model(&self, json: Value) -> ModelResult<Model> {
         if let Value::Object(vs) = json {
-            let version = self.version(vs.get(K_SMITHY))?;
+            let version = self.version(vs.get(ADD_MODEL_SMITHY_VERSION))?;
+            let mut model = Model::new(version);
 
-            let metadata = self.metadata(vs.get(K_METADATA))?;
-
-            let shapes = self.shapes(vs.get(K_SHAPES))?;
-            if !shapes.is_empty() {
-                let mut model = Model::new(version);
-
-                for shape in shapes.into_iter().map(|(_, s)| s) {
-                    let _ = model.add_shape(shape);
-                }
-
-                for (key, value) in metadata {
-                    let _ = model.add_metadata(key, value);
-                }
-                return Ok(model);
+            let metadata = self.metadata(vs.get(MODEL_METADATA))?;
+            for (key, value) in metadata {
+                let _ = model.add_metadata(key, value);
             }
+
+            let shapes = self.shapes(vs.get(MODEL_SHAPES))?;
+            for shape in shapes.into_iter().map(|(_, s)| s) {
+                let _ = model.add_shape(shape);
+            }
+
+            return Ok(model);
         }
         Err(ErrorKind::Deserialization(
-            FILE_EXTENSION.to_string(),
+            REPRESENTATION_NAME.to_string(),
             "JsonReader::model".to_string(),
             None,
         )
@@ -81,7 +87,7 @@ impl JsonReader {
             Ok(Version::from_str(version)?)
         } else {
             Err(ErrorKind::Deserialization(
-                FILE_EXTENSION.to_string(),
+                REPRESENTATION_NAME.to_string(),
                 "JsonReader::version".to_string(),
                 Some(format!("{:#?}", json)),
             )
@@ -107,7 +113,7 @@ impl JsonReader {
                 let inner = self.shape(&id, v)?;
                 let mut shape = TopLevelShape::new(id.clone(), inner);
 
-                if let Some(Value::Object(vs)) = v.get(K_TRAITS) {
+                if let Some(Value::Object(vs)) = v.get(ADD_SHAPE_KEY_TRAITS) {
                     shape.append_traits(&self.traits(vs)?)?;
                 };
 
@@ -118,30 +124,30 @@ impl JsonReader {
     }
 
     fn shape(&self, id: &ShapeID, outer: &Value) -> ModelResult<ShapeKind> {
-        if let Some(Value::String(s)) = outer.get(K_TYPE) {
+        if let Some(Value::String(s)) = outer.get(ADD_SHAPE_KEY_TYPE) {
             let s = s.as_str();
             return if let Ok(st) = Simple::from_str(s) {
                 Ok(ShapeKind::Simple(st))
-            } else if s == V_APPLY {
+            } else if s == SHAPE_APPLY {
                 Ok(ShapeKind::Unresolved)
-            } else if s == V_LIST {
+            } else if s == SHAPE_LIST {
                 Ok(ShapeKind::List(ListOrSet::new(
                     &id,
-                    self.target(outer.get(K_MEMBER))?,
+                    self.target(outer.get(MEMBER_MEMBER))?,
                 )))
-            } else if s == V_SET {
+            } else if s == SHAPE_SET {
                 Ok(ShapeKind::Set(ListOrSet::new(
                     &id,
-                    self.target(outer.get(K_MEMBER))?,
+                    self.target(outer.get(MEMBER_MEMBER))?,
                 )))
-            } else if s == V_MAP {
+            } else if s == SHAPE_MAP {
                 Ok(ShapeKind::Map(MapShape::new(
                     &id,
-                    self.target(outer.get(K_KEY))?,
-                    self.target(outer.get(K_VALUE))?,
+                    self.target(outer.get(MEMBER_KEY))?,
+                    self.target(outer.get(MEMBER_VALUE))?,
                 )))
-            } else if s == V_STRUCTURE {
-                let members = if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
+            } else if s == SHAPE_STRUCTURE {
+                let members = if let Some(Value::Object(vs)) = outer.get(ADD_SHAPE_KEY_MEMBERS) {
                     self.members(&id, vs)?
                 } else {
                     Default::default()
@@ -149,8 +155,8 @@ impl JsonReader {
                 Ok(ShapeKind::Structure(StructureOrUnion::with_members(
                     members.as_slice(),
                 )))
-            } else if s == V_UNION {
-                let members = if let Some(Value::Object(vs)) = outer.get(K_MEMBERS) {
+            } else if s == SHAPE_UNION {
+                let members = if let Some(Value::Object(vs)) = outer.get(ADD_SHAPE_KEY_MEMBERS) {
                     self.members(&id, vs)?
                 } else {
                     Default::default()
@@ -158,9 +164,61 @@ impl JsonReader {
                 Ok(ShapeKind::Union(StructureOrUnion::with_members(
                     members.as_slice(),
                 )))
+            } else if s == SHAPE_SERVICE {
+                let version = if let Some(Value::String(value)) = outer.get(MEMBER_VERSION) {
+                    value.clone()
+                } else {
+                    return Err(
+                        ErrorKind::MissingVersionNumber(REPRESENTATION_NAME.to_string()).into(),
+                    );
+                };
+                let mut service = Service::new(&version);
+                service.append_operations(&self.target_list(outer.get(MEMBER_OPERATIONS))?);
+                service.append_resources(&self.target_list(outer.get(MEMBER_RESOURCES))?);
+                service.set_renames(self.renames_hash(outer.get(MEMBER_RENAME))?);
+                Ok(ShapeKind::Service(service))
+            } else if s == SHAPE_OPERATION {
+                let mut operation = Operation::default();
+                if let Some(input) = self.optional_target(outer.get(MEMBER_INPUT))? {
+                    operation.set_input(input);
+                }
+                if let Some(output) = self.optional_target(outer.get(MEMBER_OUTPUT))? {
+                    operation.set_output(output);
+                }
+                operation.append_errors(&self.target_list(outer.get(MEMBER_ERRORS))?);
+                Ok(ShapeKind::Operation(operation))
+            } else if s == SHAPE_RESOURCE {
+                let mut resource = Resource::default();
+                resource.set_identifiers(self.identifiers_hash(outer.get(MEMBER_IDENTIFIERS))?);
+                if let Some(create) = self.optional_target(outer.get(MEMBER_CREATE))? {
+                    resource.set_create(create);
+                }
+                if let Some(put) = self.optional_target(outer.get(MEMBER_PUT))? {
+                    resource.set_put(put);
+                }
+                if let Some(read) = self.optional_target(outer.get(MEMBER_READ))? {
+                    resource.set_read(read);
+                }
+                if let Some(update) = self.optional_target(outer.get(MEMBER_UPDATE))? {
+                    resource.set_update(update);
+                }
+                if let Some(delete) = self.optional_target(outer.get(MEMBER_DELETE))? {
+                    resource.set_delete(delete);
+                }
+                if let Some(list) = self.optional_target(outer.get(MEMBER_LIST))? {
+                    resource.set_list(list);
+                }
+                resource.append_operations(&self.target_list(outer.get(MEMBER_OPERATIONS))?);
+                resource.append_collection_operations(
+                    &self.target_list(outer.get(MEMBER_COLLECTION_OPERATIONS))?,
+                );
+                resource.append_resources(&self.target_list(outer.get(MEMBER_RESOURCES))?);
+                Ok(ShapeKind::Resource(resource))
+            } else if s == SHAPE_APPLY {
+                Ok(ShapeKind::Unresolved)
             } else {
                 return Err(ErrorKind::Deserialization(
-                    FILE_EXTENSION.to_string(),
+                    REPRESENTATION_NAME.to_string(),
                     "JsonReader::shape/type".to_string(),
                     Some(format!("{:#?}", outer)),
                 )
@@ -168,7 +226,7 @@ impl JsonReader {
             };
         }
         Err(ErrorKind::Deserialization(
-            FILE_EXTENSION.to_string(),
+            REPRESENTATION_NAME.to_string(),
             "JsonReader::shape".to_string(),
             Some(format!("{:#?}", outer)),
         )
@@ -193,11 +251,11 @@ impl JsonReader {
         let mut members: Vec<MemberShape> = Default::default();
         for (k, v) in json {
             if let Value::Object(obj) = v {
-                let target = if let Some(Value::String(target)) = obj.get(K_TARGET) {
+                let target = if let Some(Value::String(target)) = obj.get(ADD_SHAPE_KEY_TARGET) {
                     ShapeID::from_str(target)?
                 } else {
                     return Err(ErrorKind::Deserialization(
-                        FILE_EXTENSION.to_string(),
+                        REPRESENTATION_NAME.to_string(),
                         "JsonReader::members/target".to_string(),
                         Some(format!("{:#?}", obj)),
                     )
@@ -205,13 +263,13 @@ impl JsonReader {
                 };
                 let mut member =
                     MemberShape::new(parent_id.make_member(Identifier::from_str(k)?), target);
-                if let Some(Value::Object(traits)) = obj.get(K_TRAITS) {
+                if let Some(Value::Object(traits)) = obj.get(ADD_SHAPE_KEY_TRAITS) {
                     member.append_traits(&self.traits(traits)?)?;
                 }
                 members.push(member);
             } else {
                 return Err(ErrorKind::Deserialization(
-                    FILE_EXTENSION.to_string(),
+                    REPRESENTATION_NAME.to_string(),
                     "JsonReader::members".to_string(),
                     Some(format!("{:#?}", v)),
                 )
@@ -221,18 +279,109 @@ impl JsonReader {
         Ok(members)
     }
 
+    fn renames_hash(&self, member: Option<&Value>) -> ModelResult<HashMap<ShapeID, Identifier>> {
+        if let Some(member) = member {
+            let mut hash: HashMap<ShapeID, Identifier> = Default::default();
+            if let Value::Object(ms) = member {
+                for (obj_key, obj) in ms {
+                    let key = ShapeID::from_str(obj_key)?;
+                    let value = Identifier::from_str(&self.string_value(obj)?)?;
+                    let _ = hash.insert(key, value);
+                }
+                Ok(hash)
+            } else {
+                Err(ErrorKind::Deserialization(
+                    REPRESENTATION_NAME.to_string(),
+                    "JsonReader::renames_hash".to_string(),
+                    Some(format!("{:#?}", member)),
+                )
+                .into())
+            }
+        } else {
+            Ok(Default::default())
+        }
+    }
+
+    fn identifiers_hash(
+        &self,
+        member: Option<&Value>,
+    ) -> ModelResult<HashMap<Identifier, ShapeID>> {
+        if let Some(member) = member {
+            let mut hash: HashMap<Identifier, ShapeID> = Default::default();
+            if let Value::Object(ms) = member {
+                for (obj_key, obj) in ms {
+                    let key = Identifier::from_str(obj_key)?;
+                    let value = ShapeID::from_str(&self.string_value(obj)?)?;
+                    let _ = hash.insert(key, value);
+                }
+                Ok(hash)
+            } else {
+                Err(ErrorKind::Deserialization(
+                    REPRESENTATION_NAME.to_string(),
+                    "JsonReader::renames_hash".to_string(),
+                    Some(format!("{:#?}", member)),
+                )
+                .into())
+            }
+        } else {
+            Ok(Default::default())
+        }
+    }
+
+    fn target_list(&self, member: Option<&Value>) -> ModelResult<Vec<ShapeID>> {
+        if let Some(member) = member {
+            let mut targets: Vec<ShapeID> = Default::default();
+            if let Value::Array(ms) = member {
+                for obj in ms {
+                    targets.push(self.target(Some(obj))?)
+                }
+                Ok(targets)
+            } else {
+                Err(ErrorKind::Deserialization(
+                    REPRESENTATION_NAME.to_string(),
+                    "JsonReader::target_list".to_string(),
+                    Some(format!("{:#?}", member)),
+                )
+                .into())
+            }
+        } else {
+            Ok(Default::default())
+        }
+    }
+
+    fn optional_target(&self, member: Option<&Value>) -> ModelResult<Option<ShapeID>> {
+        if member.is_some() {
+            self.target(member).map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+
     fn target(&self, member: Option<&Value>) -> ModelResult<ShapeID> {
         if let Some(Value::Object(ms)) = member {
-            if let Some(Value::String(member_id)) = ms.get(K_TARGET) {
+            if let Some(Value::String(member_id)) = ms.get(ADD_SHAPE_KEY_TARGET) {
                 return ShapeID::from_str(member_id);
             }
         }
         Err(ErrorKind::Deserialization(
-            FILE_EXTENSION.to_string(),
+            REPRESENTATION_NAME.to_string(),
             "JsonReader::target".to_string(),
             Some(format!("{:#?}", member)),
         )
         .into())
+    }
+
+    fn string_value(&self, value: &Value) -> ModelResult<String> {
+        if let Value::String(value) = value {
+            Ok(value.clone())
+        } else {
+            Err(ErrorKind::Deserialization(
+                REPRESENTATION_NAME.to_string(),
+                "JsonReader::string_value".to_string(),
+                Some(format!("{:#?}", value)),
+            )
+            .into())
+        }
     }
 
     fn value(&self, json: &Value) -> ModelResult<NodeValue> {
@@ -248,7 +397,7 @@ impl JsonReader {
                     Ok(NodeValue::from(v.as_u64().unwrap() as i64))
                 } else {
                     Err(ErrorKind::Deserialization(
-                        FILE_EXTENSION.to_string(),
+                        REPRESENTATION_NAME.to_string(),
                         "JsonReader::value".to_string(),
                         Some(format!("{:#?}", json)),
                     )

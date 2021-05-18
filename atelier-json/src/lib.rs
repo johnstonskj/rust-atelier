@@ -101,6 +101,11 @@ println!("{:#?}", result.unwrap());
 ///
 pub const FILE_EXTENSION: &str = "json";
 
+///
+/// The name to report in errors in this representation.
+///
+pub const REPRESENTATION_NAME: &str = "JSON AST";
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------

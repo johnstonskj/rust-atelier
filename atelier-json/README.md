@@ -26,6 +26,12 @@ println!("{:#?}", result.unwrap());
 
 ## Changes
 
+**Version 0.2.3**
+
+* Supporting the core model builders which now use TryFrom instead of From.
+* Support the "renames" collection added to service shapes in the abstract model.
+* Using new shared atelier-test crate.
+
 **Version 0.2.2**
 
 * Updated due to trait API changes in core.
