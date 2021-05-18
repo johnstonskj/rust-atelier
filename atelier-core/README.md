@@ -97,6 +97,11 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.14**
+
+* Made Identifier and ShapeID PartialOrd + Ord.
+* Added missing prelude trait identifier.
+
 **Version 0.2.13**
 
 * Added the "renames" collection to service shapes in the abstract model and corresponding builder.

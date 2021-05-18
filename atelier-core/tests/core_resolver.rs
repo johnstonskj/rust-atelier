@@ -48,10 +48,23 @@ boolean MyBoolean
 
 use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
 use atelier_core::error::{Error, ErrorKind};
+use atelier_core::io::lines::make_line_oriented_form;
 use atelier_core::model::shapes::ShapeKind;
 use atelier_core::model::{HasIdentity, Model, ShapeID};
 use atelier_core::Version;
 use std::convert::TryInto;
+
+const EXPECTED_LINES: &[&str] = &[
+    "boolean::smithy.example#MyBoolean",
+    "string::smithy.example#MyString",
+    "structure::smithy.example#MyStructure",
+    "structure::smithy.example#MyStructure::a=>smithy.example#MyString",
+    "structure::smithy.example#MyStructure::b=>smithy.example#MyString",
+    "structure::smithy.example#MyStructure::c=>foo.baz#Bar",
+    "structure::smithy.example#MyStructure::d=>smithy.api#String",
+    "structure::smithy.example#MyStructure::e=>smithy.example#MyBoolean",
+    "unresolved::foo.baz#Bar",
+];
 
 #[test]
 fn test_shapeid_resolution_valid() {
@@ -73,61 +86,10 @@ fn test_shapeid_resolution_valid() {
 
     assert!(!model.is_complete());
 
-    let mut top_level_shape_names: Vec<String> =
-        model.shape_names().map(|s| s.to_string()).collect();
-    top_level_shape_names.sort();
-    assert_eq!(
-        top_level_shape_names,
-        vec![
-            "smithy.example#MyBoolean".to_string(),
-            "smithy.example#MyString".to_string(),
-            "smithy.example#MyStructure".to_string()
-        ]
-    );
+    let lines = make_line_oriented_form(&model);
+    println!("{:#?}", lines);
 
-    let my_structure = model
-        .shape(&ShapeID::new_unchecked(
-            "smithy.example",
-            "MyStructure",
-            None,
-        ))
-        .unwrap();
-
-    if let ShapeKind::Structure(my_structure) = my_structure.body() {
-        println!("{:#?}", my_structure);
-        let expected = [
-            (
-                ShapeID::new_unchecked("smithy.example", "MyStructure", Some("a")),
-                ShapeID::new_unchecked("smithy.example", "MyString", None),
-            ),
-            (
-                ShapeID::new_unchecked("smithy.example", "MyStructure", Some("b")),
-                ShapeID::new_unchecked("smithy.example", "MyString", None),
-            ),
-            (
-                ShapeID::new_unchecked("smithy.example", "MyStructure", Some("c")),
-                ShapeID::new_unchecked("foo.baz", "Bar", None),
-            ),
-            (
-                ShapeID::new_unchecked("smithy.example", "MyStructure", Some("d")),
-                ShapeID::new_unchecked("smithy.api", "String", None),
-            ),
-            (
-                ShapeID::new_unchecked("smithy.example", "MyStructure", Some("e")),
-                ShapeID::new_unchecked("smithy.example", "MyBoolean", None),
-            ),
-        ];
-
-        for (member_id, target) in expected.iter() {
-            let member = my_structure
-                .member(member_id.member_name().as_ref().unwrap())
-                .unwrap();
-            assert_eq!(member.id(), member_id);
-            assert_eq!(member.target(), target);
-        }
-    } else {
-        panic!("my_structure is not a structure")
-    }
+    assert_eq!(lines, EXPECTED_LINES);
 }
 
 #[test]

@@ -18,7 +18,7 @@ use std::str::FromStr;
 ///   of the Smithy 1.0 Specification.
 ///
 #[allow(clippy::derive_hash_xor_eq)]
-#[derive(Clone, Debug, Eq, Hash)]
+#[derive(Clone, Debug, Eq, PartialOrd, Ord, Hash)]
 pub struct Identifier(String);
 
 ///
@@ -31,7 +31,7 @@ pub struct Identifier(String);
 ///
 #[allow(clippy::derive_hash_xor_eq)]
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Clone, Debug, Eq, Hash)]
+#[derive(Clone, Debug, Eq, PartialOrd, Ord, Hash)]
 pub struct NamespaceID(String);
 
 ///
@@ -57,7 +57,7 @@ pub struct NamespaceID(String);
 ///   * Preceded by the separator character `CHAR_SHAPE_ID_MEMBER`.
 ///
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ShapeID {
     namespace: NamespaceID,
     shape_name: Identifier,

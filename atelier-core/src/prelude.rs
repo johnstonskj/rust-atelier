@@ -26,21 +26,21 @@ macro_rules! string_const {
 
 ///
 /// Return the prelude namespace as a `NamespaceID`.
-/// 
+///
 pub fn prelude_namespace_id() -> &'static NamespaceID {
     &PRELUDE_NAMESPACE_ID
 }
 
 ///
 /// Return a set of `ShapeID`s for all the prelude defined shapes.
-/// 
+///
 pub fn defined_prelude_shapes() -> &'static HashSet<&'static str> {
     &PRELUDE_SHAPES
 }
 
 ///
 /// Return a set of `ShapeID`s for all the prelude defined traits.
-/// 
+///
 pub fn defined_prelude_traits() -> &'static HashSet<&'static str> {
     &PRELUDE_TRAITS
 }
@@ -169,6 +169,7 @@ lazy_static! {
         TRAIT_NONEMPTYSTRINGLIST,
         TRAIT_PATTERN,
         TRAIT_READONLY,
+        TRAIT_RECOMMENDED,
         TRAIT_HTTPLABEL,
         TRAIT_AUTHTRAITREFERENCE,
         TRAIT_XMLNAMESPACE,
@@ -457,6 +458,12 @@ string_const!(
     TRAIT_REQUIRED,
     "required",
     " The identifier for the structure trait `required`"
+);
+
+string_const!(
+    TRAIT_RECOMMENDED,
+    "recommended",
+    " The identifier for the structure trait `recommended`"
 );
 
 string_const!(
