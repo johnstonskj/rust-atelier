@@ -1,6 +1,7 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use crate::parser::error::ParserError;
+use crate::REPRESENTATION_NAME;
 use atelier_core::builder::shapes::ShapeTraits;
 use atelier_core::builder::{
     ListBuilder, MapBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ReferenceBuilder,
@@ -322,8 +323,12 @@ fn parse_a_trait(input_pair: Pair<'_, Rule>) -> ModelResult<TraitBuilder> {
         node_value = Some(NodeValue::Object(members));
     }
 
+    // TODO: We ALWAYS provide a value, this overrides the notion of None as a value here.
     match (id, node_value) {
-        (Some(id), None) => Ok(TraitBuilder::new(&id)),
+        (Some(id), None) => Ok(TraitBuilder::with_value(
+            &id,
+            NodeValue::Object(ValueMap::new()),
+        )),
         (Some(id), Some(node_value)) => Ok(TraitBuilder::with_value(&id, node_value)),
         _ => ParserError::unreachable("parse_a_trait").into(),
     }
@@ -846,7 +851,7 @@ fn parse_node_object_kvp(input_pair: Pair<'_, Rule>) -> ModelResult<(String, Nod
 fn from_pest_error(e: PestError<Rule>) -> Error {
     Error::with_chain(
         e,
-        ErrorKind::Deserialization("Smithy".to_string(), "pest".to_string(), None),
+        ErrorKind::Deserialization(REPRESENTATION_NAME.to_string(), "pest".to_string(), None),
     )
 }
 

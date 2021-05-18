@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use atelier_core::error::Result;
 use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{HasTraits, MemberShape, ShapeKind};
@@ -10,7 +12,10 @@ use atelier_core::syntax::{
     SHAPE_APPLY, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET,
     SHAPE_STRUCTURE, SHAPE_UNION,
 };
-use std::io::Write;
+
+use crate::syntax::{
+    CONTROL_DATA_PREFIX, STATEMENT_METADATA, STATEMENT_NAMESPACE, STATEMENT_USE, TRAIT_PREFIX,
+};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -28,13 +33,6 @@ pub struct SmithyWriter {
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
-
-const CONTROL_DATA_PREFIX: &str = "$";
-const TRAIT_PREFIX: &str = "@";
-
-const STATEMENT_NAMESPACE: &str = "namespace";
-const STATEMENT_USE: &str = "use";
-const STATEMENT_METADATA: &str = "metadata";
 
 impl ModelWriter for SmithyWriter {
     fn write(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {

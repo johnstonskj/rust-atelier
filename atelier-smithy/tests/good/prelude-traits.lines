@@ -1,0 +1,414 @@
+integer::smithy.api#httpError
+integer::smithy.api#httpError::trait::smithy.api#documentation<="Defines an HTTP response code for an operation error."
+integer::smithy.api#httpError::trait::smithy.api#tags<=[0]="diff.error.const"
+integer::smithy.api#httpError::trait::smithy.api#trait<={selector}="structure[trait|error]"
+list::smithy.api#NonEmptyStringList
+list::smithy.api#NonEmptyStringList::member=>smithy.api#NonEmptyString
+list::smithy.api#NonEmptyStringList::trait::smithy.api#private<={}
+list::smithy.api#TraitShapeIdList
+list::smithy.api#TraitShapeIdList::member=>smithy.api#TraitShapeId
+list::smithy.api#TraitShapeIdList::trait::smithy.api#private<={}
+list::smithy.api#auth
+list::smithy.api#auth::member=>smithy.api#AuthTraitReference
+list::smithy.api#auth::trait::smithy.api#documentation<="Defines the list of authentication schemes supported by a service or operation."
+list::smithy.api#auth::trait::smithy.api#trait<={selector}=":is(service, operation)"
+list::smithy.api#auth::trait::smithy.api#uniqueItems<={}
+list::smithy.api#enum
+list::smithy.api#enum::member=>smithy.api#EnumDefinition
+list::smithy.api#enum::trait::smithy.api#documentation<="Constrains the acceptable values of a string to a fixed set\nof constant values."
+list::smithy.api#enum::trait::smithy.api#length<={min}=1
+list::smithy.api#enum::trait::smithy.api#tags<=[0]="diff.error.add"
+list::smithy.api#enum::trait::smithy.api#tags<=[1]="diff.error.remove"
+list::smithy.api#enum::trait::smithy.api#trait<={selector}="string"
+list::smithy.api#examples
+list::smithy.api#examples::member=>smithy.api#Example
+list::smithy.api#examples::trait::smithy.api#documentation<="Provides example inputs and outputs for operations."
+list::smithy.api#examples::trait::smithy.api#trait<={selector}="operation"
+list::smithy.api#references
+list::smithy.api#references::member=>smithy.api#Reference
+list::smithy.api#references::trait::smithy.api#documentation<="Defines the resource shapes that are referenced by a string shape or a\nstructure shape and the members of the structure that provide values for\nthe identifiers of the resource."
+list::smithy.api#references::trait::smithy.api#trait<={selector}=":is(structure, string)"
+list::smithy.api#suppress
+list::smithy.api#suppress::member=>smithy.api#String
+list::smithy.api#suppress::trait::smithy.api#documentation<="Suppresses validation events by ID for a given shape."
+list::smithy.api#suppress::trait::smithy.api#trait<={}
+list::smithy.api#tags
+list::smithy.api#tags::member=>smithy.api#String
+list::smithy.api#tags::trait::smithy.api#documentation<="Tags a shape with arbitrary tag names that can be used to filter and\ngroup shapes in the model."
+list::smithy.api#tags::trait::smithy.api#trait<={}
+map::smithy.api#NonEmptyStringMap
+map::smithy.api#NonEmptyStringMap::key=>smithy.api#NonEmptyString
+map::smithy.api#NonEmptyStringMap::trait::smithy.api#private<={}
+map::smithy.api#NonEmptyStringMap::value=>smithy.api#NonEmptyString
+map::smithy.api#externalDocumentation
+map::smithy.api#externalDocumentation::key=>smithy.api#NonEmptyString
+map::smithy.api#externalDocumentation::trait::smithy.api#documentation<="Provides a link to additional documentation."
+map::smithy.api#externalDocumentation::trait::smithy.api#length<={min}=1
+map::smithy.api#externalDocumentation::trait::smithy.api#trait<={}
+map::smithy.api#externalDocumentation::value=>smithy.api#NonEmptyString
+string::smithy.api#AuthTraitReference
+string::smithy.api#AuthTraitReference::trait::smithy.api#documentation<="A string that must target an auth trait."
+string::smithy.api#AuthTraitReference::trait::smithy.api#idRef<={selector}="[trait|authDefinition]"
+string::smithy.api#AuthTraitReference::trait::smithy.api#private<={}
+string::smithy.api#EnumConstantBodyName
+string::smithy.api#EnumConstantBodyName::trait::smithy.api#documentation<="The optional name or label of the enum constant value.\n\nThis property is used in code generation to provide a label for\neach enum value. No two enums can have the same \'name\' value."
+string::smithy.api#EnumConstantBodyName::trait::smithy.api#pattern<="^[a-zA-Z_]+[a-zA-Z_0-9]*$"
+string::smithy.api#EnumConstantBodyName::trait::smithy.api#private<={}
+string::smithy.api#HttpApiKeyLocations
+string::smithy.api#HttpApiKeyLocations::trait::smithy.api#enum<=[0]={value}="header"
+string::smithy.api#HttpApiKeyLocations::trait::smithy.api#enum<=[1]={value}="query"
+string::smithy.api#HttpApiKeyLocations::trait::smithy.api#private<={}
+string::smithy.api#NonEmptyString
+string::smithy.api#NonEmptyString::trait::smithy.api#length<={min}=1
+string::smithy.api#NonEmptyString::trait::smithy.api#private<={}
+string::smithy.api#StructurallyExclusive
+string::smithy.api#StructurallyExclusive::trait::smithy.api#enum<=[0]={documentation}="Only a single member of a structure can be marked with the trait."
+string::smithy.api#StructurallyExclusive::trait::smithy.api#enum<=[0]={name}="MEMBER"
+string::smithy.api#StructurallyExclusive::trait::smithy.api#enum<=[0]={value}="member"
+string::smithy.api#StructurallyExclusive::trait::smithy.api#enum<=[1]={documentation}="Only a single member of a structure can target a shape marked with this trait."
+string::smithy.api#StructurallyExclusive::trait::smithy.api#enum<=[1]={name}="TARGET"
+string::smithy.api#StructurallyExclusive::trait::smithy.api#enum<=[1]={value}="target"
+string::smithy.api#StructurallyExclusive::trait::smithy.api#private<={}
+string::smithy.api#TraitShapeId
+string::smithy.api#TraitShapeId::trait::smithy.api#idRef<={failWhenMissing}=true
+string::smithy.api#TraitShapeId::trait::smithy.api#idRef<={selector}="[trait|trait]"
+string::smithy.api#TraitShapeId::trait::smithy.api#private<={}
+string::smithy.api#documentation
+string::smithy.api#documentation::trait::smithy.api#documentation<="Adds documentation to a shape or member using CommonMark syntax."
+string::smithy.api#documentation::trait::smithy.api#trait<={}
+string::smithy.api#error
+string::smithy.api#error::trait::smithy.api#documentation<="Indicates that a structure shape represents an error.\n\nAll shapes referenced by the errors list of an operation MUST be\ntargeted with this trait."
+string::smithy.api#error::trait::smithy.api#enum<=[0]={name}="CLIENT"
+string::smithy.api#error::trait::smithy.api#enum<=[0]={value}="client"
+string::smithy.api#error::trait::smithy.api#enum<=[1]={name}="SERVER"
+string::smithy.api#error::trait::smithy.api#enum<=[1]={value}="server"
+string::smithy.api#error::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#error::trait::smithy.api#trait<={conflicts}=[0]="trait"
+string::smithy.api#error::trait::smithy.api#trait<={selector}="structure"
+string::smithy.api#httpHeader
+string::smithy.api#httpHeader::trait::smithy.api#documentation<="Binds a structure member to an HTTP header."
+string::smithy.api#httpHeader::trait::smithy.api#length<={min}=1
+string::smithy.api#httpHeader::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#httpHeader::trait::smithy.api#trait<={conflicts}=[0]="httpLabel"
+string::smithy.api#httpHeader::trait::smithy.api#trait<={conflicts}=[1]="httpQuery"
+string::smithy.api#httpHeader::trait::smithy.api#trait<={conflicts}=[2]="httpPrefixHeaders"
+string::smithy.api#httpHeader::trait::smithy.api#trait<={conflicts}=[3]="httpPayload"
+string::smithy.api#httpHeader::trait::smithy.api#trait<={selector}="structure > :test(member > :test(boolean, number, string, timestamp,\n                collection > member > :test(boolean, number, string, timestamp)))"
+string::smithy.api#httpPrefixHeaders
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#documentation<="Binds a map of key-value pairs to prefixed HTTP headers."
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#trait<={conflicts}=[0]="httpLabel"
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#trait<={conflicts}=[1]="httpQuery"
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#trait<={conflicts}=[2]="httpHeader"
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#trait<={conflicts}=[3]="httpPayload"
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#trait<={selector}="structure > member\n        :test(> map > member[id|member=value] > :test(simpleType, collection > member > simpleType))"
+string::smithy.api#httpPrefixHeaders::trait::smithy.api#trait<={structurallyExclusive}="member"
+string::smithy.api#httpQuery
+string::smithy.api#httpQuery::trait::smithy.api#documentation<="Binds an operation input structure member to a query string parameter."
+string::smithy.api#httpQuery::trait::smithy.api#length<={min}=1
+string::smithy.api#httpQuery::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#httpQuery::trait::smithy.api#trait<={conflicts}=[0]="httpLabel"
+string::smithy.api#httpQuery::trait::smithy.api#trait<={conflicts}=[1]="httpHeader"
+string::smithy.api#httpQuery::trait::smithy.api#trait<={conflicts}=[2]="httpPrefixHeaders"
+string::smithy.api#httpQuery::trait::smithy.api#trait<={conflicts}=[3]="httpPayload"
+string::smithy.api#httpQuery::trait::smithy.api#trait<={selector}="structure > :test(member > :test(simpleType, collection > member > simpleType))"
+string::smithy.api#jsonName
+string::smithy.api#jsonName::trait::smithy.api#documentation<="The jsonName trait allows a serialized object property name to differ\nfrom a structure member name used in the model."
+string::smithy.api#jsonName::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#jsonName::trait::smithy.api#trait<={selector}="structure > member"
+string::smithy.api#mediaType
+string::smithy.api#mediaType::trait::smithy.api#documentation<="Describes the contents of a blob shape using a media type as defined by\nRFC 6838 (e.g., \"video/quicktime\")."
+string::smithy.api#mediaType::trait::smithy.api#tags<=[0]="diff.error.remove"
+string::smithy.api#mediaType::trait::smithy.api#trait<={selector}=":is(blob, string)"
+string::smithy.api#pattern
+string::smithy.api#pattern::trait::smithy.api#documentation<="Restricts string shape values to a specified regular expression."
+string::smithy.api#pattern::trait::smithy.api#trait<={selector}=":test(string, member > string)"
+string::smithy.api#resourceIdentifier
+string::smithy.api#resourceIdentifier::trait::smithy.api#documentation<="Indicates that the targeted structure member provides an identifier for a resource."
+string::smithy.api#resourceIdentifier::trait::smithy.api#length<={min}=1
+string::smithy.api#resourceIdentifier::trait::smithy.api#tags<=[0]="diff.error.remove"
+string::smithy.api#resourceIdentifier::trait::smithy.api#trait<={selector}="structure > :test(member[trait|required] > string)"
+string::smithy.api#since
+string::smithy.api#since::trait::smithy.api#documentation<="Defines the version or date in which a shape or member was added to the model."
+string::smithy.api#since::trait::smithy.api#trait<={}
+string::smithy.api#timestampFormat
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[0]={documentation}="Date time as defined by the date-time production in RFC3339 section 5.6\n            with no UTC offset (for example, 1985-04-12T23:20:50.52Z)."
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[0]={name}="DATE_TIME"
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[0]={value}="date-time"
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[1]={documentation}="Also known as Unix time, the number of seconds that have elapsed since\n            00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970,\n            with decimal precision (for example, 1515531081.1234)."
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[1]={name}="EPOCH_SECONDS"
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[1]={value}="epoch-seconds"
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[2]={documentation}="An HTTP date as defined by the IMF-fixdate production in\n            RFC 7231#section-7.1.1.1 (for example, Tue, 29 Apr 2014 18:30:38 GMT)."
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[2]={name}="HTTP_DATE"
+string::smithy.api#timestampFormat::trait::smithy.api#enum<=[2]={value}="http-date"
+string::smithy.api#timestampFormat::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#timestampFormat::trait::smithy.api#trait<={selector}=":test(timestamp, member > timestamp)"
+string::smithy.api#title
+string::smithy.api#title::trait::smithy.api#documentation<="Defines a proper name for a service or resource shape.\n\nThis title can be used in automatically generated documentation\nand other contexts to provide a user friendly name for services\nand resources."
+string::smithy.api#title::trait::smithy.api#trait<={selector}=":is(service, resource)"
+string::smithy.api#xmlName
+string::smithy.api#xmlName::trait::smithy.api#documentation<="Changes the serialized element or attribute name of a structure, union, or member."
+string::smithy.api#xmlName::trait::smithy.api#pattern<="^[a-zA-Z_][a-zA-Z_0-9-]*(:[a-zA-Z_][a-zA-Z_0-9-]*)?$"
+string::smithy.api#xmlName::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.api#xmlName::trait::smithy.api#trait<={selector}=":is(structure, union, member)"
+structure::smithy.api#EnumDefinition
+structure::smithy.api#EnumDefinition::documentation::trait::smithy.api#documentation<="Provides optional documentation about the enum constant value."
+structure::smithy.api#EnumDefinition::documentation=>smithy.api#String
+structure::smithy.api#EnumDefinition::name::trait::smithy.api#documentation<="Defines the name, or label, that is used in code to represent this variant."
+structure::smithy.api#EnumDefinition::name=>smithy.api#EnumConstantBodyName
+structure::smithy.api#EnumDefinition::tags::trait::smithy.api#documentation<="Applies a list of tags to the enum constant."
+structure::smithy.api#EnumDefinition::tags=>smithy.api#NonEmptyStringList
+structure::smithy.api#EnumDefinition::trait::smithy.api#documentation<="An enum definition for the enum trait."
+structure::smithy.api#EnumDefinition::trait::smithy.api#private<={}
+structure::smithy.api#EnumDefinition::value::trait::smithy.api#documentation<="Defines the enum value that is sent over the wire."
+structure::smithy.api#EnumDefinition::value::trait::smithy.api#required<={}
+structure::smithy.api#EnumDefinition::value=>smithy.api#NonEmptyString
+structure::smithy.api#Example
+structure::smithy.api#Example::documentation=>smithy.api#String
+structure::smithy.api#Example::input=>smithy.api#Document
+structure::smithy.api#Example::output=>smithy.api#Document
+structure::smithy.api#Example::title::trait::smithy.api#required<={}
+structure::smithy.api#Example::title=>smithy.api#String
+structure::smithy.api#Example::trait::smithy.api#private<={}
+structure::smithy.api#Reference
+structure::smithy.api#Reference::ids::trait::smithy.api#documentation<="Defines a mapping of each resource identifier name to a structure member\nname that provides its value. Each key in the map MUST refer to one of the\nidentifier names in the identifiers property of the resource, and each\nvalue in the map MUST refer to a valid structure member name that targets\na string shape."
+structure::smithy.api#Reference::ids=>smithy.api#NonEmptyStringMap
+structure::smithy.api#Reference::rel::trait::smithy.api#documentation<="Defines the semantics of the relationship. The rel property SHOULD\ncontain a link relation as defined in RFC 5988#section-4."
+structure::smithy.api#Reference::rel=>smithy.api#NonEmptyString
+structure::smithy.api#Reference::resource::trait::smithy.api#documentation<="The shape ID of the referenced resource."
+structure::smithy.api#Reference::resource::trait::smithy.api#required<={}
+structure::smithy.api#Reference::resource=>smithy.api#NonEmptyString
+structure::smithy.api#Reference::service::trait::smithy.api#documentation<="Providing a service makes the reference specific to a particular binding\nof the resource to a service. When omitted, the reference is late-bound to\na service, meaning the reference is assumed to be a reference to the\nresource bound to the service currently in use by the client or server."
+structure::smithy.api#Reference::service=>smithy.api#NonEmptyString
+structure::smithy.api#Reference::trait::smithy.api#private<={}
+structure::smithy.api#authDefinition
+structure::smithy.api#authDefinition::trait::smithy.api#documentation<="Marks a trait as an auth scheme defining trait.\n\nThe targeted trait must only be applied to service shapes or operation\nshapes, must be a structure, and must have the `trait` trait."
+structure::smithy.api#authDefinition::trait::smithy.api#tags<=[0]="diff.error.add"
+structure::smithy.api#authDefinition::trait::smithy.api#tags<=[1]="diff.error.remove"
+structure::smithy.api#authDefinition::trait::smithy.api#trait<={selector}="structure[trait|trait]"
+structure::smithy.api#authDefinition::traits::trait::smithy.api#documentation<="Defines a list of traits that auth implementations must\nunderstand in order to successfully use the scheme."
+structure::smithy.api#authDefinition::traits=>smithy.api#TraitShapeIdList
+structure::smithy.api#box
+structure::smithy.api#box::trait::smithy.api#documentation<="Indicates that a shape is boxed.\n\nWhen a boxed shape is the target of a member, the member\nmay or may not contain a value, and the member has no default value."
+structure::smithy.api#box::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#box::trait::smithy.api#trait<={selector}=":test(boolean, byte, short, integer, long, float, double,\n          member > :test(boolean, byte, short, integer, long, float, double))"
+structure::smithy.api#cors
+structure::smithy.api#cors::additionalAllowedHeaders::trait::smithy.api#documentation<="The names of headers that should be included in the\nAccess-Control-Allow-Headers header in responses to preflight OPTIONS\nrequests. This list will be used in addition to the names of all\nrequest headers bound to an input data member via the httpHeader, as\nwell as any headers required by the protocol or authentication scheme."
+structure::smithy.api#cors::additionalAllowedHeaders=>smithy.api#NonEmptyStringList
+structure::smithy.api#cors::additionalExposedHeaders::trait::smithy.api#documentation<="The names of headers that should be included in the\nAccess-Control-Expose-Headers header in all responses sent by the\nservice. This list will be used in addition to the names of all\nrequest headers bound to an output data member via the httpHeader,\nas well as any headers required by the protocol or authentication\nscheme."
+structure::smithy.api#cors::additionalExposedHeaders=>smithy.api#NonEmptyStringList
+structure::smithy.api#cors::maxAge::trait::smithy.api#documentation<="The maximum number of seconds for which browsers are allowed to cache\nthe results of a preflight OPTIONS request.\n\nDefaults to 600, the maximum age permitted by several browsers.\nSet to -1 to disable caching entirely."
+structure::smithy.api#cors::maxAge=>smithy.api#Integer
+structure::smithy.api#cors::origin::trait::smithy.api#documentation<="The origin from which browser script-originating requests will be allowed.\n\nDefaults to *."
+structure::smithy.api#cors::origin=>smithy.api#NonEmptyString
+structure::smithy.api#cors::trait::smithy.api#documentation<="Defines how a service supports cross-origin resource sharing."
+structure::smithy.api#cors::trait::smithy.api#tags<=[0]="diff.error.remove"
+structure::smithy.api#cors::trait::smithy.api#trait<={selector}="service"
+structure::smithy.api#deprecated
+structure::smithy.api#deprecated::message::trait::smithy.api#documentation<="The reason for deprecation."
+structure::smithy.api#deprecated::message=>smithy.api#String
+structure::smithy.api#deprecated::since::trait::smithy.api#documentation<="A description of when the shape was deprecated (e.g., a date or version)."
+structure::smithy.api#deprecated::since=>smithy.api#String
+structure::smithy.api#deprecated::trait::smithy.api#documentation<="Marks a shape or member as deprecated."
+structure::smithy.api#deprecated::trait::smithy.api#trait<={}
+structure::smithy.api#endpoint
+structure::smithy.api#endpoint::hostPrefix::trait::smithy.api#documentation<="A host prefix pattern for the operation.\n\nLabels defined in the host pattern are used to bind top-level\noperation input members to the host."
+structure::smithy.api#endpoint::hostPrefix::trait::smithy.api#required<={}
+structure::smithy.api#endpoint::hostPrefix=>smithy.api#NonEmptyString
+structure::smithy.api#endpoint::trait::smithy.api#documentation<="Configures a custom operation endpoint."
+structure::smithy.api#endpoint::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#endpoint::trait::smithy.api#trait<={selector}="operation"
+structure::smithy.api#eventHeader
+structure::smithy.api#eventHeader::trait::smithy.api#documentation<="Marks a member as a header of an event."
+structure::smithy.api#eventHeader::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#eventHeader::trait::smithy.api#trait<={conflicts}=[0]="eventPayload"
+structure::smithy.api#eventHeader::trait::smithy.api#trait<={selector}="structure >\n        :test(member > :test(boolean, byte, short, integer, long, blob, string, timestamp))"
+structure::smithy.api#eventPayload
+structure::smithy.api#eventPayload::trait::smithy.api#documentation<="Marks a member as the payload of an event."
+structure::smithy.api#eventPayload::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#eventPayload::trait::smithy.api#trait<={conflicts}=[0]="eventHeader"
+structure::smithy.api#eventPayload::trait::smithy.api#trait<={selector}="structure > :test(member > :test(blob, string, structure, union))"
+structure::smithy.api#eventPayload::trait::smithy.api#trait<={structurallyExclusive}="member"
+structure::smithy.api#hostLabel
+structure::smithy.api#hostLabel::trait::smithy.api#documentation<="Binds a top-level operation input structure member to a label\nin the hostPrefix of an endpoint trait."
+structure::smithy.api#hostLabel::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#hostLabel::trait::smithy.api#trait<={selector}="structure > :test(member[trait|required] > string)"
+structure::smithy.api#http
+structure::smithy.api#http::code::trait::smithy.api#documentation<="The HTTP status code of a successful response.\n\nDefaults to 200 if not provided."
+structure::smithy.api#http::code=>smithy.api#PrimitiveInteger
+structure::smithy.api#http::method::trait::smithy.api#documentation<="The HTTP method of the operation."
+structure::smithy.api#http::method::trait::smithy.api#required<={}
+structure::smithy.api#http::method=>smithy.api#NonEmptyString
+structure::smithy.api#http::trait::smithy.api#documentation<="Configures the HTTP bindings of an operation."
+structure::smithy.api#http::trait::smithy.api#tags<=[0]="diff.error.remove"
+structure::smithy.api#http::trait::smithy.api#trait<={selector}="operation"
+structure::smithy.api#http::uri::trait::smithy.api#documentation<="The URI pattern of the operation.\n\nLabels defined in the URI pattern are used to bind operation input\nmembers to the URI."
+structure::smithy.api#http::uri::trait::smithy.api#required<={}
+structure::smithy.api#http::uri=>smithy.api#NonEmptyString
+structure::smithy.api#httpApiKeyAuth
+structure::smithy.api#httpApiKeyAuth::in::trait::smithy.api#documentation<="Defines the location of where the key is serialized. This value\ncan be set to `\"header\"` or `\"query\"`."
+structure::smithy.api#httpApiKeyAuth::in::trait::smithy.api#required<={}
+structure::smithy.api#httpApiKeyAuth::in=>smithy.api#HttpApiKeyLocations
+structure::smithy.api#httpApiKeyAuth::name::trait::smithy.api#documentation<="Defines the name of the HTTP header or query string parameter\nthat contains the API key."
+structure::smithy.api#httpApiKeyAuth::name::trait::smithy.api#required<={}
+structure::smithy.api#httpApiKeyAuth::name=>smithy.api#NonEmptyString
+structure::smithy.api#httpApiKeyAuth::trait::smithy.api#authDefinition<={}
+structure::smithy.api#httpApiKeyAuth::trait::smithy.api#documentation<="An HTTP-specific authentication scheme that sends an arbitrary\nAPI key in a header or query string parameter."
+structure::smithy.api#httpApiKeyAuth::trait::smithy.api#trait<={selector}="service"
+structure::smithy.api#httpBasicAuth
+structure::smithy.api#httpBasicAuth::trait::smithy.api#authDefinition<={}
+structure::smithy.api#httpBasicAuth::trait::smithy.api#documentation<="Enables HTTP Basic Authentication as defined in RFC 2617\non a service or operation."
+structure::smithy.api#httpBasicAuth::trait::smithy.api#externalDocumentation<={RFC 2617}="https://tools.ietf.org/html/rfc2617.html"
+structure::smithy.api#httpBasicAuth::trait::smithy.api#trait<={selector}="service"
+structure::smithy.api#httpBearerAuth
+structure::smithy.api#httpBearerAuth::trait::smithy.api#authDefinition<={}
+structure::smithy.api#httpBearerAuth::trait::smithy.api#documentation<="Enables HTTP Bearer Authentication as defined in RFC 6750\non a service or operation."
+structure::smithy.api#httpBearerAuth::trait::smithy.api#externalDocumentation<={RFC 6750}="https://tools.ietf.org/html/rfc6750.html"
+structure::smithy.api#httpBearerAuth::trait::smithy.api#trait<={selector}="service"
+structure::smithy.api#httpChecksumRequired
+structure::smithy.api#httpChecksumRequired::trait::smithy.api#documentation<="Marks an operation as requiring checksum in its HTTP request.\nBy default, the checksum used for a service is a MD5 checksum\npassed in the Content-MD5 header."
+structure::smithy.api#httpChecksumRequired::trait::smithy.api#trait<={selector}="operation"
+structure::smithy.api#httpChecksumRequired::trait::smithy.api#unstable<={}
+structure::smithy.api#httpDigestAuth
+structure::smithy.api#httpDigestAuth::trait::smithy.api#authDefinition<={}
+structure::smithy.api#httpDigestAuth::trait::smithy.api#documentation<="Enables HTTP Digest Authentication as defined in RFC 2617\non a service or operation."
+structure::smithy.api#httpDigestAuth::trait::smithy.api#externalDocumentation<={RFC 2617}="https://tools.ietf.org/html/rfc2617.html"
+structure::smithy.api#httpDigestAuth::trait::smithy.api#trait<={selector}="service"
+structure::smithy.api#httpLabel
+structure::smithy.api#httpLabel::trait::smithy.api#documentation<="Binds an operation input structure member to an HTTP label."
+structure::smithy.api#httpLabel::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#httpLabel::trait::smithy.api#trait<={conflicts}=[0]="httpHeader"
+structure::smithy.api#httpLabel::trait::smithy.api#trait<={conflicts}=[1]="httpQuery"
+structure::smithy.api#httpLabel::trait::smithy.api#trait<={conflicts}=[2]="httpPrefixHeaders"
+structure::smithy.api#httpLabel::trait::smithy.api#trait<={conflicts}=[3]="httpPayload"
+structure::smithy.api#httpLabel::trait::smithy.api#trait<={selector}="structure > :test(member > :test(string, number, boolean, timestamp))"
+structure::smithy.api#httpPayload
+structure::smithy.api#httpPayload::trait::smithy.api#documentation<="Binds a single structure member to the body of an HTTP request."
+structure::smithy.api#httpPayload::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#httpPayload::trait::smithy.api#trait<={conflicts}=[0]="httpLabel"
+structure::smithy.api#httpPayload::trait::smithy.api#trait<={conflicts}=[1]="httpQuery"
+structure::smithy.api#httpPayload::trait::smithy.api#trait<={conflicts}=[2]="httpHeader"
+structure::smithy.api#httpPayload::trait::smithy.api#trait<={conflicts}=[3]="httpPrefixHeaders"
+structure::smithy.api#httpPayload::trait::smithy.api#trait<={selector}="structure > :test(member > :test(string, blob, structure, union, document))"
+structure::smithy.api#httpPayload::trait::smithy.api#trait<={structurallyExclusive}="member"
+structure::smithy.api#idRef
+structure::smithy.api#idRef::errorMessage::trait::smithy.api#documentation<="Defines a custom error message to use when the shape ID cannot be\nfound or does not match the selector.\n\nA default message is generated when errorMessage is not defined."
+structure::smithy.api#idRef::errorMessage=>smithy.api#String
+structure::smithy.api#idRef::failWhenMissing::trait::smithy.api#documentation<="When set to `true`, the shape ID MUST target a shape that can be\nfound in the model."
+structure::smithy.api#idRef::failWhenMissing=>smithy.api#PrimitiveBoolean
+structure::smithy.api#idRef::selector::trait::smithy.api#documentation<="Defines the selector that the resolved shape, if found, MUST match.\n\nselector defaults to * when not defined."
+structure::smithy.api#idRef::selector=>smithy.api#String
+structure::smithy.api#idRef::trait::smithy.api#documentation<="Indicates that a string value MUST contain a valid shape ID.\n\nThe provided shape ID MAY be absolute or relative to the shape to which\nthe trait is applied. A relative shape ID that does not resolve to a\nshape defined in the same namespace resolves to a shape defined in the\nprelude if the prelude shape is not marked with the private trait."
+structure::smithy.api#idRef::trait::smithy.api#trait<={selector}=":test(string, member > string)"
+structure::smithy.api#idempotencyToken
+structure::smithy.api#idempotencyToken::trait::smithy.api#documentation<="Defines the input member of an operation that is used by the server to\nidentify and discard replayed requests."
+structure::smithy.api#idempotencyToken::trait::smithy.api#trait<={selector}="structure > :test(member > string)"
+structure::smithy.api#idempotencyToken::trait::smithy.api#trait<={structurallyExclusive}="member"
+structure::smithy.api#idempotent
+structure::smithy.api#idempotent::trait::smithy.api#documentation<="Indicates that the intended effect on the server of multiple identical\nrequests with an operation is the same as the effect for a single\nsuch request."
+structure::smithy.api#idempotent::trait::smithy.api#tags<=[0]="diff.error.remove"
+structure::smithy.api#idempotent::trait::smithy.api#trait<={conflicts}=[0]="readonly"
+structure::smithy.api#idempotent::trait::smithy.api#trait<={selector}="operation"
+structure::smithy.api#length
+structure::smithy.api#length::max::trait::smithy.api#documentation<="Integer value that represents the maximum inclusive length of a shape."
+structure::smithy.api#length::max=>smithy.api#Long
+structure::smithy.api#length::min::trait::smithy.api#documentation<="Integer value that represents the minimum inclusive length of a shape."
+structure::smithy.api#length::min=>smithy.api#Long
+structure::smithy.api#length::trait::smithy.api#documentation<="Constrains a shape to minimum and maximum number of elements or size."
+structure::smithy.api#length::trait::smithy.api#trait<={selector}=":test(collection, map, string, blob, member > :is(collection, map, string, blob))"
+structure::smithy.api#noReplace
+structure::smithy.api#noReplace::trait::smithy.api#documentation<="Indicates that the put lifecycle operation of a resource\ncan only be used to create a resource and cannot replace\nan existing resource."
+structure::smithy.api#noReplace::trait::smithy.api#trait<={selector}="resource:test(-[put]->)"
+structure::smithy.api#optionalAuth
+structure::smithy.api#optionalAuth::trait::smithy.api#documentation<="Indicates that an operation can be called without authentication."
+structure::smithy.api#optionalAuth::trait::smithy.api#trait<={selector}="operation"
+structure::smithy.api#paginated
+structure::smithy.api#paginated::inputToken::trait::smithy.api#documentation<="The name of the operation input member that represents the continuation token.\n\nWhen this value is provided as operation input, the service returns results\nfrom where the previous response left off. This input member MUST NOT be\nrequired and MUST target a string shape."
+structure::smithy.api#paginated::inputToken=>smithy.api#NonEmptyString
+structure::smithy.api#paginated::items::trait::smithy.api#documentation<="The name of a top-level output member of the operation that is the data\nthat is being paginated across many responses.\n\nThe named output member, if specified, MUST target a list or map."
+structure::smithy.api#paginated::items=>smithy.api#NonEmptyString
+structure::smithy.api#paginated::outputToken::trait::smithy.api#documentation<="The name of the operation output member that represents the continuation token.\n\nWhen this value is present in operation output, it indicates that there are more\nresults to retrieve. To get the next page of results, the client uses the output\ntoken as the input token of the next request. This output member MUST NOT be\nrequired and MUST target a string shape."
+structure::smithy.api#paginated::outputToken=>smithy.api#NonEmptyString
+structure::smithy.api#paginated::pageSize::trait::smithy.api#documentation<="The name of an operation input member that limits the maximum number of\nresults to include in the operation output. This input member MUST NOT be\nrequired and MUST target an integer shape."
+structure::smithy.api#paginated::pageSize=>smithy.api#NonEmptyString
+structure::smithy.api#paginated::trait::smithy.api#documentation<="The paginated trait indicates that an operation intentionally limits the number\nof results returned in a single response and that multiple invocations might be\nnecessary to retrieve all results."
+structure::smithy.api#paginated::trait::smithy.api#tags<=[0]="diff.error.remove"
+structure::smithy.api#paginated::trait::smithy.api#trait<={selector}=":is(service, operation)"
+structure::smithy.api#private
+structure::smithy.api#private::trait::smithy.api#documentation<="Prevents models defined in a different namespace from referencing the targeted shape."
+structure::smithy.api#private::trait::smithy.api#trait<={}
+structure::smithy.api#protocolDefinition
+structure::smithy.api#protocolDefinition::trait::smithy.api#documentation<="Marks a trait as a protocol defining trait.\n\nThe targeted trait must only be applied to service shapes, must be a\nstructure, and must have the `trait` trait."
+structure::smithy.api#protocolDefinition::trait::smithy.api#tags<=[0]="diff.error.add"
+structure::smithy.api#protocolDefinition::trait::smithy.api#tags<=[1]="diff.error.remove"
+structure::smithy.api#protocolDefinition::trait::smithy.api#trait<={selector}="structure[trait|trait]"
+structure::smithy.api#protocolDefinition::traits::trait::smithy.api#documentation<="Defines a list of traits that protocol implementations must\nunderstand in order to successfully use the protocol."
+structure::smithy.api#protocolDefinition::traits=>smithy.api#TraitShapeIdList
+structure::smithy.api#range
+structure::smithy.api#range::max::trait::smithy.api#documentation<="Specifies the allowed inclusive maximum value."
+structure::smithy.api#range::max=>smithy.api#BigDecimal
+structure::smithy.api#range::min::trait::smithy.api#documentation<="Specifies the allowed inclusive minimum value."
+structure::smithy.api#range::min=>smithy.api#BigDecimal
+structure::smithy.api#range::trait::smithy.api#documentation<="Restricts allowed values of byte, short, integer, long, float, double,\nbigDecimal, and bigInteger shapes within an acceptable lower and upper bound."
+structure::smithy.api#range::trait::smithy.api#trait<={selector}=":test(number, member > number)"
+structure::smithy.api#readonly
+structure::smithy.api#readonly::trait::smithy.api#documentation<="Indicates that an operation is effectively read-only."
+structure::smithy.api#readonly::trait::smithy.api#trait<={conflicts}=[0]="idempotent"
+structure::smithy.api#readonly::trait::smithy.api#trait<={selector}="operation"
+structure::smithy.api#required
+structure::smithy.api#required::trait::smithy.api#documentation<="Marks a structure member as required, meaning a value for the member MUST be present."
+structure::smithy.api#required::trait::smithy.api#tags<=[0]="diff.error.add"
+structure::smithy.api#required::trait::smithy.api#trait<={selector}="structure > member"
+structure::smithy.api#requiresLength
+structure::smithy.api#requiresLength::trait::smithy.api#documentation<="Indicates that the streaming blob must be finite and has a known size."
+structure::smithy.api#requiresLength::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#requiresLength::trait::smithy.api#trait<={selector}="blob[trait|streaming]"
+structure::smithy.api#retryable
+structure::smithy.api#retryable::throttling::trait::smithy.api#documentation<="Classifies the retry as throttling."
+structure::smithy.api#retryable::throttling=>smithy.api#Boolean
+structure::smithy.api#retryable::trait::smithy.api#documentation<="Indicates that an error MAY be retried by the client."
+structure::smithy.api#retryable::trait::smithy.api#trait<={selector}="structure[trait|error]"
+structure::smithy.api#sensitive
+structure::smithy.api#sensitive::trait::smithy.api#documentation<="Indicates that the data stored in the shape or member is sensitive and MUST be handled with care."
+structure::smithy.api#sensitive::trait::smithy.api#trait<={selector}=":not(:test(service, operation, resource))"
+structure::smithy.api#streaming
+structure::smithy.api#streaming::trait::smithy.api#documentation<="Indicates that the data stored in the shape is very large and should not\nbe stored in memory, or that the size of the data stored in the shape is\nunknown at the start of a request. If the target is a union then the shape\nrepresents a stream of events."
+structure::smithy.api#streaming::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#streaming::trait::smithy.api#trait<={selector}=":is(blob, union)"
+structure::smithy.api#streaming::trait::smithy.api#trait<={structurallyExclusive}="target"
+structure::smithy.api#trait
+structure::smithy.api#trait::conflicts::trait::smithy.api#documentation<="The traits that this trait conflicts with."
+structure::smithy.api#trait::conflicts=>smithy.api#NonEmptyStringList
+structure::smithy.api#trait::selector::trait::smithy.api#documentation<="The valid places in a model that the trait can be applied."
+structure::smithy.api#trait::selector=>smithy.api#String
+structure::smithy.api#trait::structurallyExclusive::trait::smithy.api#documentation<="Whether or not only a single member in a structure can have this trait."
+structure::smithy.api#trait::structurallyExclusive=>smithy.api#StructurallyExclusive
+structure::smithy.api#trait::trait::smithy.api#documentation<="Makes a shape a trait."
+structure::smithy.api#trait::trait::smithy.api#tags<=[0]="diff.error.add"
+structure::smithy.api#trait::trait::smithy.api#tags<=[1]="diff.error.remove"
+structure::smithy.api#trait::trait::smithy.api#trait<={selector}=":is(simpleType, list, map, set, structure, union)"
+structure::smithy.api#uniqueItems
+structure::smithy.api#uniqueItems::trait::smithy.api#documentation<="Indicates that the items in a list MUST be unique."
+structure::smithy.api#uniqueItems::trait::smithy.api#trait<={selector}="list"
+structure::smithy.api#unstable
+structure::smithy.api#unstable::trait::smithy.api#documentation<="Indicates that the shape is unstable and could change in the future."
+structure::smithy.api#unstable::trait::smithy.api#trait<={}
+structure::smithy.api#xmlAttribute
+structure::smithy.api#xmlAttribute::trait::smithy.api#documentation<="Serializes an object property as an XML attribute rather than a nested XML element."
+structure::smithy.api#xmlAttribute::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#xmlAttribute::trait::smithy.api#trait<={conflicts}=[0]="xmlNamespace"
+structure::smithy.api#xmlAttribute::trait::smithy.api#trait<={selector}="structure > :test(member > :test(boolean, number, string, timestamp))"
+structure::smithy.api#xmlFlattened
+structure::smithy.api#xmlFlattened::trait::smithy.api#documentation<="Unwraps the values of a list, set, or map into the containing structure/union."
+structure::smithy.api#xmlFlattened::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#xmlFlattened::trait::smithy.api#trait<={selector}=":is(structure, union) > :test(member > :test(collection, map))"
+structure::smithy.api#xmlNamespace
+structure::smithy.api#xmlNamespace::prefix::trait::smithy.api#documentation<="The prefix for the given namespace."
+structure::smithy.api#xmlNamespace::prefix::trait::smithy.api#pattern<="^[a-zA-Z_][a-zA-Z_0-9-]*$"
+structure::smithy.api#xmlNamespace::prefix=>smithy.api#NonEmptyString
+structure::smithy.api#xmlNamespace::trait::smithy.api#documentation<="Adds an xmlns namespace definition URI to an XML element."
+structure::smithy.api#xmlNamespace::trait::smithy.api#tags<=[0]="diff.error.const"
+structure::smithy.api#xmlNamespace::trait::smithy.api#trait<={conflicts}=[0]="xmlAttribute"
+structure::smithy.api#xmlNamespace::uri::trait::smithy.api#documentation<="The namespace URI for scoping this XML element."
+structure::smithy.api#xmlNamespace::uri::trait::smithy.api#required<={}
+structure::smithy.api#xmlNamespace::uri=>smithy.api#NonEmptyString

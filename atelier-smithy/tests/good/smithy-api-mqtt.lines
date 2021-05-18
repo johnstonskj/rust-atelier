@@ -1,0 +1,15 @@
+string::smithy.mqtt#publish
+string::smithy.mqtt#publish::trait::smithy.api#pattern<="^[^#+]+$"
+string::smithy.mqtt#publish::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.mqtt#publish::trait::smithy.api#trait<={conflicts}=[0]="smithy.mqtt#subscribe"
+string::smithy.mqtt#publish::trait::smithy.api#trait<={selector}="operation:not(-[output]->)"
+string::smithy.mqtt#subscribe
+string::smithy.mqtt#subscribe::trait::smithy.api#pattern<="^[^#+]+$"
+string::smithy.mqtt#subscribe::trait::smithy.api#tags<=[0]="diff.error.const"
+string::smithy.mqtt#subscribe::trait::smithy.api#trait<={conflicts}=[0]="smithy.mqtt#publish"
+string::smithy.mqtt#subscribe::trait::smithy.api#trait<={selector}="operation:test(-[output]-> structure > member > union[trait|streaming])"
+structure::smithy.mqtt#mqttJson
+structure::smithy.mqtt#mqttJson::trait::smithy.api#protocolDefinition<={}
+structure::smithy.mqtt#mqttJson::trait::smithy.api#trait<={selector}="service"
+structure::smithy.mqtt#topicLabel
+structure::smithy.mqtt#topicLabel::trait::smithy.api#trait<={selector}="member[trait|required] :test(> :test(string, byte, short, integer, long, boolean, timestamp))"

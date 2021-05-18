@@ -43,6 +43,13 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.8**
+
+* Supporting the core model builders which now use TryFrom instead of From.
+* Support the "renames" collection added to service shapes in the abstract model.
+* All annotation traits use an empty object as value, not None.
+* Using new shared atelier-test crate.
+
 **Version 0.2.7**
 
 * Supporting the core model builders which now use TryFrom instead of From.

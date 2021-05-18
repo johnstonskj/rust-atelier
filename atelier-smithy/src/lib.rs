@@ -74,6 +74,11 @@ extern crate log;
 ///
 pub const FILE_EXTENSION: &str = "smithy";
 
+///
+/// The name to report in errors in this representation.
+///
+pub const REPRESENTATION_NAME: &str = "Smithy IDL";
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------
@@ -89,3 +94,5 @@ pub use writer::SmithyWriter;
 #[doc(hidden)]
 pub mod parser;
 pub use parser::{parse_model, parse_selector};
+
+mod syntax;

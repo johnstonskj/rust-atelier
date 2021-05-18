@@ -1,0 +1,96 @@
+integer::smithy.waiters#WaiterDelay
+integer::smithy.waiters#WaiterDelay::trait::smithy.api#box<={}
+integer::smithy.waiters#WaiterDelay::trait::smithy.api#range<={min}=1
+list::smithy.waiters#Acceptors
+list::smithy.waiters#Acceptors::member=>smithy.waiters#Acceptor
+list::smithy.waiters#Acceptors::trait::smithy.api#length<={min}=1
+list::smithy.waiters#Acceptors::trait::smithy.api#private<={}
+list::smithy.waiters#NonEmptyStringList
+list::smithy.waiters#NonEmptyStringList::member=>smithy.waiters#NonEmptyString
+list::smithy.waiters#NonEmptyStringList::trait::smithy.api#private<={}
+map::smithy.waiters#waitable
+map::smithy.waiters#waitable::key=>smithy.waiters#WaiterName
+map::smithy.waiters#waitable::trait::smithy.api#documentation<="Indicates that an operation has various named \"waiters\" that can be used\nto poll a resource until it enters a desired state."
+map::smithy.waiters#waitable::trait::smithy.api#length<={min}=1
+map::smithy.waiters#waitable::trait::smithy.api#trait<={selector}="operation :not(-[input, output]-> structure > member > union[trait|streaming])"
+map::smithy.waiters#waitable::value=>smithy.waiters#Waiter
+string::smithy.waiters#AcceptorState
+string::smithy.waiters#AcceptorState::trait::smithy.api#documentation<="The transition state of a waiter."
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[0]={"documentation"}="The waiter successfully finished waiting. This is a terminal\n                state that causes the waiter to stop."
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[0]={"name"}="SUCCESS"
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[0]={"value"}="success"
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[1]={"documentation"}="The waiter failed to enter into the desired state. This is a\n                terminal state that causes the waiter to stop."
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[1]={"name"}="FAILURE"
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[1]={"value"}="failure"
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[2]={"documentation"}="The waiter will retry the operation. This state transition is\n                implicit if no accepter causes a state transition."
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[2]={"name"}="RETRY"
+string::smithy.waiters#AcceptorState::trait::smithy.api#enum<=[2]={"value"}="retry"
+string::smithy.waiters#AcceptorState::trait::smithy.api#private<={}
+string::smithy.waiters#NonEmptyString
+string::smithy.waiters#NonEmptyString::trait::smithy.api#length<={min}=1
+string::smithy.waiters#NonEmptyString::trait::smithy.api#private<={}
+string::smithy.waiters#PathComparator
+string::smithy.waiters#PathComparator::trait::smithy.api#documentation<="Defines a comparison to perform in a PathMatcher."
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[0]={"documentation"}="Matches if the return value is a string that is equal to the expected string."
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[0]={"name"}="STRING_EQUALS"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[0]={"value"}="stringEquals"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"documentation"}="Matches if the return value is a boolean that is equal to the string literal \'true\' or \'false\'."
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"name"}="BOOLEAN_EQUALS"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"value"}="booleanEquals"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[2]={"documentation"}="Matches if all values in the list matches the expected string."
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[2]={"name"}="ALL_STRING_EQUALS"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[2]={"value"}="allStringEquals"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[3]={"documentation"}="Matches if any value in the list matches the expected string."
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[3]={"name"}="ANY_STRING_EQUALS"
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[3]={"value"}="anyStringEquals"
+string::smithy.waiters#PathComparator::trait::smithy.api#private<={}
+string::smithy.waiters#WaiterName
+string::smithy.waiters#WaiterName::trait::smithy.api#pattern<="^[A-Z]+[A-Za-z0-9]*$"
+structure::smithy.waiters#Acceptor
+structure::smithy.waiters#Acceptor::matcher::trait::smithy.api#documentation<="The matcher used to test if the resource is in a given state."
+structure::smithy.waiters#Acceptor::matcher::trait::smithy.api#required<={}
+structure::smithy.waiters#Acceptor::matcher=>smithy.waiters#Matcher
+structure::smithy.waiters#Acceptor::state::trait::smithy.api#documentation<="The state the acceptor transitions to when matched."
+structure::smithy.waiters#Acceptor::state::trait::smithy.api#required<={}
+structure::smithy.waiters#Acceptor::state=>smithy.waiters#AcceptorState
+structure::smithy.waiters#Acceptor::trait::smithy.api#documentation<="Represents an acceptor in a waiter\'s state machine."
+structure::smithy.waiters#Acceptor::trait::smithy.api#private<={}
+structure::smithy.waiters#PathMatcher
+structure::smithy.waiters#PathMatcher::comparator::trait::smithy.api#documentation<="The comparator used to compare the result of the expression with the\nexpected value."
+structure::smithy.waiters#PathMatcher::comparator::trait::smithy.api#required<={}
+structure::smithy.waiters#PathMatcher::comparator=>smithy.waiters#PathComparator
+structure::smithy.waiters#PathMatcher::expected::trait::smithy.api#documentation<="The expected return value of the expression."
+structure::smithy.waiters#PathMatcher::expected::trait::smithy.api#required<={}
+structure::smithy.waiters#PathMatcher::expected=>smithy.api#String
+structure::smithy.waiters#PathMatcher::path::trait::smithy.api#documentation<="A JMESPath expression applied to the input or output of an operation."
+structure::smithy.waiters#PathMatcher::path::trait::smithy.api#required<={}
+structure::smithy.waiters#PathMatcher::path=>smithy.api#String
+structure::smithy.waiters#PathMatcher::trait::smithy.api#documentation<="Defines how to test the result of a JMESPath expression against\nan expected value."
+structure::smithy.waiters#PathMatcher::trait::smithy.api#private<={}
+structure::smithy.waiters#Waiter
+structure::smithy.waiters#Waiter::acceptors::trait::smithy.api#documentation<="An ordered array of acceptors to check after executing an operation."
+structure::smithy.waiters#Waiter::acceptors::trait::smithy.api#required<={}
+structure::smithy.waiters#Waiter::acceptors=>smithy.waiters#Acceptors
+structure::smithy.waiters#Waiter::deprecated::trait::smithy.api#documentation<="Indicates if the waiter is considered deprecated. A waiter SHOULD\nbe marked as deprecated if it has been replaced by another waiter or\nif it is no longer needed (for example, if a resource changes from\neventually consistent to strongly consistent)."
+structure::smithy.waiters#Waiter::deprecated=>smithy.api#PrimitiveBoolean
+structure::smithy.waiters#Waiter::documentation::trait::smithy.api#documentation<="Documentation about the waiter. Can use CommonMark."
+structure::smithy.waiters#Waiter::documentation=>smithy.api#String
+structure::smithy.waiters#Waiter::maxDelay::trait::smithy.api#documentation<="The maximum amount of time in seconds to delay between each retry.\nThis value defaults to 120 if not specified (or, 2 minutes). If\nspecified, this value MUST be greater than or equal to 1."
+structure::smithy.waiters#Waiter::maxDelay=>smithy.waiters#WaiterDelay
+structure::smithy.waiters#Waiter::minDelay::trait::smithy.api#documentation<="The minimum amount of time in seconds to delay between each retry.\nThis value defaults to 2 if not specified. If specified, this value\nMUST be greater than or equal to 1 and less than or equal to\n`maxDelay`."
+structure::smithy.waiters#Waiter::minDelay=>smithy.waiters#WaiterDelay
+structure::smithy.waiters#Waiter::tags::trait::smithy.api#documentation<="A list of tags associated with the waiter that allow waiters to be\ncategorized and grouped."
+structure::smithy.waiters#Waiter::tags=>smithy.waiters#NonEmptyStringList
+structure::smithy.waiters#Waiter::trait::smithy.api#documentation<="Defines an individual operation waiter."
+structure::smithy.waiters#Waiter::trait::smithy.api#private<={}
+union::smithy.waiters#Matcher
+union::smithy.waiters#Matcher::errorType::trait::smithy.api#documentation<="Matches if an operation returns an error and the error matches\nthe expected error type. If an absolute shape ID is provided, the\nerror is matched exactly on the shape ID. A shape name can be\nprovided to match an error in any namespace with the given name."
+union::smithy.waiters#Matcher::errorType=>smithy.api#String
+union::smithy.waiters#Matcher::inputOutput::trait::smithy.api#documentation<="Matches on both the input and output of an operation using a JMESPath\nexpression. Input parameters are available through the top-level\n`input` field, and output data is available through the top-level\n`output` field. This matcher can only be used on operations that\ndefine both input and output. This matcher is checked only if an\noperation completes successfully."
+union::smithy.waiters#Matcher::inputOutput=>smithy.waiters#PathMatcher
+union::smithy.waiters#Matcher::output::trait::smithy.api#documentation<="Matches on the successful output of an operation using a\nJMESPath expression."
+union::smithy.waiters#Matcher::output=>smithy.waiters#PathMatcher
+union::smithy.waiters#Matcher::success::trait::smithy.api#documentation<="When set to `true`, matches when an operation returns a successful\nresponse. When set to `false`, matches when an operation fails with\nany error."
+union::smithy.waiters#Matcher::success=>smithy.api#Boolean
+union::smithy.waiters#Matcher::trait::smithy.api#documentation<="Defines how an acceptor determines if it matches the current state of\na resource."
+union::smithy.waiters#Matcher::trait::smithy.api#private<={}
