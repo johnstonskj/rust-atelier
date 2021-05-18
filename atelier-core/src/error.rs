@@ -16,6 +16,11 @@ use std::str::FromStr;
 
 error_chain! {
     errors {
+        #[doc("Missing version number in serialized representation.")]
+        MissingVersionNumber(repr: String) {
+            description("Missing version number in serialized representation.")
+            display("Missing version number in serialized representatio: '{}'", repr)
+        }
         #[doc("Invalid version number")]
         InvalidVersionNumber(v: String) {
             description("Invalid version number")

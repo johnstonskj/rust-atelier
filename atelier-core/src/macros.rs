@@ -198,6 +198,46 @@ macro_rules! array_member {
     };
 }
 
+macro_rules! hash_member {
+    ($collection:ident, $key_name:ident, $key_type:ty, $value_name:ident, $value_type:ty) => {
+        paste! {
+        #[doc = "Returns `true` if the `" $collection "` collection has _any_ elements, else `false`."]
+        pub fn [<has_ $collection>](&self) -> bool {
+            !self.$collection.is_empty()
+        }
+
+        #[doc = "Return an iterator over all elements in the `" $collection "` collection."]
+        pub fn $collection(&self) -> impl Iterator<Item = (&$key_type, &$value_type)> {
+            self.$collection.iter()
+        }
+
+        #[doc = "Set the `" $collection "` collection, this overwrites any existing values."]
+        pub fn [<set_ $collection>](&mut self, $collection: HashMap<$key_type, $value_type>) {
+            self.$collection = $collection;
+        }
+
+        #[doc = "Returns `true` if the " $key_name " is present, else `false`."]
+        pub fn [<has_ $key_name>](&self, $key_name: &$key_type) -> bool {
+            self.$collection.contains_key($key_name)
+        }
+
+        #[doc = "Returns `true` if the " $key_name " is present, else `false`."]
+        pub fn [<contains_ $key_name>](&self, $key_name: &$key_type) -> Option<&$value_type> {
+            self.$collection.get($key_name)
+        }
+
+        #[doc = "Add an element to the `" $collection "` collection."]
+        pub fn [<insert_ $key_name>](&mut self, $key_name: $key_type, $value_name: $value_type) -> Option<$value_type> {
+            self.$collection.insert($key_name, $value_name)
+        }
+
+        #[doc = "Remove any element, equal to the `" $key_name "`, from the `" $collection "` collection."]
+        pub fn [<remove_ $key_name>](&mut self, $key_name: &$key_type) -> Option<$value_type> {
+            self.$collection.remove($key_name)
+        }}
+    };
+}
+
 macro_rules! linter_or_validator_defn {
     ($struct_name:ident { $( $i:ident : $t:ty ),* },  $doc:expr) => {
         #[doc = $doc]

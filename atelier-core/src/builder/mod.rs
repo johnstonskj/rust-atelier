@@ -234,6 +234,8 @@ impl ModelBuilder {
     /// 4. If a relative shape ID does not satisfy one of the above cases, the shape ID is invalid,
     ///    and the namespace is inherited from the *current namespace*.
     ///
+    /// TODO: what about `Service::renames`?
+    ///
     fn resolve_shape_name(&self, shape_name: &ShapeName, is_trait: bool) -> Result<ShapeID, Error> {
         match shape_name {
             ShapeName::Qualified(qualified) => {
@@ -420,6 +422,9 @@ impl ModelBuilder {
         }
         for shape_id in &builder.resources {
             service.add_resource(self.resolve_shape_name(shape_id, false)?);
+        }
+        for (shape_id, local_name) in &builder.rename_shapes {
+            let _ = service.insert_rename_shape(shape_id.clone(), local_name.clone());
         }
         Ok(TopLevelShape::with_traits(
             shape_name,

@@ -118,6 +118,7 @@ pub struct ServiceBuilder {
     pub(super) version: String,
     pub(super) operations: Vec<ShapeName>,
     pub(super) resources: Vec<ShapeName>,
+    pub(super) rename_shapes: HashMap<ShapeID, Identifier>,
 }
 
 /// Builder for `ShapeKind::Operation` shapes.
@@ -497,6 +498,7 @@ impl ServiceBuilder {
             version: version.to_string(),
             operations: Default::default(),
             resources: Default::default(),
+            rename_shapes: Default::default(),
         }
     }
 
@@ -531,6 +533,15 @@ impl ServiceBuilder {
         for shape_id in shape_ids {
             let _ = self.resource(shape_id);
         }
+        self
+    }
+
+    /// Add a name mapping used to disambiguate shape name conflicts in the service closure.
+    pub fn rename(&mut self, shape_id: &str, local_name: &str) -> &mut Self {
+        let _ = self.rename_shapes.insert(
+            ShapeID::from_str(shape_id).unwrap(),
+            Identifier::from_str(local_name).unwrap(),
+        );
         self
     }
 

@@ -111,7 +111,7 @@ impl ModelVisitor for ExampleVisitor {
 fn test_model_visitor() {
     let model = make_message_of_the_day_model();
     let visitor = ExampleVisitor::default();
-    let result = walk_model(&model, &visitor);
+    let result = walk_model(&model.model, &visitor);
     println!("{:#?}", result);
     assert!(result.is_ok());
     let remaining = visitor.expected.borrow();

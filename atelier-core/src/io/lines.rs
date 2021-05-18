@@ -32,11 +32,12 @@ and "`<=`" the *value assignment* operator.
  5. {shape_type}::{shape_id}::{identifier}::trait::{shape_id}
  6. {shape_type}::{shape_id}::{identifier}::trait::{shape_id}<={value...}
  7. {shape_type}::{shape_id}::identifier::{identifier}=>{shape_id}
- 8. meta::{identifier}<={value...}
- 9. ()
-10. {simple_value}
-11. [{integer}]={value...}
-12. {{identifier}}={value...}
+ 8. {shape_type}::{shape_id}::rename::{shape_id}<={identifier}
+ 9. meta::{identifier}<={value...}
+10. ()
+11. {simple_value}
+12. [{integer}]={value...}
+13. {{identifier}}={value...}
 ```
 
 * For each top-level shape:
@@ -47,26 +48,31 @@ and "`<=`" the *value assignment* operator.
   * For each member of the shape:
     * emit a line with the member identifier, "`=>`", and the target's fully qualified name (4),
       * for array-valued members the member name emitted is the singular form (error for errors, etc.).
-      * for the resource "`identifiers`" map-valued member:
+      * If the shape is a resource; emit the "`identifiers`" map-valued member:
         * append an additional "`::identifier::`" string,
         * emit each key followed by "`=>`", and the target's fully qualified name (7),
+      * If the shape is a service; emit the "`renames`" map-valued member:
+        * append an additional "`::rename::`" string,
+        * emit each key followed by "`<=`", and the value (8),
     * For each trait applied to the member:
       * append to the above string the value "`::trait`" and the trait's fully qualified name (5),
       * if the trait has a value, append the "`<=`" and follow the value production rules below (6).
 
-* For each value in the model metadat map:
+* For each value in the model metadata map:
   * use the string "`meta`" as if it where a shape name followed by "`::`"
-  * append the key name, the string "`<=`" and follow the value production rules below (8).
+  * append the key name, the string "`<=`" and follow the value production rules below (9).
 
-* For null values simply emit the string "`()`" (9).
-* For boolean, numeric, and string values emit their natural form (10).
+* For null values simply emit the string "`()`" (10).
+* For boolean, numeric, and string values emit their natural form (11).
   * Ensure string values are correctly quoted.
 * For arrays:
   * emit a line per index, with "`[`", the index as a zero-based integer, "`]`", the operator
-    "`<=`" and follow these same value production rules (11).
+    "`<=`" and follow these same value production rules (12),
+  * an empty array is denoted with the string "`[]`".
 * For objects:
   * emit a line per key, with "`{`", the key name, "`}`", the operator "`<=`" and follow
-    these same value production rules (12).
+    these same value production rules (13),
+  * an empty object is denoted with the string "`{}`".
 
 Finally, all lines must be sorted to ensure the overall output can be compared.
 
@@ -115,6 +121,9 @@ service Weather {
     version: "2006-03-01"
     resources: [City]
     operations: [GetCurrentTime]
+    rename: {
+        "foo.example#Widget": "FooWidget"
+    }
 }
 ```
 
@@ -122,6 +131,7 @@ service Weather {
 service::example.weather#Weather
 service::example.weather#Weather::operation=>example.weather#GetCurrentTime
 service::example.weather#Weather::resource=>example.weather#City
+service::example.weather#Weather::rename::foo.example#Widget<=FooWidget
 service::example.weather#Weather::trait::smithy.api#documentation<="Provides weather forecasts."
 service::example.weather#Weather::trait::smithy.api#paginated<={inputToken}="nextToken"
 service::example.weather#Weather::trait::smithy.api#paginated<={outputToken}="nextToken"
@@ -269,6 +279,12 @@ fn shape_into_strings(shape: &TopLevelShape, strings: &mut Vec<String>) {
             for id in v.resources() {
                 strings.push(format!("{}{}", prefix, member_target("resource", id)));
             }
+            for (id, ln) in v.renames() {
+                strings.push(format!(
+                    "{}{}rename{}{}{}{}",
+                    prefix, SEGMENT_SEP, SEGMENT_SEP, id, VALUE_SEP, ln
+                ));
+            }
             prefix
         }
         ShapeKind::Operation(v) => {
@@ -347,15 +363,23 @@ fn member_target(member_name: &str, id: &ShapeID) -> String {
 fn value_into_strings(prefix: &str, value: &Value, strings: &mut Vec<String>) {
     match value {
         Value::Array(vs) => {
-            for (i, v) in vs.iter().enumerate() {
-                let prefix = format!("{}[{}]=", prefix, i);
-                value_into_strings(&prefix, v, strings);
+            if vs.is_empty() {
+                strings.push(format!("{}[]", prefix));
+            } else {
+                for (i, v) in vs.iter().enumerate() {
+                    let prefix = format!("{}[{}]=", prefix, i);
+                    value_into_strings(&prefix, v, strings);
+                }
             }
         }
         Value::Object(vo) => {
-            for (k, v) in vo {
-                let prefix = format!("{}{{{}}}=", prefix, k);
-                value_into_strings(&prefix, v, strings);
+            if vo.is_empty() {
+                strings.push(format!("{}{{}}", prefix));
+            } else {
+                for (k, v) in vo {
+                    let prefix = format!("{}{{{}}}=", prefix, k);
+                    value_into_strings(&prefix, v, strings);
+                }
             }
         }
         Value::Number(v) => strings.push(format!("{}{}", prefix, v)),

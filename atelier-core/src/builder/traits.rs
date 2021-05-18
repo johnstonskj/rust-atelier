@@ -32,7 +32,7 @@ pub struct TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn boxed() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_BOX))
+    TraitBuilder::annotation(&prelude_name(TRAIT_BOX))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -68,7 +68,7 @@ pub fn external_documentation(map: &[(&str, &str)]) -> TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn idempotent() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_IDEMPOTENT))
+    TraitBuilder::annotation(&prelude_name(TRAIT_IDEMPOTENT))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -96,7 +96,7 @@ pub fn length_min(value: usize) -> TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn no_replace() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_NOREPLACE))
+    TraitBuilder::annotation(&prelude_name(TRAIT_NOREPLACE))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -130,7 +130,7 @@ pub fn pattern(pat: &str) -> TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn private() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_PRIVATE))
+    TraitBuilder::annotation(&prelude_name(TRAIT_PRIVATE))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -158,7 +158,7 @@ pub fn range_min(value: usize) -> TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn readonly() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_READONLY))
+    TraitBuilder::annotation(&prelude_name(TRAIT_READONLY))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -173,22 +173,22 @@ pub fn references(reference_list: Value) -> TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn required() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_REQUIRED))
+    TraitBuilder::annotation(&prelude_name(TRAIT_REQUIRED))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn requires_length() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_REQUIRESLENGTH))
+    TraitBuilder::annotation(&prelude_name(TRAIT_REQUIRESLENGTH))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn sensitive() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_SENSITIVE))
+    TraitBuilder::annotation(&prelude_name(TRAIT_SENSITIVE))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn streaming() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_STREAMING))
+    TraitBuilder::annotation(&prelude_name(TRAIT_STREAMING))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -217,7 +217,7 @@ pub fn a_trait() -> TraitBuilder {
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
 pub fn unique_items() -> TraitBuilder {
-    TraitBuilder::new(&prelude_name(TRAIT_UNIQUEITEMS))
+    TraitBuilder::annotation(&prelude_name(TRAIT_UNIQUEITEMS))
 }
 
 /// Create a new `TraitBuilder` for the corresponding prelude trait.
@@ -235,6 +235,14 @@ impl TraitBuilder {
         Self {
             shape_id: ShapeName::from_str(id).unwrap(),
             value: None,
+        }
+    }
+
+    /// Construct a new `TraitBuilder` with the given shape identifier.
+    pub fn annotation(id: &str) -> Self {
+        Self {
+            shape_id: ShapeName::from_str(id).unwrap(),
+            value: Some(Value::Object(ValueMap::new())),
         }
     }
 

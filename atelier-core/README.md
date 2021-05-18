@@ -97,6 +97,13 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.13**
+
+* Added the "renames" collection to service shapes in the abstract model and corresponding builder.
+* Updated LineOrientedWriter with rules for empty arrays and objects.
+* Made all syntax values public at top of library.
+* All annotation traits use an empty object as value, not None.
+
 **Version 0.2.12**
 
 * Altered builder logic around "apply" of traits to existing shapes, references, and members.

@@ -6,6 +6,19 @@ String constants for elements of the model.
 // ShapeID Separators
 // ------------------------------------------------------------------------------------------------
 
+/// The model member containing metadata.
+pub const MODEL_METADATA: &str = "metadata";
+
+/// The model member containing top-level shapes.
+pub const MODEL_SHAPES: &str = "shapes";
+
+/// The model member identifying the version of Smithy used.
+pub const MODEL_VERSION: &str = "version";
+
+// ------------------------------------------------------------------------------------------------
+// ShapeID Separators
+// ------------------------------------------------------------------------------------------------
+
 /// The character separating components of a `Namespace` string.
 pub const SHAPE_ID_NAMESPACE_SEPARATOR: char = '.';
 
@@ -62,23 +75,14 @@ pub const SHAPE_TIMESTAMP: &str = "timestamp";
 // Shape Names
 // ------------------------------------------------------------------------------------------------
 
+/// String identifier for the shape `ShapeBody::Apply`.
+pub const SHAPE_APPLY: &str = "apply";
+
 /// String identifier for the shape `ShapeBody::List`.
 pub const SHAPE_LIST: &str = "list";
 
-/// String identifier for the shape `ShapeBody::Set`.
-pub const SHAPE_SET: &str = "set";
-
 /// String identifier for the shape `ShapeBody::Map`.
 pub const SHAPE_MAP: &str = "map";
-
-/// String identifier for the shape `ShapeBody::Structure`.
-pub const SHAPE_STRUCTURE: &str = "structure";
-
-/// String identifier for the shape `ShapeBody::Union`.
-pub const SHAPE_UNION: &str = "union";
-
-/// String identifier for the shape `ShapeBody::Service`.
-pub const SHAPE_SERVICE: &str = "service";
 
 /// String identifier for the shape `ShapeBody::Operation`.
 pub const SHAPE_OPERATION: &str = "operation";
@@ -86,36 +90,30 @@ pub const SHAPE_OPERATION: &str = "operation";
 /// String identifier for the shape `ShapeBody::Resource`.
 pub const SHAPE_RESOURCE: &str = "resource";
 
-/// String identifier for the shape `ShapeBody::Apply`.
-pub const SHAPE_APPLY: &str = "apply";
+/// String identifier for the shape `ShapeBody::Service`.
+pub const SHAPE_SERVICE: &str = "service";
+
+/// String identifier for the shape `ShapeBody::Set`.
+pub const SHAPE_SET: &str = "set";
+
+/// String identifier for the shape `ShapeBody::Structure`.
+pub const SHAPE_STRUCTURE: &str = "structure";
+
+/// String identifier for the shape `ShapeBody::Union`.
+pub const SHAPE_UNION: &str = "union";
 
 // ------------------------------------------------------------------------------------------------
 // Member Names
 // ------------------------------------------------------------------------------------------------
 
-/// The member named "member" on the shapes List and Set.
-pub const MEMBER_MEMBER: &str = "member";
+/// The member named "collectionOperations" on the shape Resource.
+pub const MEMBER_COLLECTION_OPERATIONS: &str = "collectionOperations";
 
-/// The member named "key" on the shape Map.
-pub const MEMBER_KEY: &str = "key";
+/// The member named "create" on the shape Resource.
+pub const MEMBER_CREATE: &str = "create";
 
-/// The member named "value" on the shape Map.
-pub const MEMBER_VALUE: &str = "value";
-
-/// The member named "version" on the shape Service.
-pub const MEMBER_VERSION: &str = "version";
-
-/// The member named "operations" on the shapes Service and Resource.
-pub const MEMBER_OPERATIONS: &str = "operations";
-
-/// The member named "resources" on the shapes Service and Resource.
-pub const MEMBER_RESOURCES: &str = "resources";
-
-/// The member named "input" on the shape Operation.
-pub const MEMBER_INPUT: &str = "input";
-
-/// The member named "output" on the shape Operation.
-pub const MEMBER_OUTPUT: &str = "output";
+/// The member named "delete" on the shape Resource.
+pub const MEMBER_DELETE: &str = "delete";
 
 /// The member named "errors" on the shape Operation.
 pub const MEMBER_ERRORS: &str = "errors";
@@ -123,8 +121,23 @@ pub const MEMBER_ERRORS: &str = "errors";
 /// The member named "identifiers" on the shape Resource.
 pub const MEMBER_IDENTIFIERS: &str = "identifiers";
 
-/// The member named "create" on the shape Resource.
-pub const MEMBER_CREATE: &str = "create";
+/// The member named "input" on the shape Operation.
+pub const MEMBER_INPUT: &str = "input";
+
+/// The member named "key" on the shape Map.
+pub const MEMBER_KEY: &str = "key";
+
+/// The member named "list" on the shape Resource.
+pub const MEMBER_LIST: &str = "list";
+
+/// The member named "member" on the shapes List and Set.
+pub const MEMBER_MEMBER: &str = "member";
+
+/// The member named "operations" on the shapes Service and Resource.
+pub const MEMBER_OPERATIONS: &str = "operations";
+
+/// The member named "output" on the shape Operation.
+pub const MEMBER_OUTPUT: &str = "output";
 
 /// The member named "put" on the shape Resource.
 pub const MEMBER_PUT: &str = "put";
@@ -132,14 +145,17 @@ pub const MEMBER_PUT: &str = "put";
 /// The member named "read" on the shape Resource.
 pub const MEMBER_READ: &str = "read";
 
+/// The member named "rename" on the shape Service.
+pub const MEMBER_RENAME: &str = "rename";
+
+/// The member named "resources" on the shapes Service and Resource.
+pub const MEMBER_RESOURCES: &str = "resources";
+
 /// The member named "update" on the shape Resource.
 pub const MEMBER_UPDATE: &str = "update";
 
-/// The member named "delete" on the shape Resource.
-pub const MEMBER_DELETE: &str = "delete";
+/// The member named "value" on the shape Map.
+pub const MEMBER_VALUE: &str = "value";
 
-/// The member named "list" on the shape Resource.
-pub const MEMBER_LIST: &str = "list";
-
-/// The member named "collectionOperations" on the shape Resource.
-pub const MEMBER_COLLECTION_OPERATIONS: &str = "collectionOperations";
+/// The member named "version" on the shape Service.
+pub const MEMBER_VERSION: &str = "version";

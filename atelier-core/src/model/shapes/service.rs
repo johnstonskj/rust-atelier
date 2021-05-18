@@ -14,6 +14,7 @@ pub struct Service {
     version: String,
     operations: Vec<ShapeID>,
     resources: Vec<ShapeID>,
+    renames: HashMap<ShapeID, Identifier>,
 }
 
 ///
@@ -54,6 +55,7 @@ impl Service {
             version: version.to_string(),
             operations: Default::default(),
             resources: Default::default(),
+            renames: Default::default(),
         }
     }
 
@@ -85,6 +87,8 @@ impl Service {
             self.add_resource(shape.id().clone())
         }
     }
+
+    hash_member! { renames, rename_shape, ShapeID, local_name, Identifier }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -184,6 +188,11 @@ impl Resource {
     /// Add an identifier, providing a name and the target shape ID.
     pub fn add_identifier(&mut self, name: Identifier, target: ShapeID) -> Option<ShapeID> {
         self.identifiers.insert(name, target)
+    }
+
+    /// Set the hash of identifiers, replacing any existing mapping.
+    pub fn set_identifiers(&mut self, identifiers: HashMap<Identifier, ShapeID>) {
+        self.identifiers = identifiers;
     }
 
     /// Return an iterator over all the identifier name and target pairs for this resource.

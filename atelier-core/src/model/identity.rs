@@ -64,9 +64,6 @@ pub struct ShapeID {
     member_name: Option<Identifier>,
 }
 
-// TODO: Investigate making all ShapeID components `RC<>` to reduce memory size due to duplication.
-// (https://github.com/johnstonskj/rust-atelier/issues/4)
-
 ///
 /// A Trait that is implemented by model elements that have a shape identifier.
 ///
