@@ -51,6 +51,15 @@ let documentation = writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.8**
+
+* Completed trait tables for all shapes/members.
+* Added some additional formatting to indent member definitions.
+
+**Version 0.1.7**
+
+* Support the "renames" collection added to service shapes in the abstract model.
+
 **Version 0.1.6**
 
 * Supporting the core model builders which now use TryFrom instead of From.

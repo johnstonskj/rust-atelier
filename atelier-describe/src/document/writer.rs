@@ -49,7 +49,6 @@ writer.write(&mut stdout(), &model).expect("Error writing model documentation");
 */
 
 use atelier_core::error::Result as ModelResult;
-use atelier_core::error::Result;
 use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{
     HasTraits, ListOrSet, Map, Operation, Resource, Service, ShapeKind, StructureOrUnion,
@@ -58,15 +57,15 @@ use atelier_core::model::shapes::{
 use atelier_core::model::values::Value;
 use atelier_core::model::{HasIdentity, Model, NamespaceID, ShapeID};
 use atelier_core::prelude::{
-    PRELUDE_NAMESPACE, TRAIT_DOCUMENTATION, TRAIT_EXTERNALDOCUMENTATION, TRAIT_TAGS,
+    prelude_namespace_id, PRELUDE_NAMESPACE, TRAIT_DOCUMENTATION, TRAIT_EXTERNALDOCUMENTATION,
 };
 use atelier_core::syntax::{
     SHAPE_ID_MEMBER_SEPARATOR, SHAPE_LIST, SHAPE_MAP, SHAPE_OPERATION, SHAPE_RESOURCE,
     SHAPE_SERVICE, SHAPE_SET, SHAPE_STRUCTURE, SHAPE_UNION,
 };
 use somedoc::model::block::{
-    Caption, Cell, Column, HasBlockContent, HasLabel, Heading, Item, Label, List, Paragraph, Row,
-    Table,
+    Caption, Cell, Column, HasBlockContent, HasLabel, Heading, Item, Label, List, Paragraph, Quote,
+    Row, Table,
 };
 use somedoc::model::inline::HyperLink;
 use somedoc::model::inline::{HasInlineContent, InlineContent, Span};
@@ -112,7 +111,7 @@ impl Default for DocumentationWriter {
 }
 
 impl ModelWriter for DocumentationWriter {
-    fn write(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
+    fn write(&mut self, w: &mut impl Write, model: &Model) -> ModelResult<()> {
         let document = describe_model(model)?;
         match write_document(
             &document,
@@ -131,7 +130,7 @@ impl ModelWriter for DocumentationWriter {
 
 fn describe_this_model(model: &Model, doc: &mut Document) {
     let doc = doc.set_title("Smithy Model");
-    let doc = doc.add_paragraph(format!("Smith Version: {}", model.smithy_version()).into());
+    let doc = doc.add_paragraph(format!("Smithy Version: {}", model.smithy_version()).into());
 
     if model.has_metadata() {
         describe_model_metadata(model, doc.add_heading(Heading::section("Metadata")));
@@ -192,6 +191,91 @@ fn describe_shape(shape: &TopLevelShape, doc: &mut Document) {
     }
 }
 
+fn trait_value(
+    id: String,
+    prefix: Option<String>,
+    value: &Value,
+) -> Vec<(String, Option<String>, Option<String>)> {
+    let mut result: Vec<(String, Option<String>, Option<String>)> = Default::default();
+    match value {
+        Value::Boolean(v) => result.push((id, prefix, Some(v.to_string()))),
+        Value::Number(v) => result.push((id, prefix, Some(v.to_string()))),
+        Value::String(v) => result.push((id, prefix, Some(v.to_string()))),
+        Value::Array(vs) => {
+            if vs.is_empty() {
+                result.push((id, None, None))
+            } else {
+                for (i, v) in vs.iter().enumerate() {
+                    result.extend(trait_value(id.clone(), Some(format!("[{}]", i)), v));
+                }
+            }
+        }
+        Value::Object(vs) => {
+            if vs.is_empty() {
+                result.push((id, None, None))
+            } else {
+                let mut obj_keys: Vec<&String> = vs.keys().collect();
+                obj_keys.sort();
+                for k in obj_keys {
+                    let v = vs.get(k).unwrap();
+                    result.extend(trait_value(id.clone(), Some(format!(".{}", k)), v));
+                }
+            }
+        }
+        _ => result.push((id, None, None)),
+    }
+    result
+}
+
+fn describe_traits(shape: &impl HasTraits, doc: &mut Document) {
+    let prelude_namespace = prelude_namespace_id();
+    let doc_trait = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_DOCUMENTATION, None);
+    let ext_doc_trait =
+        ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_EXTERNALDOCUMENTATION, None);
+    let mut traits: Vec<(String, Option<String>, Option<String>)> = Default::default();
+    let mut trait_ids: Vec<&ShapeID> = shape.traits().iter().map(|(id, _)| id).collect();
+    trait_ids.sort();
+    for id in trait_ids {
+        let value = shape.trait_named(id).unwrap();
+        if id != &doc_trait && id != &ext_doc_trait {
+            let id = if id.namespace() == prelude_namespace {
+                id.shape_name().to_string()
+            } else {
+                id.to_string()
+            };
+            if let Some(value) = value {
+                traits.extend(trait_value(id.to_string(), None, value));
+            } else {
+                traits.push((id, None, None));
+            }
+        }
+    }
+
+    if !traits.is_empty() {
+        let mut trait_table = Table::new(&[
+            Column::new("Trait ID"),
+            Column::new("Path"),
+            Column::new("Value"),
+        ]);
+        for applied in traits {
+            trait_table.add_row(Row::new(&[
+                Cell::plain_str(&applied.0),
+                if let Some(v) = &applied.1 {
+                    Cell::code_str(v)
+                } else {
+                    Cell::skip()
+                },
+                if let Some(v) = &applied.2 {
+                    Cell::code_str(v)
+                } else {
+                    Cell::skip()
+                },
+            ]));
+        }
+        let _ = doc.add_table(trait_table);
+    }
+}
+
 fn describe_documentation(shape: &impl HasTraits, doc: &mut Document) {
     let trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_DOCUMENTATION, None);
     if let Some(Some(doc_value)) = shape.trait_named(&trait_id) {
@@ -215,139 +299,7 @@ fn describe_documentation(shape: &impl HasTraits, doc: &mut Document) {
         }
     }
 
-    let mut traits = Table::new(&[Column::new("Trait"), Column::new("Value")]);
-
-    if shape.is_boxed() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Boxed"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_deprecated() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Deprecated"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_error() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Error"),
-            // TODO: value: string
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_idempotent() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Idempotent"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.has_length() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Has Length"),
-            // TODO: value: object
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_no_replace() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("No Replace"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_paginated() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Paginated"),
-            // TODO: value: object
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.has_pattern() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Has Pattern"),
-            // TODO: value: string
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_private() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Private"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_readonly() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Read-only"),
-            Cell::code_str("true"),
-        ]));
-    }
-    // TODO: references
-    if shape.is_required() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Required"),
-            Cell::code_str("true"),
-        ]));
-    }
-    // TODO: requires length
-    if shape.is_sensitive() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Sensitive"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_streaming() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Streaming"),
-            Cell::code_str("true"),
-        ]));
-    }
-    // TODO: since, value: String
-    if shape.is_tagged() {
-        let mut tags: Vec<String> = Vec::new();
-        let trait_id = ShapeID::new_unchecked(PRELUDE_NAMESPACE, TRAIT_TAGS, None);
-        if let Some(trait_value) = shape.trait_named(&trait_id) {
-            match trait_value {
-                Some(Value::Array(values)) => tags.extend(values.iter().map(|v| v.to_string())),
-                Some(Value::String(value)) => tags.push(value.clone()),
-                _ => {}
-            }
-        }
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Has Tags"),
-            Cell::code_str(&tags.join(", ")),
-        ]));
-    }
-    // if shape.is_titled() {
-    //     traits.add_row(Row::new(&[
-    //         Cell::plain_str("Title"),
-    //         match shape.ti,
-    //     ]));
-    // }
-    // TODO: title: string
-    if shape.is_trait() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Trait"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.has_unique_items() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Has Unique Items"),
-            Cell::code_str("true"),
-        ]));
-    }
-    if shape.is_unstable() {
-        traits.add_row(Row::new(&[
-            Cell::plain_str("Is Unstable"),
-            Cell::code_str("true"),
-        ]));
-    }
-
-    // TODO: non-prelude traits!
-
-    if traits.has_rows() {
-        let _ = doc.add_table(traits);
-    }
+    describe_traits(shape, doc);
 }
 
 fn shape_id_to_label(source: &ShapeID) -> Label {
@@ -384,29 +336,35 @@ fn describe_list_or_set(shape_id: &ShapeID, shape: &ListOrSet, doc: &mut Documen
         Span::bold_str("Member type: ").into(),
         shape_link(shape_id, shape.member().target()),
     ]));
+    describe_documentation(shape.member(), doc);
 }
 
 fn describe_map(shape_id: &ShapeID, shape: &Map, doc: &mut Document) {
     let _ = doc.add_paragraph(Paragraph::from(vec![
         Span::bold_str("Key type: ").into(),
         shape_link(shape_id, shape.key().target()),
+    ]));
+    describe_documentation(shape.key(), doc);
+    let _ = doc.add_paragraph(Paragraph::from(vec![
         Span::bold_str(", value type: ").into(),
         shape_link(shape_id, shape.value().target()),
     ]));
+    describe_documentation(shape.value(), doc);
 }
 
 fn describe_structure_or_union(shape_id: &ShapeID, shape: &StructureOrUnion, doc: &mut Document) {
     if shape.has_members() {
         let _ = doc.add_heading(Heading::sub_sub_section("Members"));
-        let mut list = List::unordered();
+        let mut indent = Quote::default();
         for member in shape.members() {
-            let _ = list.add_item(Item::from(vec![
+            let _ = indent.add_paragraph(Paragraph::from(vec![
                 Span::code_str(&member.id().member_name().as_ref().unwrap().to_string()).into(),
                 Span::plain_str(": ").into(),
                 shape_link(shape_id, member.target()),
             ]));
+            describe_documentation(member, doc);
         }
-        let _ = doc.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
 }
 
@@ -418,39 +376,62 @@ fn describe_service(shape_id: &ShapeID, shape: &Service, doc: &mut Document) {
     ]));
     if shape.has_operations() {
         let _ = doc.add_heading(Heading::sub_sub_section("Operations"));
+        let mut indent = Quote::default();
         let mut list = List::unordered();
         for member_id in shape.operations() {
             let _ = list.add_item(Item::from(shape_link(shape_id, member_id)));
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
     if shape.has_resources() {
         let _ = doc.add_heading(Heading::sub_sub_section("Resources"));
+        let mut indent = Quote::default();
         let mut list = List::unordered();
         for member_id in shape.resources() {
             let _ = list.add_item(Item::from(shape_link(shape_id, member_id)));
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
+    }
+    if shape.has_renames() {
+        let _ = doc.add_heading(Heading::sub_sub_section("Renames"));
+        let mut indent = Quote::default();
+        let mut list = List::unordered();
+        for (shape_id, local_name) in shape.renames() {
+            let _ = list.add_item(Item::from(InlineContent::Span(Span::from(vec![
+                Span::code_str(&shape_id.to_string()).into(),
+                Span::plain_str(" renamed to ").into(),
+                Span::code_str(&local_name.to_string()).into(),
+            ]))));
+        }
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
 }
 
 fn describe_operation(shape_id: &ShapeID, shape: &Operation, doc: &mut Document) {
     if let Some(member) = shape.input() {
-        let _ = doc.add_paragraph(Paragraph::from(vec![
+        let mut indent = Quote::default();
+        let _ = indent.add_paragraph(Paragraph::from(vec![
             Span::bold_str("Input type").into(),
             Span::plain_str(": ").into(),
             shape_link(shape_id, member),
         ]));
+        let _ = doc.add_block_quote(indent);
     }
     if let Some(member) = shape.output() {
-        let _ = doc.add_paragraph(Paragraph::from(vec![
+        let mut indent = Quote::default();
+        let _ = indent.add_paragraph(Paragraph::from(vec![
             Span::bold_str("Output type").into(),
             Span::plain_str(": ").into(),
             shape_link(shape_id, member),
         ]));
+        let _ = doc.add_block_quote(indent);
     }
     if shape.has_errors() {
-        let _ = doc.add_paragraph(Paragraph::from(vec![
+        let mut indent = Quote::default();
+        let _ = indent.add_paragraph(Paragraph::from(vec![
             Span::bold_str("Errors").into(),
             Span::plain_str(":").into(),
         ]));
@@ -458,13 +439,15 @@ fn describe_operation(shape_id: &ShapeID, shape: &Operation, doc: &mut Document)
         for error in shape.errors() {
             let _ = list.add_item(shape_link(shape_id, error).into());
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
 }
 
 fn describe_resource(shape_id: &ShapeID, shape: &Resource, doc: &mut Document) {
     if shape.has_any_resource_operation() {
         let _ = doc.add_heading(Heading::sub_sub_section("Resource Operations"));
+        let mut indent = Quote::default();
         let mut list = List::unordered();
         if let Some(member) = shape.create() {
             let _ = list.add_item(Item::from(vec![
@@ -508,31 +491,38 @@ fn describe_resource(shape_id: &ShapeID, shape: &Resource, doc: &mut Document) {
                 shape_link(shape_id, member),
             ]));
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
     if shape.has_operations() {
         let _ = doc.add_heading(Heading::sub_sub_section("Operations"));
+        let mut indent = Quote::default();
         let mut list = List::unordered();
         for member_id in shape.operations() {
             let _ = list.add_item(Item::from(shape_link(shape_id, member_id)));
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
     if shape.has_collection_operations() {
         let _ = doc.add_heading(Heading::sub_sub_section("Collection Operations"));
+        let mut indent = Quote::default();
         let mut list = List::unordered();
         for member_id in shape.collection_operations() {
             let _ = list.add_item(Item::from(shape_link(shape_id, member_id)));
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
     if shape.has_resources() {
         let _ = doc.add_heading(Heading::sub_sub_section("Resources"));
+        let mut indent = Quote::default();
         let mut list = List::unordered();
         for member_id in shape.resources() {
             let _ = list.add_item(Item::from(shape_link(shape_id, member_id)));
         }
-        let _ = doc.add_list(list);
+        let _ = indent.add_list(list);
+        let _ = doc.add_block_quote(indent);
     }
 }
 
