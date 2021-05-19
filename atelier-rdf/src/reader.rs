@@ -167,17 +167,17 @@ fn rdf_to_shape<'a>(
     graph: &'a impl Graph<'a>,
     subject_as_object: &ObjectNodeRef,
 ) -> ModelResult<TopLevelShape> {
-    if let Some(iri) = subject_as_object.as_iri() && is_shape_iri(iri) {
-        graph.st
-        // Find type
-        // Find members
-        // Apply traits
-    } else {
-        Err(
-            ErrorKind::Deserialization(REPRESENTATION_NAME.to_string(), "shape".to_string(), None)
-                .into(),
-        )
-    }
+    // if let Some(iri) = subject_as_object.as_iri() && is_shape_iri(iri) {
+    //     // Find type
+    //     // Find members
+    //     // Apply traits
+    unimplemented!()
+    // } else {
+    //     Err(
+    //         ErrorKind::Deserialization(REPRESENTATION_NAME.to_string(), "shape".to_string(), None)
+    //             .into(),
+    //     )
+    // }
 }
 
 // ------------------------------------------------------------------------------------------------
