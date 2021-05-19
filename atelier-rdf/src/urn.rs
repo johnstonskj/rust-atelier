@@ -60,6 +60,13 @@ pub fn shape_to_iri(value: &ShapeID) -> IRIRef {
 }
 
 ///
+/// Returns `true` if the provided IRI is a valid shape URN, else `false`.
+///
+pub fn is_shape_iri(iri: IRIRef) -> bool {
+    iri_to_shape(iri).is_ok()
+}
+
+///
 /// Convert an `IRIRef` into a Smithy `ShapeID`. This will fail if the provided `IRI` does not
 /// conform to the format described in the module documentation.
 ///

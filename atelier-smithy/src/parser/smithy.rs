@@ -323,7 +323,9 @@ fn parse_a_trait(input_pair: Pair<'_, Rule>) -> ModelResult<TraitBuilder> {
         node_value = Some(NodeValue::Object(members));
     }
 
-    // TODO: We ALWAYS provide a value, this overrides the notion of None as a value here.
+    // NOTE: We ALWAYS provide a value, this overrides the notion of None as a value here.
+    // We are essentially bouncing type validation up a level to determine the corresponding
+    // trait's shape.
     match (id, node_value) {
         (Some(id), None) => Ok(TraitBuilder::with_value(
             &id,
