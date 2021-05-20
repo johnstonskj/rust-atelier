@@ -51,10 +51,15 @@ pub fn parse_and_compare_to_file(input_str: &str, reader: &mut impl ModelReader,
     }
 }
 
+#[cfg(windows)]
+const LINE_ENDING: &str = "\r\n";
+#[cfg(not(windows))]
+const LINE_ENDING: &str = "\n";
+
 pub fn compare_model_to_file(model: Model, file_path: &Path) {
     let expected_lines = fs::read_to_string(file_path).unwrap();
 
-    let actual_lines = make_line_oriented_form(&model).join("\n");
+    let actual_lines = make_line_oriented_form(&model).join(LINE_ENDING);
 
     assert_eq!(actual_lines, expected_lines);
 }
