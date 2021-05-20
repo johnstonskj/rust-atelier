@@ -59,6 +59,8 @@ const LINE_ENDING: &str = "\n";
 pub fn compare_model_to_file(model: Model, file_path: &Path) {
     let expected_lines = fs::read_to_string(file_path).unwrap();
 
+    println!("LINE_ENDINGS={:#?}", LINE_ENDING);
+
     let actual_lines = make_line_oriented_form(&model).join(LINE_ENDING);
 
     assert_eq!(actual_lines, expected_lines);
