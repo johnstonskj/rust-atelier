@@ -71,11 +71,15 @@ pub fn parse_and_compare_to_file(input_str: &str, reader: &mut impl ModelReader,
 }
 
 pub fn compare_model_to_file(model: Model, file_path: &Path) {
-    let expected_lines = fs::read_to_string(file_path).unwrap();
+    let expected_lines: Vec<String> = fs::read_to_string(file_path)
+        .unwrap()
+        .split(LINE_ENDING)
+        .map(str::to_string)
+        .collect();
 
     println!("LINE_ENDINGS={:#?}", LINE_ENDING);
 
-    let actual_lines = make_line_oriented_form(&model).join(LINE_ENDING);
+    let actual_lines = make_line_oriented_form(&model);
 
     assert_eq!(actual_lines, expected_lines);
 }
