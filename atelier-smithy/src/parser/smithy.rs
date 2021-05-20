@@ -89,7 +89,7 @@ fn parse_idl(input_pair: Pair<'_, Rule>) -> ModelResult<Model> {
             });
             match builder {
                 None => Ok(Model::default()),
-                Some(mut builder) => Ok(builder.meta_data_from(meta_data).try_into().unwrap()),
+                Some(mut builder) => builder.meta_data_from(meta_data).try_into(),
             }
         }
         _ => unexpected!("parse_idl", input_pair),
