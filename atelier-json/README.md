@@ -26,6 +26,10 @@ println!("{:#?}", result.unwrap());
 
 ## Changes
 
+**Version 0.2.4**
+
+* From core: Reorganized errors, made the naming and messages consistent and removed unused.
+
 **Version 0.2.3**
 
 * Supporting the core model builders which now use TryFrom instead of From.

@@ -168,9 +168,7 @@ impl JsonReader {
                 let version = if let Some(Value::String(value)) = outer.get(MEMBER_VERSION) {
                     value.clone()
                 } else {
-                    return Err(
-                        ErrorKind::MissingVersionNumber(REPRESENTATION_NAME.to_string()).into(),
-                    );
+                    return Err(ErrorKind::InvalidVersionNumber(None).into());
                 };
                 let mut service = Service::new(&version);
                 service.append_operations(&self.target_list(outer.get(MEMBER_OPERATIONS))?);
