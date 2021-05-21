@@ -77,9 +77,7 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
     let actual_lines: Vec<String> = make_line_oriented_form(&model)
         .iter()
         .map(|s| {
-            println!("*** {}", s);
             if s.contains("\\r\\n") {
-                println!("*** FIXING WINDOWS LINE ENDINGS");
                 s.replace("\\r\\n", "\\n")
             } else {
                 s.to_string()
