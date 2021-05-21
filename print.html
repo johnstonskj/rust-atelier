@@ -343,7 +343,7 @@ fn message_of_the_day_model() -&gt; Model {
 <pre><pre class="playpen"><code class="language-rust">
 <span class="boring">#![allow(unused_variables)]
 </span><span class="boring">fn main() {
-</span>use atelier_core::error::ErrorSource;
+</span>use atelier_core::builder::traits::ErrorSource;
 use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::builder::{
     traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
