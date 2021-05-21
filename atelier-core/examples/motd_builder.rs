@@ -1,8 +1,8 @@
+use atelier_core::builder::traits::ErrorSource;
 use atelier_core::builder::{
     traits, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder, ServiceBuilder,
     ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
-use atelier_core::error::ErrorSource;
 use atelier_core::model::Model;
 use atelier_core::Version;
 use std::convert::TryInto;

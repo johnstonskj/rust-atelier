@@ -4,12 +4,12 @@ model from the Smithy [Quick Start](https://awslabs.github.io/smithy/quickstart.
 document.
 */
 
+use atelier_core::builder::traits::ErrorSource;
 use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::builder::{
     traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
     ServiceBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
 };
-use atelier_core::error::ErrorSource;
 use atelier_core::io::debug::DebugWriter;
 use atelier_core::io::write_model_to_string;
 use atelier_core::model::Model;
