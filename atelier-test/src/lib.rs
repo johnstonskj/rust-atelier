@@ -74,10 +74,8 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
     let expected_lines: Vec<String> = fs::read_to_string(file_path)
         .unwrap()
         .split(LINE_ENDING)
-        .map(str::to_string)
+        .map(line_ending_fix)
         .collect();
-
-    println!("LINE_ENDINGS={:#?}", LINE_ENDING);
 
     let actual_lines = make_line_oriented_form(&model);
 
@@ -91,6 +89,14 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
+
+fn line_ending_fix(s: &str) -> String {
+    if cfg!(windows) {
+        s.replace("\n", LINE_ENDING)
+    } else {
+        s.to_string()
+    }
+}
 
 #[inline]
 fn horizontal_line() {
