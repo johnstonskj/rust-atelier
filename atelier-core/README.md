@@ -26,7 +26,7 @@ for the current date.
 # Example - Builder
 
 ```rust
-use atelier_core::error::ErrorSource;
+use atelier_core::builder::traits::ErrorSource;
 use atelier_core::model::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::model::builder::{
     Builder, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,

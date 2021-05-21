@@ -175,7 +175,7 @@ makes it easier to use. For example, you want to add the documentation trait to 
 For more information, see [the Rust Atelier book](https://rust-atelier.dev/using/builder_api.html).
 
 ```rust
-use atelier_core::error::ErrorSource;
+use atelier_core::builder::traits::ErrorSource;
 use atelier_core::builder::values::{ArrayBuilder, ObjectBuilder};
 use atelier_core::builder::{
     traits, ListBuilder, MemberBuilder, ModelBuilder, OperationBuilder, ResourceBuilder,
