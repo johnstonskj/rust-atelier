@@ -3,8 +3,7 @@ This module provides a model to construct `Selector`s. These are described in §
 specification.
 */
 
-use crate::error::Error;
-use crate::error::ErrorKind::InvalidSelector;
+use crate::error::{Error, ErrorKind};
 use crate::model::values::Number;
 use crate::model::{Identifier, ShapeID};
 use std::fmt::{Display, Formatter};
@@ -578,7 +577,7 @@ impl FromStr for ShapeType {
             "operation" => Ok(ShapeType::Operation),
             "resource" => Ok(ShapeType::Resource),
             "member" => Ok(ShapeType::Member),
-            _ => Err(InvalidSelector.into()),
+            _ => Err(ErrorKind::InvalidSelectorExpression(s.to_string()).into()),
         }
     }
 }
@@ -793,7 +792,7 @@ impl FromStr for Comparator {
             "{!=}" => Ok(Comparator::ProjectionNotEqual),
             "{<}" => Ok(Comparator::ProjectionSubset),
             "{<<}" => Ok(Comparator::ProjectionProperSubset),
-            _ => Err(InvalidSelector.into()),
+            _ => Err(ErrorKind::InvalidSelectorExpression(s.to_string()).into()),
         }
     }
 }

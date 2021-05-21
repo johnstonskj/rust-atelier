@@ -91,7 +91,11 @@ impl Model {
     pub fn merge(&mut self, other: Model) -> ModelResult<()> {
         // Ensure version match
         if other.smithy_version != self.smithy_version {
-            return Err(ErrorKind::InvalidVersionNumber(other.smithy_version.to_string()).into());
+            return Err(ErrorKind::MergeVersionConflict(
+                self.smithy_version.to_string(),
+                other.smithy_version.to_string(),
+            )
+            .into());
         }
 
         for (key, value) in other.metadata {

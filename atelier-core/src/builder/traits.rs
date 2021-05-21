@@ -1,7 +1,6 @@
 use crate::builder::id::ShapeName;
 use crate::builder::values::ObjectBuilder;
-use crate::error::ErrorKind;
-use crate::error::ErrorSource;
+use crate::error::{Error, ErrorKind};
 use crate::model::shapes::TraitValue;
 use crate::model::values::{Number, Value, ValueMap};
 use crate::model::ShapeID;
@@ -13,13 +12,27 @@ use crate::prelude::{
     TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
 };
 use crate::syntax::SHAPE_ID_ABSOLUTE_SEPARATOR;
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
 
+///
+/// The identification of an error's source used by the `error` trait.
+///
+#[derive(Clone, Debug, PartialEq)]
+pub enum ErrorSource {
+    /// The error originated in the client.
+    Client,
+    /// The error originated in the server.
+    Server,
+}
+
+///
 /// Builder for `AppliedTrait` model elements.
+///
 #[derive(Clone, Debug)]
 pub struct TraitBuilder {
     pub(crate) shape_id: ShapeName,
@@ -167,7 +180,10 @@ pub fn references(reference_list: Value) -> TraitBuilder {
         Value::Array(_) => {
             TraitBuilder::with_value(&prelude_name(TRAIT_REFERENCES), reference_list)
         }
-        _ => panic!("{}", ErrorKind::InvalidValueVariant("Array".to_string())),
+        _ => panic!(
+            "{}",
+            ErrorKind::InvalidTraitValue(TRAIT_REFERENCES.to_string())
+        ),
     }
 }
 
@@ -227,6 +243,33 @@ pub fn unstable() -> TraitBuilder {
 
 // ------------------------------------------------------------------------------------------------
 // Implementations
+// ------------------------------------------------------------------------------------------------
+
+impl Display for ErrorSource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ErrorSource::Client => "client",
+                ErrorSource::Server => "server",
+            }
+        )
+    }
+}
+
+impl FromStr for ErrorSource {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "client" => Ok(Self::Client),
+            "server" => Ok(Self::Server),
+            _ => Err(ErrorKind::InvalidTraitValue(TRAIT_ERROR.to_string()).into()),
+        }
+    }
+}
+
 // ------------------------------------------------------------------------------------------------
 
 impl TraitBuilder {

@@ -250,7 +250,6 @@ let model: Model = ModelBuilder::new(Version::V10, "example.motd")
     unused_qualifications,
     unused_results,
 )]
-#![recursion_limit = "256"] // required for error_chain
 
 #[macro_use]
 extern crate error_chain;
@@ -303,7 +302,7 @@ impl FromStr for Version {
         if s == "1" || s == "1.0" {
             Ok(Self::V10)
         } else {
-            Err(error::ErrorKind::InvalidVersionNumber(s.to_string()).into())
+            Err(error::ErrorKind::InvalidVersionNumber(Some(s.to_string())).into())
         }
     }
 }

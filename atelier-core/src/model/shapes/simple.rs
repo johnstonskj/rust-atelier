@@ -90,7 +90,7 @@ impl FromStr for Simple {
             SHAPE_BIG_INTEGER => Ok(Simple::BigInteger),
             SHAPE_BIG_DECIMAL => Ok(Simple::BigDecimal),
             SHAPE_TIMESTAMP => Ok(Simple::Timestamp),
-            _ => Err(ErrorKind::UnknownType(s.to_string()).into()),
+            _ => Err(ErrorKind::InvalidSimpleShape(s.to_string()).into()),
         }
     }
 }

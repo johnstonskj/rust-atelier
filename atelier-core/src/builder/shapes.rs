@@ -1,6 +1,6 @@
 use crate::builder::id::ShapeName;
+use crate::builder::traits::ErrorSource;
 use crate::builder::{traits, TopLevelShapeBuilder, TraitBuilder};
-use crate::error::ErrorSource;
 use crate::model::shapes::Simple;
 use crate::model::{Identifier, ShapeID};
 use crate::prelude::{

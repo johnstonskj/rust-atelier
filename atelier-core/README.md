@@ -99,6 +99,10 @@ $ cargo run --example motd_builder
 
 **Version 0.2.14**
 
+* Reorganized errors, made the naming and messages consistent and removed unused.
+
+**Version 0.2.14**
+
 * Made Identifier and ShapeID PartialOrd + Ord.
 * Added missing prelude trait identifier.
 
