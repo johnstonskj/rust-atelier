@@ -92,6 +92,7 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
 
 fn line_ending_fix(s: &str) -> String {
     if cfg!(windows) {
+        println!("*** FIXING WINDOWS LINE ENDINGS");
         s.replace("\\r\\n", "\\n")
     } else {
         s.to_string()

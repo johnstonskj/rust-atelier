@@ -36,7 +36,7 @@ string StructurallyExclusive
 /// When a boxed shape is the target of a member, the member
 /// may or may not contain a value, and the member has no default value.
 @trait(selector: """
-    :test(boolean, byte, short, integer, long, float, doubleX,
+    :test(boolean, byte, short, integer, long, float, double,
           member > :test(boolean, byte, short, integer, long, float, double))""")
 @tags(["diff.error.const"])
 structure box {}
