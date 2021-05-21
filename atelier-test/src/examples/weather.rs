@@ -1,10 +1,10 @@
 use crate::TestCaseModel;
+use atelier_core::builder::traits::ErrorSource;
 use atelier_core::builder::{
     traits, ArrayBuilder, ListBuilder, MemberBuilder, ModelBuilder, ObjectBuilder,
     OperationBuilder, ResourceBuilder, ServiceBuilder, ShapeTraits, SimpleShapeBuilder,
     StructureBuilder,
 };
-use atelier_core::error::ErrorSource;
 use atelier_core::model::Model;
 use atelier_core::Version;
 use std::convert::TryInto;
