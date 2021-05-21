@@ -27,10 +27,13 @@ use crate::model::{Identifier, Model, NamespaceID, ShapeID};
 use crate::prelude::{
     defined_prelude_shapes, defined_prelude_traits, prelude_namespace_id, PRELUDE_NAMESPACE,
 };
+use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use crate::Version;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::iter::FromIterator;
+use std::str::FromStr;
+pub use values::{ArrayBuilder, ObjectBuilder, ValueBuilder};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -82,11 +85,15 @@ impl TryFrom<&mut ModelBuilder> for Model {
 
     fn try_from(builder: &mut ModelBuilder) -> Result<Self, Self::Error> {
         let mut model = Model::new(builder.smithy_version);
-        for (k, v) in builder.metadata.drain() {
-            let _ = model.add_metadata(k, v);
+        for (k, v) in builder.metadata.iter() {
+            let _ = model.add_metadata(k.clone(), v.clone());
         }
+        let mut unresolved: HashSet<ShapeID> = Default::default();
         for shape in builder.shapes.values() {
-            let _ = model.add_shape(builder.make_shape(&shape)?);
+            let _ = model.add_shape(builder.make_shape(&shape, &mut unresolved)?);
+        }
+        for shape_id in unresolved {
+            let _ = model.add_shape(TopLevelShape::new(shape_id, ShapeKind::Unresolved));
         }
         Ok(model)
     }
@@ -236,24 +243,28 @@ impl ModelBuilder {
     ///
     /// TODO: what about `Service::renames`?
     ///
-    fn resolve_shape_name(&self, shape_name: &ShapeName, is_trait: bool) -> Result<ShapeID, Error> {
+    fn resolve_shape_name(
+        &self,
+        shape_name: &ShapeName,
+        is_trait: bool,
+    ) -> Result<(ShapeID, bool), Error> {
         info!(
             "resolve_shape_name(shape_name: {:?}, is_trait: {})",
             &shape_name, is_trait
         );
         match shape_name {
             ShapeName::Qualified(qualified) => {
-                trace!("qualified ShapeID exists, use as is");
+                trace!("Qualified ShapeID exists, use as is");
                 // If this is a ShapeID already, then just use it as-is.
                 if !qualified.is_member() {
-                    Ok(qualified.clone())
+                    Ok((qualified.clone(), false))
                 } else {
-                    error!("expected a qualified ShapeID");
+                    error!("expected a qualified, non-member, ShapeID");
                     Err(ErrorKind::ShapeIDExpected(qualified.clone()).into())
                 }
             }
             ShapeName::Local(local) => {
-                trace!("Local ShapeName: proceeding with resolution...");
+                trace!("Local Identifier: proceeding with resolution...");
                 let references: Vec<&ShapeName> = self
                     .reference_names()
                     .filter(|shape_name| shape_name.shape_name() == local)
@@ -267,7 +278,10 @@ impl ModelBuilder {
                     1 => {
                         // 1. a `use_statement` has imported a shape with the same name
                         trace!("SUCCESS: a use statement imports this shape explicitly");
-                        Ok(references.first().unwrap().as_qualified().unwrap().clone())
+                        Ok((
+                            references.first().unwrap().as_qualified().unwrap().clone(),
+                            false,
+                        ))
                     }
                     0 => {
                         if self.shapes.contains_key(shape_name) {
@@ -275,18 +289,20 @@ impl ModelBuilder {
                             trace!(
                                 "SUCCESS: shape found in same namespace as shape with same name"
                             );
-                            Ok(self.default_namespace.make_shape(local.clone()))
+                            Ok((self.default_namespace.make_shape(local.clone()), false))
                         } else if (!is_trait
                             && defined_prelude_shapes().contains(&*local.to_string()))
                             || (is_trait && defined_prelude_traits().contains(&*local.to_string()))
                         {
                             // 3. a shape is defined in the prelude with the same name
                             trace!("SUCCESS: shape found in prelude with the same name");
-                            Ok(prelude_namespace_id().make_shape(local.clone()))
+                            Ok((prelude_namespace_id().make_shape(local.clone()), false))
                         } else {
                             // 4. the shape ID is invalid
-                            error!("shape is invalid because no reference found");
-                            Err(ErrorKind::UnknownShape(local.to_string()).into())
+                            // => the namespace is inherited from the *current namespace*.
+                            trace!("SUCCESS-ish: shape not found, so assume it's local");
+                            let qualified = self.default_namespace.make_shape(local.clone());
+                            Ok((qualified, true))
                         }
                     }
                     _ => {
@@ -320,81 +336,135 @@ impl ModelBuilder {
             ShapeName::Local(local) => {
                 // This is disallowed in the Smithy IDL which requires apply statements to take
                 // qualified names.
-                let shape_id = self
+                let (shape_id, new_reference) = self
                     .resolve_shape_name(&local.clone().into(), false)
                     .unwrap();
+                if new_reference {
+                    let _ = self.reference(ReferenceBuilder::from(shape_id.clone()));
+                }
                 self.apply_to(&shape_id.into(), a_trait)
             }
         }
     }
 
-    fn make_shape(&self, builder: &TopLevelShapeBuilder) -> Result<TopLevelShape, Error> {
+    fn make_shape(
+        &self,
+        builder: &TopLevelShapeBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
         Ok(match builder {
-            TopLevelShapeBuilder::SimpleShape(builder) => self.make_simple_shape(builder)?,
-            TopLevelShapeBuilder::List(builder) => self.make_list(builder)?,
-            TopLevelShapeBuilder::Set(builder) => self.make_set(builder)?,
-            TopLevelShapeBuilder::Map(builder) => self.make_map(builder)?,
-            TopLevelShapeBuilder::Structure(builder) => self.make_structure(builder)?,
-            TopLevelShapeBuilder::Union(builder) => self.make_union(builder)?,
-            TopLevelShapeBuilder::Service(builder) => self.make_service(builder)?,
-            TopLevelShapeBuilder::Operation(builder) => self.make_operation(builder)?,
-            TopLevelShapeBuilder::Resource(builder) => self.make_resource(builder)?,
-            TopLevelShapeBuilder::Reference(builder) => self.make_reference(builder)?,
+            TopLevelShapeBuilder::SimpleShape(builder) => {
+                self.make_simple_shape(builder, references)?
+            }
+            TopLevelShapeBuilder::List(builder) => self.make_list(builder, references)?,
+            TopLevelShapeBuilder::Set(builder) => self.make_set(builder, references)?,
+            TopLevelShapeBuilder::Map(builder) => self.make_map(builder, references)?,
+            TopLevelShapeBuilder::Structure(builder) => self.make_structure(builder, references)?,
+            TopLevelShapeBuilder::Union(builder) => self.make_union(builder, references)?,
+            TopLevelShapeBuilder::Service(builder) => self.make_service(builder, references)?,
+            TopLevelShapeBuilder::Operation(builder) => self.make_operation(builder, references)?,
+            TopLevelShapeBuilder::Resource(builder) => self.make_resource(builder, references)?,
+            TopLevelShapeBuilder::Reference(builder) => self.make_reference(builder, references)?,
         })
     }
 
-    fn make_simple_shape(&self, builder: &SimpleShapeBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
+    fn make_simple_shape(
+        &self,
+        builder: &SimpleShapeBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
         Ok(TopLevelShape::with_traits(
-            shape_name,
+            shape_id,
             ShapeKind::Simple(builder.simple_shape.clone()),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
-    fn make_list(&self, builder: &ListBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
+    fn make_list(
+        &self,
+        builder: &ListBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
+        let (target_id, new_reference) = self.resolve_shape_name(&builder.member.target, false)?;
+        if new_reference {
+            let _ = references.insert(target_id.clone());
+        }
         Ok(TopLevelShape::with_traits(
-            shape_name.clone(),
+            shape_id.clone(),
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
-                shape_name.make_member(builder.member.member_name.clone()),
-                self.resolve_shape_name(&builder.member.target, false)?,
-                self.make_traits(&builder.member.applied_traits)?,
+                shape_id.make_member(builder.member.member_name.clone()),
+                target_id,
+                self.make_traits(&builder.member.applied_traits, references)?,
             ))),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
-    fn make_set(&self, builder: &ListBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
+    fn make_set(
+        &self,
+        builder: &ListBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
+        let (target_id, new_reference) = self.resolve_shape_name(&builder.member.target, false)?;
+        if new_reference {
+            let _ = references.insert(target_id.clone());
+        }
         Ok(TopLevelShape::with_traits(
-            shape_name.clone(),
+            shape_id.clone(),
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
-                shape_name.make_member(builder.member.member_name.clone()),
-                self.resolve_shape_name(&builder.member.target, false)?,
-                self.make_traits(&builder.member.applied_traits)?,
+                shape_id.make_member(builder.member.member_name.clone()),
+                target_id,
+                self.make_traits(&builder.member.applied_traits, references)?,
             ))),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
-    fn make_map(&self, builder: &MapBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
+    fn make_map(
+        &self,
+        builder: &MapBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
+        let (key_target_id, new_reference) = self.resolve_shape_name(&builder.key.target, false)?;
+        if new_reference {
+            let _ = references.insert(key_target_id.clone());
+        }
+        let (value_target_id, new_reference) =
+            self.resolve_shape_name(&builder.value.target, false)?;
+        if new_reference {
+            let _ = references.insert(value_target_id.clone());
+        }
         Ok(TopLevelShape::with_traits(
-            shape_name.clone(),
+            shape_id.clone(),
             ShapeKind::Map(Map::from(
                 MemberShape::with_traits(
-                    shape_name.make_member(builder.key.member_name.clone()),
-                    self.resolve_shape_name(&builder.key.target, false)?,
-                    self.make_traits(&builder.key.applied_traits)?,
+                    shape_id.make_member(builder.key.member_name.clone()),
+                    key_target_id,
+                    self.make_traits(&builder.key.applied_traits, references)?,
                 ),
                 MemberShape::with_traits(
-                    shape_name.make_member(builder.value.member_name.clone()),
-                    self.resolve_shape_name(&builder.value.target, false)?,
-                    self.make_traits(&builder.value.applied_traits)?,
+                    shape_id.make_member(builder.value.member_name.clone()),
+                    value_target_id,
+                    self.make_traits(&builder.value.applied_traits, references)?,
                 ),
             )),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
@@ -402,138 +472,244 @@ impl ModelBuilder {
         &self,
         shape_name: &ShapeID,
         builder: &StructureBuilder,
+        references: &mut HashSet<ShapeID>,
     ) -> Result<StructureOrUnion, Error> {
         let members: Result<Vec<MemberShape>, Error> = builder
             .members
             .iter()
             .map(|mb| {
+                let (member_target_id, new_reference) =
+                    self.resolve_shape_name(&mb.target, false)?;
+                if new_reference {
+                    let _ = references.insert(member_target_id.clone());
+                }
                 Ok(MemberShape::with_traits(
                     shape_name.make_member(mb.member_name.clone()),
-                    self.resolve_shape_name(&mb.target, false)?,
-                    self.make_traits(&mb.applied_traits)?,
+                    member_target_id,
+                    self.make_traits(&mb.applied_traits, references)?,
                 ))
             })
             .collect();
         members.map(|members| StructureOrUnion::with_members(&members))
     }
 
-    fn make_structure(&self, builder: &StructureBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
-        Ok(TopLevelShape::with_traits(
-            shape_name.clone(),
-            ShapeKind::Structure(self.make_structure_inner(&shape_name, builder)?),
-            self.make_traits(&builder.applied_traits)?,
-        ))
-    }
-
-    fn make_union(&self, builder: &StructureBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
-        Ok(TopLevelShape::with_traits(
-            shape_name.clone(),
-            ShapeKind::Union(self.make_structure_inner(&shape_name, builder)?),
-            self.make_traits(&builder.applied_traits)?,
-        ))
-    }
-
-    fn make_service(&self, builder: &ServiceBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
-        let mut service = Service::new(&builder.version);
-        for shape_id in &builder.operations {
-            service.add_operation(self.resolve_shape_name(shape_id, false)?);
+    fn make_structure(
+        &self,
+        builder: &StructureBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
         }
-        for shape_id in &builder.resources {
-            service.add_resource(self.resolve_shape_name(shape_id, false)?);
+        Ok(TopLevelShape::with_traits(
+            shape_id.clone(),
+            ShapeKind::Structure(self.make_structure_inner(&shape_id, builder, references)?),
+            self.make_traits(&builder.applied_traits, references)?,
+        ))
+    }
+
+    fn make_union(
+        &self,
+        builder: &StructureBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
+        Ok(TopLevelShape::with_traits(
+            shape_id.clone(),
+            ShapeKind::Union(self.make_structure_inner(&shape_id, builder, references)?),
+            self.make_traits(&builder.applied_traits, references)?,
+        ))
+    }
+
+    fn make_service(
+        &self,
+        builder: &ServiceBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
+        let mut service = Service::new(&builder.version);
+        for member_shape_id in &builder.operations {
+            let (shape_id, new_reference) = self.resolve_shape_name(&member_shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            service.add_operation(shape_id);
+        }
+        for member_shape_id in &builder.resources {
+            let (shape_id, new_reference) = self.resolve_shape_name(&member_shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            service.add_resource(shape_id);
         }
         for (shape_id, local_name) in &builder.rename_shapes {
             let _ = service.insert_rename_shape(shape_id.clone(), local_name.clone());
         }
         Ok(TopLevelShape::with_traits(
-            shape_name,
+            shape_id,
             ShapeKind::Service(service),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
-    fn make_operation(&self, builder: &OperationBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
+    fn make_operation(
+        &self,
+        builder: &OperationBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
         let mut operation = Operation::default();
         if let Some(shape_id) = &builder.input {
-            operation.set_input(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            operation.set_input(shape_id);
         }
         if let Some(shape_id) = &builder.input {
-            operation.set_output(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            operation.set_output(shape_id);
         }
         for shape_id in &builder.errors {
-            operation.add_error(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            operation.add_error(shape_id);
         }
         Ok(TopLevelShape::with_traits(
-            shape_name,
+            shape_id,
             ShapeKind::Operation(operation),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
-    fn make_resource(&self, builder: &ResourceBuilder) -> Result<TopLevelShape, Error> {
-        let shape_name = self.resolve_shape_name(&builder.shape_name, false)?;
+    fn make_resource(
+        &self,
+        builder: &ResourceBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
+        let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_name, false)?;
+        if new_reference {
+            let _ = references.insert(shape_id.clone());
+        }
         let mut resource = Resource::default();
         for (name, shape_ref) in &builder.identifiers {
-            let shape = self.resolve_shape_name(&shape_ref, false)?;
-            let _ = resource.add_identifier(name.clone(), shape);
+            let (shape_id, new_reference) = self.resolve_shape_name(shape_ref, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            let _ = resource.add_identifier(name.clone(), shape_id);
         }
         if let Some(shape_id) = &builder.create {
-            resource.set_create(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.set_create(shape_id);
         }
         if let Some(shape_id) = &builder.put {
-            resource.set_put(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.set_put(shape_id);
         }
         if let Some(shape_id) = &builder.read {
-            resource.set_read(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.set_read(shape_id);
         }
         if let Some(shape_id) = &builder.update {
-            resource.set_update(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.set_update(shape_id);
         }
         if let Some(shape_id) = &builder.delete {
-            resource.set_delete(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.set_delete(shape_id);
         }
         if let Some(shape_id) = &builder.list {
-            resource.set_list(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.set_list(shape_id);
         }
         for shape_id in &builder.operations {
-            resource.add_operation(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.add_operation(shape_id);
         }
         for shape_id in &builder.collection_operations {
-            resource.add_collection_operation(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.add_collection_operation(shape_id);
         }
         for shape_id in &builder.resources {
-            resource.add_resource(self.resolve_shape_name(shape_id, false)?);
+            let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
+            if new_reference {
+                let _ = references.insert(shape_id.clone());
+            }
+            resource.add_resource(shape_id);
         }
         Ok(TopLevelShape::with_traits(
-            shape_name,
+            shape_id,
             ShapeKind::Resource(resource),
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
-    fn make_reference(&self, builder: &ReferenceBuilder) -> Result<TopLevelShape, Error> {
+    fn make_reference(
+        &self,
+        builder: &ReferenceBuilder,
+        references: &mut HashSet<ShapeID>,
+    ) -> Result<TopLevelShape, Error> {
         Ok(TopLevelShape::with_traits(
             builder.shape_id.as_qualified().unwrap().clone(),
             ShapeKind::Unresolved,
-            self.make_traits(&builder.applied_traits)?,
+            self.make_traits(&builder.applied_traits, references)?,
         ))
     }
 
     fn make_traits(
         &self,
         builders: &[TraitBuilder],
+        references: &mut HashSet<ShapeID>,
     ) -> Result<HashMap<ShapeID, Option<Value>>, Error> {
         let pairs: Result<Vec<(ShapeID, Option<Value>)>, Error> = builders
             .iter()
             .cloned()
             .map(|builder| {
-                Ok((
-                    self.resolve_shape_name(&builder.shape_id, true)?,
-                    builder.value,
-                ))
+                let (shape_id, new_reference) = self.resolve_shape_name(&builder.shape_id, true)?;
+                if new_reference {
+                    let _ = references.insert(shape_id.clone());
+                }
+                Ok((shape_id, builder.value))
             })
             .collect();
         match pairs {
@@ -668,6 +844,3 @@ pub use traits::TraitBuilder;
 
 #[doc(hidden)]
 pub mod values;
-use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
-use std::str::FromStr;
-pub use values::{ArrayBuilder, ObjectBuilder, ValueBuilder};

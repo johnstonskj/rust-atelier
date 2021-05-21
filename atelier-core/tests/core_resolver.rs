@@ -47,11 +47,10 @@ boolean MyBoolean
  */
 
 use atelier_core::builder::{ModelBuilder, SimpleShapeBuilder, StructureBuilder};
-use atelier_core::error::{Error, ErrorKind};
 use atelier_core::io::lines::make_line_oriented_form;
-use atelier_core::model::shapes::ShapeKind;
-use atelier_core::model::{HasIdentity, Model, ShapeID};
+use atelier_core::model::Model;
 use atelier_core::Version;
+use pretty_assertions::assert_eq;
 use std::convert::TryInto;
 
 const EXPECTED_LINES: &[&str] = &[
@@ -63,7 +62,9 @@ const EXPECTED_LINES: &[&str] = &[
     "structure::smithy.example#MyStructure::c=>foo.baz#Bar",
     "structure::smithy.example#MyStructure::d=>smithy.api#String",
     "structure::smithy.example#MyStructure::e=>smithy.example#MyBoolean",
+    "structure::smithy.example#MyStructure::f=>smithy.example#InvalidShape",
     "unresolved::foo.baz#Bar",
+    "unresolved::smithy.example#InvalidShape",
 ];
 
 #[test]
@@ -78,6 +79,7 @@ fn test_shapeid_resolution_valid() {
                 .member("c", "Bar")
                 .member("d", "String")
                 .member("e", "MyBoolean")
+                .member("f", "InvalidShape")
                 .into(),
         )
         .simple_shape(SimpleShapeBuilder::boolean("MyBoolean"))
@@ -90,29 +92,4 @@ fn test_shapeid_resolution_valid() {
     println!("{:#?}", lines);
 
     assert_eq!(lines, EXPECTED_LINES);
-}
-
-#[test]
-fn test_shapeid_resolution_invalid() {
-    let result: Result<Model, Error> = ModelBuilder::new(Version::V10, "smithy.example")
-        .uses("foo.baz#Bar")
-        .simple_shape(SimpleShapeBuilder::string("MyString"))
-        .structure(
-            StructureBuilder::new("MyStructure")
-                .member("a", "MyString")
-                .member("b", "smithy.example#MyString")
-                .member("c", "Bar")
-                .member("d", "String")
-                .member("e", "MyBoolean")
-                .member("f", "InvalidShape")
-                .into(),
-        )
-        .simple_shape(SimpleShapeBuilder::boolean("MyBoolean"))
-        .try_into();
-    let expected: Result<Model, Error> =
-        Err(ErrorKind::UnknownShape("InvalidShape".to_string()).into());
-    assert_eq!(
-        result.err().map(|e| e.to_string()),
-        expected.err().map(|e| e.to_string())
-    )
 }

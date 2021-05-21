@@ -97,6 +97,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.15**
+
+* Fixed resolver bug for the fall-through case and create an unresolved reference.
+
 **Version 0.2.14**
 
 * Reorganized errors, made the naming and messages consistent and removed unused.
