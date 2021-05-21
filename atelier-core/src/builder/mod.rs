@@ -243,7 +243,7 @@ impl ModelBuilder {
         );
         match shape_name {
             ShapeName::Qualified(qualified) => {
-                debug!("qualified ShapeID exists, use as is");
+                trace!("qualified ShapeID exists, use as is");
                 // If this is a ShapeID already, then just use it as-is.
                 if !qualified.is_member() {
                     Ok(qualified.clone())
@@ -253,7 +253,7 @@ impl ModelBuilder {
                 }
             }
             ShapeName::Local(local) => {
-                debug!("Local ShapeName: proceeding with resolution...");
+                trace!("Local ShapeName: proceeding with resolution...");
                 let references: Vec<&ShapeName> = self
                     .reference_names()
                     .filter(|shape_name| shape_name.shape_name() == local)
@@ -266,13 +266,13 @@ impl ModelBuilder {
                 match references.len() {
                     1 => {
                         // 1. a `use_statement` has imported a shape with the same name
-                        debug!("SUCCESS: a use statement imports this shape explicitly");
+                        trace!("SUCCESS: a use statement imports this shape explicitly");
                         Ok(references.first().unwrap().as_qualified().unwrap().clone())
                     }
                     0 => {
                         if self.shapes.contains_key(shape_name) {
                             // 2. a shape is defined in the same namespace as the shape with the same name
-                            debug!(
+                            trace!(
                                 "SUCCESS: shape found in same namespace as shape with same name"
                             );
                             Ok(self.default_namespace.make_shape(local.clone()))
@@ -281,7 +281,7 @@ impl ModelBuilder {
                             || (is_trait && defined_prelude_traits().contains(&*local.to_string()))
                         {
                             // 3. a shape is defined in the prelude with the same name
-                            debug!("SUCCESS: shape found in prelude with the same name");
+                            trace!("SUCCESS: shape found in prelude with the same name");
                             Ok(prelude_namespace_id().make_shape(local.clone()))
                         } else {
                             // 4. the shape ID is invalid
