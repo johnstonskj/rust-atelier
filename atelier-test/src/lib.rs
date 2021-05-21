@@ -77,7 +77,10 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
         .map(line_ending_fix)
         .collect();
 
-    let actual_lines = make_line_oriented_form(&model);
+    let actual_lines: Vec<String> = make_line_oriented_form(&model)
+        .iter()
+        .map(|s| line_ending_fix(s.as_str()))
+        .collect();
 
     assert_eq!(actual_lines, expected_lines);
 }
