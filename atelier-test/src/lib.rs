@@ -35,7 +35,6 @@ pub fn parse_and_compare_model(input_str: &str, reader: &mut impl ModelReader, e
     horizontal_line();
     match read_model_from_string(reader, input_str) {
         Ok(actual) => {
-            println!("actual:\n{:#?}", actual);
             horizontal_line();
             assert_eq!(actual, expected);
         }
@@ -58,11 +57,9 @@ pub fn parse_and_compare_to_files(
 }
 
 pub fn parse_and_compare_to_file(input_str: &str, reader: &mut impl ModelReader, file_path: &Path) {
-    println!("input to parse:\n{}", input_str);
     horizontal_line();
     match read_model_from_string(reader, input_str) {
         Ok(actual) => {
-            println!("actual:\n{:#?}", actual);
             horizontal_line();
             compare_model_to_file(actual, file_path);
         }
@@ -80,9 +77,10 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
     let actual_lines: Vec<String> = make_line_oriented_form(&model)
         .iter()
         .map(|s| {
-            if s.contains("\r\n") {
+            println!("*** {}", s);
+            if s.contains("\\r\\n") {
                 println!("*** FIXING WINDOWS LINE ENDINGS");
-                s.replace("\r\n", "😀")
+                s.replace("\\r\\n", "\\n")
             } else {
                 s.to_string()
             }
