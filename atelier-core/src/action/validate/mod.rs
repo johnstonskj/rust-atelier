@@ -81,14 +81,14 @@ impl Validator for CorrectTypeReferences {
                 ShapeKind::List(list_or_set) | ShapeKind::Set(list_or_set) => {
                     self.check_type_only(
                         &shape.id(),
-                        list_or_set.member().id(),
+                        list_or_set.member().target(),
                         model,
                         "List or Set member",
                     );
                 }
                 ShapeKind::Map(map) => {
-                    self.check_type_only(&shape.id(), map.key().id(), model, "Map key");
-                    self.check_type_only(&shape.id(), map.value().id(), model, "Map value");
+                    self.check_type_only(&shape.id(), map.key().target(), model, "Map key");
+                    self.check_type_only(&shape.id(), map.value().target(), model, "Map value");
                 }
                 ShapeKind::Structure(structured) | ShapeKind::Union(structured) => {
                     for member in structured.members() {
