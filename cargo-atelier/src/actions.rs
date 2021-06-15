@@ -1,5 +1,5 @@
 use crate::{
-    DocumentCommand, File as FileArg, FileCommand, FileFormat, Files as FilesArg, MultiFileCommand,
+    DocumentCommand, File as FileArg, FileFormat, Files as FilesArg, MultiFileCommand,
     TransformCommand,
 };
 use atelier_lib::actions::{standard_model_lint, standard_model_validation};
@@ -12,6 +12,7 @@ use atelier_lib::format::document::writer::describe_model;
 use atelier_lib::format::json::{JsonReader, JsonWriter};
 use atelier_lib::format::plant_uml::writer::PlantUmlWriter;
 use atelier_lib::format::smithy::{SmithyReader, SmithyWriter};
+//use somedoc::error::ErrorKind;
 use somedoc::write::{write_document, OutputFormat};
 use std::error::Error;
 use std::fs::File;
@@ -88,11 +89,13 @@ fn write_model(
 
     match output.format {
         FileFormat::Json => write_json(&mut file, model),
-        FileFormat::Smithy => write_smithy(
-            &mut file,
-            model,
-            NamespaceID::from_str(&namespace.unwrap()).unwrap(),
-        ),
+        FileFormat::Smithy => match namespace {
+            Some(namespace) => write_smithy(&mut file, model, NamespaceID::from_str(&namespace)?),
+            None => Err(Box::new(atelier_lib::core::action::ActionIssue::error(
+                "convert",
+                "conversion from json requires a namespace selector",
+            ))),
+        },
         FileFormat::Uml => write_uml(&mut file, model),
     }
 }
@@ -137,10 +140,6 @@ fn read_json(content: &String) -> Result<Model, ModelError> {
 fn read_strings(content: Vec<String>) -> Result<Model, ModelError> {
     let mut r = SmithyReader::default();
     r.merge(content)
-}
-
-fn read_smithy(content: &Vec<u8>) -> Result<Model, ModelError> {
-    read_model_from_string(&mut SmithyReader::default(), content)
 }
 
 fn write_json(w: &mut impl Write, model: Model) -> Result<(), Box<dyn Error>> {

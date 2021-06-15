@@ -1,6 +1,5 @@
 use crate::{
-    Command, DocumentCommand, File, FileCommand, FileFormat, Files, MultiFileCommand, Options,
-    TransformCommand,
+    Command, DocumentCommand, File, FileFormat, Files, MultiFileCommand, Options, TransformCommand,
 };
 use somedoc::write::OutputFormat;
 use std::error::Error;
