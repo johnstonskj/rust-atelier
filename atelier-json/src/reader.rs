@@ -148,7 +148,7 @@ impl JsonReader {
                 )))
             } else if s == SHAPE_STRUCTURE {
                 let members = if let Some(Value::Object(vs)) = outer.get(ADD_SHAPE_KEY_MEMBERS) {
-                    self.members(&id, vs)?
+                    self.members(vs)?
                 } else {
                     Default::default()
                 };
@@ -157,7 +157,7 @@ impl JsonReader {
                 )))
             } else if s == SHAPE_UNION {
                 let members = if let Some(Value::Object(vs)) = outer.get(ADD_SHAPE_KEY_MEMBERS) {
-                    self.members(&id, vs)?
+                    self.members(vs)?
                 } else {
                     Default::default()
                 };
@@ -241,11 +241,7 @@ impl JsonReader {
         Ok(traits)
     }
 
-    fn members(
-        &self,
-        parent_id: &ShapeID,
-        json: &Map<String, Value>,
-    ) -> ModelResult<Vec<MemberShape>> {
+    fn members(&self, json: &Map<String, Value>) -> ModelResult<Vec<MemberShape>> {
         let mut members: Vec<MemberShape> = Default::default();
         for (k, v) in json {
             if let Value::Object(obj) = v {
@@ -259,13 +255,7 @@ impl JsonReader {
                     )
                     .into());
                 };
-                // try to read id with namespace, fallback to member name only and add parent's namespace
-                let member_id = if let Ok(shape) = ShapeID::from_str(k) {
-                    shape
-                } else {
-                    parent_id.make_member(Identifier::from_str(k)?)
-                };
-                let mut member = MemberShape::new(member_id, target);
+                let mut member = MemberShape::new(ShapeID::from_str(k)?, target);
                 if let Some(Value::Object(traits)) = obj.get(ADD_SHAPE_KEY_TRAITS) {
                     member.append_traits(&self.traits(traits)?)?;
                 }
