@@ -1,4 +1,7 @@
-use crate::{Command, DocumentCommand, File, FileCommand, FileFormat, Options, TransformCommand};
+use crate::{
+    Command, DocumentCommand, File, FileCommand, FileFormat, Files, MultiFileCommand, Options,
+    TransformCommand,
+};
 use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -29,9 +32,9 @@ pub(crate) struct CommandLine {
 pub(crate) enum SubCommand {
     /// Run standard linter rules on a model file
     Lint {
-        /// The file to read [default: <stdin>]
+        /// The file(s) to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
+        in_files: Vec<PathBuf>,
 
         /// The representation of the input file
         #[structopt(short, long, default_value = "smithy")]
@@ -39,9 +42,9 @@ pub(crate) enum SubCommand {
     },
     /// Run standard validators on a model file
     Validate {
-        /// The file to read [default: <stdin>]
+        /// The file(s) to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
+        in_files: Vec<PathBuf>,
 
         /// The representation of the input file,
         #[structopt(short, long, default_value = "smithy")]
@@ -49,9 +52,9 @@ pub(crate) enum SubCommand {
     },
     /// Convert model from one representation to another
     Convert {
-        /// The file to read [default: <stdin>]
+        /// The file(s) to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
+        in_files: Vec<PathBuf>,
 
         /// The representation of the input file
         #[structopt(short, long, default_value = "smithy")]
@@ -71,9 +74,9 @@ pub(crate) enum SubCommand {
     },
     /// Create human-readable documentation from a model
     Document {
-        /// The file to read [default: <stdin>]
+        /// The file(s) to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
+        in_files: Vec<PathBuf>,
 
         /// The representation of the input file
         #[structopt(short, long, default_value = "smithy")]
@@ -105,39 +108,39 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
 
     match args.cmd {
         SubCommand::Lint {
-            in_file,
+            in_files,
             read_format,
         } => Ok(Command::Lint(
-            FileCommand {
-                input_file: File {
-                    file_name: in_file,
+            MultiFileCommand {
+                input_files: Files {
+                    file_names: in_files,
                     format: read_format,
                 },
             },
             options,
         )),
         SubCommand::Validate {
-            in_file,
+            in_files,
             read_format,
         } => Ok(Command::Validate(
-            FileCommand {
-                input_file: File {
-                    file_name: in_file,
+            MultiFileCommand {
+                input_files: Files {
+                    file_names: in_files,
                     format: read_format,
                 },
             },
             options,
         )),
         SubCommand::Convert {
-            in_file,
+            in_files,
             read_format,
             out_file,
             write_format,
             namespace,
         } => Ok(Command::Convert(
             TransformCommand {
-                input_file: File {
-                    file_name: in_file,
+                input_files: Files {
+                    file_names: in_files,
                     format: read_format,
                 },
                 output_file: File {
@@ -149,14 +152,14 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
             options,
         )),
         SubCommand::Document {
-            in_file,
+            in_files,
             read_format,
             out_file,
             write_format,
         } => Ok(Command::Document(
             DocumentCommand {
-                input_file: File {
-                    file_name: in_file,
+                input_files: Files {
+                    file_names: in_files,
                     format: read_format,
                 },
                 output_file: File {

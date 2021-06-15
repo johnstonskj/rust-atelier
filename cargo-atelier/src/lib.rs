@@ -15,8 +15,8 @@ pub struct Options {
 
 #[derive(Debug)]
 pub enum Command {
-    Lint(FileCommand, Options),
-    Validate(FileCommand, Options),
+    Lint(MultiFileCommand, Options),
+    Validate(MultiFileCommand, Options),
     Convert(TransformCommand, Options),
     Document(DocumentCommand, Options),
 }
@@ -35,20 +35,31 @@ pub struct File {
 }
 
 #[derive(Debug)]
+pub struct Files {
+    pub file_names: Vec<PathBuf>,
+    pub format: FileFormat,
+}
+
+#[derive(Debug)]
 pub struct FileCommand {
     pub input_file: File,
 }
 
 #[derive(Debug)]
+pub struct MultiFileCommand {
+    pub input_files: Files,
+}
+
+#[derive(Debug)]
 pub struct TransformCommand {
-    pub input_file: File,
+    pub input_files: Files,
     pub output_file: File,
     pub namespace: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct DocumentCommand {
-    pub input_file: File,
+    pub input_files: Files,
     pub output_file: File,
     pub output_format: OutputFormat,
 }

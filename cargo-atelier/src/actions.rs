@@ -1,4 +1,7 @@
-use crate::{DocumentCommand, File as FileArg, FileCommand, FileFormat, TransformCommand};
+use crate::{
+    DocumentCommand, File as FileArg, FileCommand, FileFormat, Files as FilesArg, MultiFileCommand,
+    TransformCommand,
+};
 use atelier_lib::actions::{standard_model_lint, standard_model_validation};
 use atelier_lib::core::action::ActionIssue;
 use atelier_lib::core::error::{Error as ModelError, ErrorKind, Result as ModelResult};
@@ -19,41 +22,58 @@ use std::str::FromStr;
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-pub fn lint_file(cmd: FileCommand) -> ModelResult<Vec<ActionIssue>> {
-    standard_model_lint(&read_model(cmd.input_file)?, false)
+pub fn lint_file(cmd: MultiFileCommand) -> ModelResult<Vec<ActionIssue>> {
+    standard_model_lint(&read_model(cmd.input_files)?, false)
 }
 
-pub fn validate_file(cmd: FileCommand) -> ModelResult<Vec<ActionIssue>> {
-    standard_model_validation(&read_model(cmd.input_file)?, false)
+pub fn validate_file(cmd: MultiFileCommand) -> ModelResult<Vec<ActionIssue>> {
+    standard_model_validation(&read_model(cmd.input_files)?, false)
 }
 
 pub fn convert_file_format(cmd: TransformCommand) -> Result<(), Box<dyn Error>> {
-    transform_file(cmd.input_file, cmd.output_file, cmd.namespace, None)
+    transform_file(cmd.input_files, cmd.output_file, cmd.namespace, None)
 }
 
 pub fn document_file(cmd: DocumentCommand) -> Result<(), Box<dyn Error>> {
-    document_a_file(cmd.input_file, cmd.output_file, cmd.output_format)
+    document_a_file(cmd.input_files, cmd.output_file, cmd.output_format)
 }
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
-fn read_model(input: FileArg) -> ModelResult<Model> {
-    let reader = match input.format {
-        FileFormat::Json => read_json,
-        FileFormat::Smithy => read_smithy,
+fn read_model(input: FilesArg) -> ModelResult<Model> {
+    let is_multi = input.file_names.len() > 1;
+    // validate input parameters
+    match (&input.format, is_multi) {
+        (FileFormat::Smithy, _) | (FileFormat::Json, false) => {}
+        (FileFormat::Json, true) => {
+            return Err(ErrorKind::InvalidRepresentation(
+                "json input format accepts no more than one input file".to_string(),
+            )
+            .into());
+        }
         _ => {
             return Err(ErrorKind::InvalidRepresentation("read".to_string()).into());
         }
     };
-    let mut file: Box<dyn Read> = match input.file_name {
-        None => Box::new(std::io::stdin()),
-        Some(file_name) => Box::new(File::open(file_name)?),
+    let content = if input.file_names.is_empty() {
+        let mut content: String = String::default();
+        let _ = std::io::stdin().read_to_string(&mut content)?;
+        vec![content]
+    } else {
+        let mut files_data = Vec::new();
+        for path in input.file_names.iter() {
+            //let c = std::fs::read_to_string(path);
+            files_data.push(std::fs::read_to_string(path)?);
+        }
+        files_data
     };
-    let mut content: Vec<u8> = Vec::default();
-    let _ = file.read_to_end(&mut content).unwrap();
-    reader(content)
+    match &input.format {
+        FileFormat::Smithy => read_strings(content),
+        FileFormat::Json => read_json(content.get(0).unwrap()),
+        _ => Err(ErrorKind::InvalidRepresentation("read".to_string()).into()),
+    }
 }
 
 fn write_model(
@@ -78,7 +98,7 @@ fn write_model(
 }
 
 fn transform_file(
-    input: FileArg,
+    input: FilesArg,
     output: FileArg,
     namespace: Option<String>,
     transform_fn: Option<&dyn Fn(Model) -> Result<Model, Box<dyn Error>>>,
@@ -95,7 +115,7 @@ fn transform_file(
 }
 
 fn document_a_file(
-    input: FileArg,
+    input: FilesArg,
     output: FileArg,
     format: OutputFormat,
 ) -> Result<(), Box<dyn Error>> {
@@ -110,11 +130,16 @@ fn document_a_file(
     Ok(())
 }
 
-fn read_json(content: Vec<u8>) -> Result<Model, ModelError> {
+fn read_json(content: &String) -> Result<Model, ModelError> {
     read_model_from_string(&mut JsonReader::default(), content)
 }
 
-fn read_smithy(content: Vec<u8>) -> Result<Model, ModelError> {
+fn read_strings(content: Vec<String>) -> Result<Model, ModelError> {
+    let mut r = SmithyReader::default();
+    r.merge(content)
+}
+
+fn read_smithy(content: &Vec<u8>) -> Result<Model, ModelError> {
     read_model_from_string(&mut SmithyReader::default(), content)
 }
 
