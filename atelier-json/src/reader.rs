@@ -259,8 +259,13 @@ impl JsonReader {
                     )
                     .into());
                 };
-                let mut member =
-                    MemberShape::new(parent_id.make_member(Identifier::from_str(k)?), target);
+                // try to read id with namespace, fallback to member name only and add parent's namespace
+                let member_id = if let Ok(shape) = ShapeID::from_str(k) {
+                    shape
+                } else {
+                    parent_id.make_member(Identifier::from_str(k)?)
+                };
+                let mut member = MemberShape::new(member_id, target);
                 if let Some(Value::Object(traits)) = obj.get(ADD_SHAPE_KEY_TRAITS) {
                     member.append_traits(&self.traits(traits)?)?;
                 }
