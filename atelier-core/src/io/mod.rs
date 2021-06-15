@@ -65,6 +65,16 @@ pub trait ModelReader {
     fn read(&mut self, r: &mut impl std::io::Read) -> ModelResult<Model>;
 }
 
+///
+/// Trait implemented to build a model from multiple input sources
+///
+pub trait ModelBuilder {
+    ///
+    /// Build model from multiple input sources.
+    ///
+    fn merge<S: AsRef<str>>(&mut self, models: Vec<S>) -> ModelResult<Model>;
+}
+
 // ------------------------------------------------------------------------------------------------
 // Public Functions
 // ------------------------------------------------------------------------------------------------
@@ -89,6 +99,20 @@ where
 pub fn read_model_from_file(r: &mut impl ModelReader, path: PathBuf) -> ModelResult<Model> {
     let mut file = File::open(path)?;
     r.read(&mut file)
+}
+
+///
+/// Build a model from multiple input files
+///
+pub fn build_model_from_files(
+    b: &mut impl ModelBuilder,
+    paths: Vec<PathBuf>,
+) -> ModelResult<Model> {
+    let mut models = Vec::new();
+    for path in paths.iter() {
+        models.push(std::fs::read_to_string(path)?);
+    }
+    b.merge(models)
 }
 
 ///
