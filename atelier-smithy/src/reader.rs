@@ -31,3 +31,15 @@ impl ModelReader for SmithyReader {
         parser::parse_model(&content)
     }
 }
+
+impl SmithyReader {
+    /// Merge multiple model files to create a single model
+    pub fn merge<S: AsRef<str>>(&mut self, model_files: Vec<S>) -> Result<Model> {
+        let mut model = Model::default();
+        for partial in model_files.iter() {
+            let m = parser::parse_model(partial.as_ref())?;
+            model.merge(m)?;
+        }
+        Ok(model)
+    }
+}
