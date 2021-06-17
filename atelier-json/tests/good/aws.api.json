@@ -4,19 +4,19 @@
         "aws.api#arn": {
             "type": "structure",
             "members": {
-                "template": {
+                "aws.api#template": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#required": {}
                     }
                 },
-                "absolute": {
+                "aws.api#absolute": {
                     "target": "smithy.api#Boolean"
                 },
-                "noRegion": {
+                "aws.api#noRegion": {
                     "target": "smithy.api#Boolean"
                 },
-                "noAccount": {
+                "aws.api#noAccount": {
                     "target": "smithy.api#Boolean"
                 }
             },
@@ -33,19 +33,19 @@
         "aws.api#service": {
             "type": "structure",
             "members": {
-                "sdkId": {
+                "aws.api#sdkId": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#required": {}
                     }
                 },
-                "arnNamespace": {
+                "aws.api#arnNamespace": {
                     "target": "aws.api#ArnNamespace"
                 },
-                "cloudFormationName": {
+                "aws.api#cloudFormationName": {
                     "target": "aws.api#CloudFormationName"
                 },
-                "cloudTrailEventSource": {
+                "aws.api#cloudTrailEventSource": {
                     "target": "smithy.api#String"
                 }
             },
@@ -58,13 +58,13 @@
         "aws.api#arnReference": {
             "type": "structure",
             "members": {
-                "type": {
+                "aws.api#type": {
                     "target": "smithy.api#String"
                 },
-                "resource": {
+                "aws.api#resource": {
                     "target": "smithy.api#String"
                 },
-                "service": {
+                "aws.api#service": {
                     "target": "smithy.api#String"
                 }
             },
@@ -152,7 +152,7 @@
         "aws.api#clientDiscoveredEndpoint": {
             "type": "structure",
             "members": {
-                "required": {
+                "aws.api#required": {
                     "target": "smithy.api#Boolean",
                     "traits": {
                         "smithy.api#required": {}
@@ -178,7 +178,7 @@
         "aws.api#clientEndpointDiscovery": {
             "type": "structure",
             "members": {
-                "operation": {
+                "aws.api#operation": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#idRef": {
@@ -189,7 +189,7 @@
                         "smithy.api#documentation": "Indicates the operation that clients should use to discover endpoints for the service."
                     }
                 },
-                "error": {
+                "aws.api#error": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#idRef": {
