@@ -4,10 +4,10 @@
         "aws.protocols#restJson1": {
             "type": "structure",
             "members": {
-                "http": {
+                "aws.protocols#http": {
                     "target": "aws.protocols#StringList"
                 },
-                "eventStreamHttp": {
+                "aws.protocols#eventStreamHttp": {
                     "target": "aws.protocols#StringList"
                 }
             },
@@ -37,13 +37,13 @@
         "aws.protocols#restXml": {
             "type": "structure",
             "members": {
-                "http": {
+                "aws.protocols#http": {
                     "target": "aws.protocols#StringList"
                 },
-                "eventStreamHttp": {
+                "aws.protocols#eventStreamHttp": {
                     "target": "aws.protocols#StringList"
                 },
-                "noErrorWrapping": {
+                "aws.protocols#noErrorWrapping": {
                     "target": "smithy.api#Boolean",
                     "traits": {
                         "smithy.api#documentation": "Disables the serialization wrapping of error properties in an 'Error' XML element.",
@@ -77,10 +77,10 @@
         "aws.protocols#awsJson1_0": {
             "type": "structure",
             "members": {
-                "http": {
+                "aws.protocols#http": {
                     "target": "aws.protocols#StringList"
                 },
-                "eventStreamHttp": {
+                "aws.protocols#eventStreamHttp": {
                     "target": "aws.protocols#StringList"
                 }
             },
@@ -99,10 +99,10 @@
         "aws.protocols#awsJson1_1": {
             "type": "structure",
             "members": {
-                "http": {
+                "aws.protocols#http": {
                     "target": "aws.protocols#StringList"
                 },
-                "eventStreamHttp": {
+                "aws.protocols#eventStreamHttp": {
                     "target": "aws.protocols#StringList"
                 }
             },

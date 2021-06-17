@@ -4,7 +4,7 @@
         "aws.auth#sigv4": {
             "type": "structure",
             "members": {
-                "name": {
+                "aws.auth#name": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#required": {},
@@ -42,7 +42,7 @@
         "aws.auth#cognitoUserPools": {
             "type": "structure",
             "members": {
-                "providerArns": {
+                "aws.auth#providerArns": {
                     "target": "aws.auth#StringList",
                     "traits": {
                         "smithy.api#required": {},

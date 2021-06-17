@@ -37,7 +37,7 @@
         "aws.apigateway#AuthorizerDefinition": {
             "type": "structure",
             "members": {
-                "scheme": {
+                "aws.apigateway#scheme": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#required": {},
@@ -49,43 +49,43 @@
                         }
                     }
                 },
-                "type": {
+                "aws.apigateway#type": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#documentation": "The type of the authorizer. If specifying information beyond the scheme, this value is required. The value must be \"token\", for an authorizer with the caller identity embedded in an authorization token, or \"request\", for an authorizer with the caller identity contained in request parameters."
                     }
                 },
-                "customAuthType": {
+                "aws.apigateway#customAuthType": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#documentation": "This value is not used directly by API Gateway but will be used for OpenAPI exports. This will default to \"awsSigV4\" if your scheme is \"aws.v4\", or \"custom\" otherwise."
                     }
                 },
-                "uri": {
+                "aws.apigateway#uri": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#documentation": "The Uniform Resource Identifier (URI) of the authorizer Lambda function"
                     }
                 },
-                "credentials": {
+                "aws.apigateway#credentials": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#documentation": "Credentials required for invoking the authorizer"
                     }
                 },
-                "identitySource": {
+                "aws.apigateway#identitySource": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#documentation": "Comma-separated list of mapping expressions of the request parameters as the identity source. Applicable for the authorizer of the \"request\" type only."
                     }
                 },
-                "identityValidationExpression": {
+                "aws.apigateway#identityValidationExpression": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#documentation": "A regular expression for validating the token as the incoming identity"
                     }
                 },
-                "resultTtlInSeconds": {
+                "aws.apigateway#resultTtlInSeconds": {
                     "target": "smithy.api#Integer",
                     "traits": {
                         "smithy.api#documentation": "The number of seconds for which the resulting IAM policy is cached."
@@ -124,55 +124,55 @@
         "aws.apigateway#integration": {
             "type": "structure",
             "members": {
-                "type": {
+                "aws.apigateway#type": {
                     "target": "aws.apigateway#IntegrationType",
                     "traits": {
                         "smithy.api#required": {}
                     }
                 },
-                "uri": {
+                "aws.apigateway#uri": {
                     "target": "aws.apigateway#Arn",
                     "traits": {
                         "smithy.api#required": {}
                     }
                 },
-                "credentials": {
+                "aws.apigateway#credentials": {
                     "target": "aws.apigateway#IamRoleArn"
                 },
-                "httpMethod": {
+                "aws.apigateway#httpMethod": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#required": {}
                     }
                 },
-                "passThroughBehavior": {
+                "aws.apigateway#passThroughBehavior": {
                     "target": "aws.apigateway#PassThroughBehavior"
                 },
-                "contentHandling": {
+                "aws.apigateway#contentHandling": {
                     "target": "aws.apigateway#ContentHandling"
                 },
-                "timeoutInMillis": {
+                "aws.apigateway#timeoutInMillis": {
                     "target": "smithy.api#Integer"
                 },
-                "connectionId": {
+                "aws.apigateway#connectionId": {
                     "target": "smithy.api#String"
                 },
-                "connectionType": {
+                "aws.apigateway#connectionType": {
                     "target": "aws.apigateway#ConnectionType"
                 },
-                "cacheNamespace": {
+                "aws.apigateway#cacheNamespace": {
                     "target": "smithy.api#String"
                 },
-                "cacheKeyParameters": {
+                "aws.apigateway#cacheKeyParameters": {
                     "target": "aws.apigateway#StringList"
                 },
-                "requestParameters": {
+                "aws.apigateway#requestParameters": {
                     "target": "aws.apigateway#RequestParameters"
                 },
-                "requestTemplates": {
+                "aws.apigateway#requestTemplates": {
                     "target": "aws.apigateway#Templates"
                 },
-                "responses": {
+                "aws.apigateway#responses": {
                     "target": "aws.apigateway#IntegrationResponses"
                 }
             },
@@ -192,16 +192,16 @@
         "aws.apigateway#mockIntegration": {
             "type": "structure",
             "members": {
-                "passThroughBehavior": {
+                "aws.apigateway#passThroughBehavior": {
                     "target": "aws.apigateway#PassThroughBehavior"
                 },
-                "requestParameters": {
+                "aws.apigateway#requestParameters": {
                     "target": "aws.apigateway#RequestParameters"
                 },
-                "requestTemplates": {
+                "aws.apigateway#requestTemplates": {
                     "target": "aws.apigateway#Templates"
                 },
-                "responses": {
+                "aws.apigateway#responses": {
                     "target": "aws.apigateway#IntegrationResponses"
                 }
             },
@@ -349,16 +349,16 @@
         "aws.apigateway#IntegrationResponse": {
             "type": "structure",
             "members": {
-                "statusCode": {
+                "aws.apigateway#statusCode": {
                     "target": "smithy.api#String"
                 },
-                "contentHandling": {
+                "aws.apigateway#contentHandling": {
                     "target": "aws.apigateway#ContentHandling"
                 },
-                "responseTemplates": {
+                "aws.apigateway#responseTemplates": {
                     "target": "aws.apigateway#Templates"
                 },
-                "responseParameters": {
+                "aws.apigateway#responseParameters": {
                     "target": "aws.apigateway#ResponseParameters"
                 }
             },
