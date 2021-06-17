@@ -453,13 +453,13 @@ mod tests {
         "smithy.example#MyStructure": {
             "type": "structure",
             "members": {
-                "stringMember": {
+                "smithy.example#stringMember": {
                     "target": "smithy.api#String",
                     "traits": {
                         "smithy.api#required": {}
                     }
                 },
-                "numberMember": {
+                "smithy.example#numberMember": {
                     "target": "smithy.api#Integer"
                 }
             }
