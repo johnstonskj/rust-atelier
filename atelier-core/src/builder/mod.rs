@@ -576,7 +576,7 @@ impl ModelBuilder {
             }
             operation.set_input(shape_id);
         }
-        if let Some(shape_id) = &builder.input {
+        if let Some(shape_id) = &builder.output {
             let (shape_id, new_reference) = self.resolve_shape_name(&shape_id, false)?;
             if new_reference {
                 let _ = references.insert(shape_id.clone());

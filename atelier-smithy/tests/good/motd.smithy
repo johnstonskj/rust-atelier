@@ -5,7 +5,7 @@ namespace example.motd
 @readonly
 operation GetMessage {
    input: GetMessageInput
-   output: GetMessageInput
+   output: GetMessageOutput
    errors: [
       BadDateValue
    ]
