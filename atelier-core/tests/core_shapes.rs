@@ -1,9 +1,6 @@
 use atelier_core::{
     action::validate::{run_validation_actions, CorrectTypeReferences},
-    builder::{
-        ModelBuilder, OperationBuilder, ShapeTraits, SimpleShapeBuilder, StructureBuilder,
-        TraitBuilder,
-    },
+    builder::{ModelBuilder, OperationBuilder},
     model::{shapes::ShapeKind, Model, ShapeID},
     Version,
 };
