@@ -116,6 +116,6 @@ pub use reader::JsonReader;
 
 #[doc(hidden)]
 pub mod writer;
-pub use writer::JsonWriter;
+pub use writer::{json_ast_model, JsonWriter};
 
 mod syntax;

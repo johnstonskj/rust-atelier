@@ -30,6 +30,25 @@ pub struct JsonWriter {
 }
 
 // ------------------------------------------------------------------------------------------------
+// Public functions
+// ------------------------------------------------------------------------------------------------
+
+/// Build semantic model in Json from in-memory model
+pub fn json_ast_model(model: &Model) -> Value {
+    JsonAstBuilder::default().build(model)
+}
+
+// ------------------------------------------------------------------------------------------------
+// Private Types
+// ------------------------------------------------------------------------------------------------
+
+///
+/// Generate Json-AST from a Model
+///
+#[derive(Default)]
+struct JsonAstBuilder {}
+
+// ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
 
@@ -43,6 +62,27 @@ impl Default for JsonWriter {
 
 impl ModelWriter for JsonWriter {
     fn write(&mut self, w: &mut impl Write, model: &Model) -> ModelResult<()> {
+        let value = json_ast_model(model);
+
+        if self.pretty_print {
+            to_writer_pretty(w, &value)
+                .chain_err(|| ErrorKind::Serialization(FILE_EXTENSION.to_string()).to_string())
+        } else {
+            to_writer(w, &value)
+                .chain_err(|| ErrorKind::Serialization(FILE_EXTENSION.to_string()).to_string())
+        }
+    }
+}
+
+impl<'a> JsonWriter {
+    pub fn new(pretty_print: bool) -> Self {
+        Self { pretty_print }
+    }
+}
+
+impl JsonAstBuilder {
+    /// Build JSON AST from model
+    fn build(&self, model: &Model) -> Value {
         let mut top: Map<String, Value> = Default::default();
 
         let _ = top.insert(
@@ -52,19 +92,7 @@ impl ModelWriter for JsonWriter {
 
         let _ = top.insert(MODEL_SHAPES.to_string(), self.shapes(model));
 
-        if self.pretty_print {
-            to_writer_pretty(w, &Value::Object(top))
-                .chain_err(|| ErrorKind::Serialization(FILE_EXTENSION.to_string()).to_string())
-        } else {
-            to_writer(w, &Value::Object(top))
-                .chain_err(|| ErrorKind::Serialization(FILE_EXTENSION.to_string()).to_string())
-        }
-    }
-}
-
-impl<'a> JsonWriter {
-    pub fn new(pretty_print: bool) -> Self {
-        Self { pretty_print }
+        Value::Object(top)
     }
 
     fn shapes(&self, model: &Model) -> Value {
@@ -268,7 +296,7 @@ impl<'a> JsonWriter {
         Value::Object(trait_map)
     }
 
-    fn members(&self, members: impl Iterator<Item = &'a MemberShape>) -> Value {
+    fn members<'a>(&self, members: impl Iterator<Item = &'a MemberShape>) -> Value {
         let mut members_map: Map<String, Value> = Default::default();
         for member in members {
             let mut member_map: Map<String, Value> = Default::default();
@@ -307,7 +335,7 @@ impl<'a> JsonWriter {
         }
     }
 
-    fn reference(&self, id: &'a ShapeID) -> Value {
+    fn reference(&self, id: &'_ ShapeID) -> Value {
         let mut shape_map: Map<String, Value> = Default::default();
         let _ = shape_map.insert(
             ADD_SHAPE_KEY_TARGET.to_string(),
@@ -315,4 +343,43 @@ impl<'a> JsonWriter {
         );
         Value::Object(shape_map)
     }
+}
+
+/// Test case to verify json_ast_model api
+#[test]
+fn build_ast() {
+    use atelier_core::io::ModelReader;
+    use atelier_core::{
+        builder::{ModelBuilder, ResourceBuilder, ServiceBuilder, SimpleShapeBuilder},
+        model::{shapes::Simple, Model},
+        Version,
+    };
+    use std::convert::TryFrom;
+    use std::convert::TryInto;
+    use std::io::prelude::*;
+
+    /// parse json text to model, then convert to json ast model
+    let mut reader = crate::JsonReader::default();
+    let mut text = r#"{
+        "smithy": "1.0",
+        "shapes": {
+            "smithy.example#WaiterDelay": {
+                "type": "integer"
+            }
+        }
+    }"#
+    .as_bytes();
+    let model = reader.read(&mut text).unwrap();
+    let value = crate::json_ast_model(&model);
+
+    /// compare with serde json expected value
+    let expected = serde_json::json!({
+        "smithy": "1.0",
+        "shapes": {
+            "smithy.example#WaiterDelay": {
+                "type": "integer"
+            }
+        }
+    });
+    assert_eq!(&value, &expected);
 }
