@@ -40,6 +40,10 @@ writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.10**
+
+* Updated to RDFtk core v0.3, this is a major breaking change.
+
 **Version 0.1.9**
 
 * Updated shared atelier-test crate.

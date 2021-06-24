@@ -55,6 +55,7 @@ pub const REPRESENTATION_NAME: &str = "RDF";
 
 pub mod urn;
 
+#[doc(hidden)]
 pub mod reader;
 
 pub mod writer;
