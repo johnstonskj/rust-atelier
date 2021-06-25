@@ -30,6 +30,10 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 
 ## Changes
 
+**Version 0.1.3**
+
+* Added validation for swaits' resolver test.
+
 **Version 0.1.2**
 
 * Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace 

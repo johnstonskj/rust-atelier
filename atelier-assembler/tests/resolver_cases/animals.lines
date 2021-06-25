@@ -1,0 +1,49 @@
+string::earth.kingdom.animals#Class
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[0]={name}="Agnatha"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[0]={value}="Agnatha"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[1]={name}="Chrondrichtyes"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[1]={value}="Chrondrichtyes"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[2]={name}="Osteichthyes"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[2]={value}="Osteichthyes"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[3]={name}="Amphibia"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[3]={value}="Amphibia"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[4]={name}="Reptilia"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[4]={value}="Reptilia"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[5]={name}="Aves"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[5]={value}="Aves"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[6]={name}="Mammalia"
+string::earth.kingdom.animals#Class::trait::smithy.api#enum<=[6]={value}="Mammalia"
+string::earth.kingdom.animals.mammals.dogs#Breed
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[0]={name}="Irish Setter"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[0]={value}="IrishSetter"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[1]={name}="Great Dane"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[1]={value}="GreatDane"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[2]={name}="Vizsla"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[2]={value}="Vizsla"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[3]={name}="Poodle"
+string::earth.kingdom.animals.mammals.dogs#Breed::trait::smithy.api#enum<=[3]={value}="Poodle"
+string::earth.kingdom.animals.mammals.dogs#Color
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[0]={name}="Red"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[0]={value}="Red"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[1]={name}="Orange"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[1]={value}="Orange"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[2]={name}="Yellow"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[2]={value}="Yellow"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[3]={name}="Green"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[3]={value}="Green"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[4]={name}="Blue"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[4]={value}="Blue"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[5]={name}="Indigo"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[5]={value}="Indigo"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[6]={name}="Violet"
+string::earth.kingdom.animals.mammals.dogs#Color::trait::smithy.api#enum<=[6]={value}="Violet"
+structure::earth.kingdom.animals.mammals.dogs#Dog
+structure::earth.kingdom.animals.mammals.dogs#Dog::breed::trait::smithy.api#documentation<="the breed of this dog (from earth.kingdom.animals.mammals.dogs#Breed)"
+structure::earth.kingdom.animals.mammals.dogs#Dog::breed::trait::smithy.api#required<={}
+structure::earth.kingdom.animals.mammals.dogs#Dog::breed=>earth.kingdom.animals.mammals.dogs#Breed
+structure::earth.kingdom.animals.mammals.dogs#Dog::class::trait::smithy.api#documentation<="animal classification (from earth.kingdom.animals#Class)"
+structure::earth.kingdom.animals.mammals.dogs#Dog::class::trait::smithy.api#required<={}
+structure::earth.kingdom.animals.mammals.dogs#Dog::class=>earth.kingdom.animals#Class
+structure::earth.kingdom.animals.mammals.dogs#Dog::color::trait::smithy.api#documentation<="the color of this dog (from earth.kingdom.animals.mammals.dogs#Color)"
+structure::earth.kingdom.animals.mammals.dogs#Dog::color::trait::smithy.api#required<={}
+structure::earth.kingdom.animals.mammals.dogs#Dog::color=>earth.kingdom.animals.mammals.dogs#Color
