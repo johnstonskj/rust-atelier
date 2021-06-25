@@ -21,7 +21,7 @@ atelier_core = { version = "~0.2", path = "../atelier-core" }
 atelier_json = { version = "~0.2", path = "../atelier-json" }
 atelier_smithy = { version = "~0.2", path = "../atelier-smithy" }
 atelier_test = { version = "~0.1", path = "../atelier-test" }
-log = "0.4.14"
+log = "0.4"
 
 [dev-dependencies]
-pretty_env_logger = "0.4.0"
+pretty_env_logger = "0.4"
