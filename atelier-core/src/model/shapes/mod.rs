@@ -233,9 +233,6 @@ pub trait Shape: NonTraitEq + HasIdentity + HasTraits {
     fn is_prelude_shape(&self) -> bool {
         self.id().namespace().to_string() == *PRELUDE_NAMESPACE
     }
-
-    /// Is this instance a member (or top-level) shape?
-    fn is_member(&self) -> bool;
 }
 
 ///
@@ -406,12 +403,6 @@ impl HasIdentity for TopLevelShape {
 }
 
 has_traits_impl! { TopLevelShape . traits }
-
-impl Shape for TopLevelShape {
-    fn is_member(&self) -> bool {
-        false
-    }
-}
 
 lazy_static! {
     static ref MEMBER_MEMBER: Identifier = Identifier::from_str("member").unwrap();

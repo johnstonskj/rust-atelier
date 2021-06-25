@@ -283,10 +283,7 @@ fn from_traits(traits: &AppliedTraits) -> Value {
 fn from_members<'a>(members: impl Iterator<Item = &'a MemberShape>) -> Value {
     let mut members_map: Map<String, Value> = Default::default();
     for member in members {
-        let _ = members_map.insert(
-            member.id().member_name().as_ref().unwrap().to_string(),
-            from_member(member),
-        );
+        let _ = members_map.insert(member.id().to_string(), from_member(member));
     }
     Value::Object(members_map)
 }

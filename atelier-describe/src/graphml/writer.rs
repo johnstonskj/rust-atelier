@@ -114,7 +114,6 @@ use atelier_core::model::shapes::{
     AppliedTraits, ListOrSet, Map, Operation, Resource, Service, Simple, StructureOrUnion,
 };
 use atelier_core::model::visitor::{walk_model_mut, MutableModelVisitor};
-use atelier_core::model::HasIdentity;
 use atelier_core::model::{Model, ShapeID};
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_INPUT,
@@ -298,11 +297,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
         self.node(id, SHAPE_STRUCTURE)?;
         self.traits(id, traits)?;
         for member in value.members() {
-            self.member(
-                id,
-                member.target(),
-                &member.id().member_name().as_ref().unwrap().to_string(),
-            )?;
+            self.member(id, member.target(), &member.id().to_string())?;
         }
         Ok(())
     }
@@ -316,11 +311,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
         self.node(id, SHAPE_UNION)?;
         self.traits(id, traits)?;
         for member in value.members() {
-            self.member(
-                id,
-                member.target(),
-                &member.id().member_name().as_ref().unwrap().to_string(),
-            )?;
+            self.member(id, member.target(), &member.id().to_string())?;
         }
         Ok(())
     }

@@ -61,7 +61,7 @@ use atelier_core::model::shapes::{
 };
 use atelier_core::model::values::{Number, Value};
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
-use atelier_core::model::{HasIdentity, Model, ShapeID};
+use atelier_core::model::{Model, ShapeID};
 use rdftk_core::model::graph::{Graph, GraphFactoryRef, GraphRef};
 use rdftk_core::model::statement::SubjectNodeRef;
 use rdftk_core::simple::graph_factory;
@@ -691,10 +691,7 @@ fn from_member(
             .statement(
                 trait_node.clone(),
                 vocabulary::name().clone(),
-                statement_factory.literal_object(
-                    literal_factory
-                        .literal(&member.id().member_name().as_ref().unwrap().to_string()),
-                ),
+                statement_factory.literal_object(literal_factory.literal(&member.id().to_string())),
             )
             .unwrap(),
     );

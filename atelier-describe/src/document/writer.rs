@@ -358,7 +358,7 @@ fn describe_structure_or_union(shape_id: &ShapeID, shape: &StructureOrUnion, doc
         let mut indent = Quote::default();
         for member in shape.members() {
             let _ = indent.add_paragraph(Paragraph::from(vec![
-                Span::code_str(&member.id().member_name().as_ref().unwrap().to_string()).into(),
+                Span::code_str(&member.id().to_string()).into(),
                 Span::plain_str(": ").into(),
                 shape_link(shape_id, member.target()),
             ]));

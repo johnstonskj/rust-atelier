@@ -97,7 +97,12 @@ $ cargo run --example motd_builder
 
 ## Changes
 
-**Version 0.2.17**
+**Version 0.2.19**
+
+* Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the
+  JSON AST usage. 
+
+**Version 0.2.18**
 
 * Fixed escaping bug for line writer that made cross-platform comparison a pain.
 

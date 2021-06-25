@@ -43,6 +43,11 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.12**
+
+* Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the
+  JSON AST usage.
+
 **Version 0.2.11**
 
 * Fixed escaping bug for line writer that made cross-platform comparison a pain.

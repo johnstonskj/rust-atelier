@@ -48,7 +48,7 @@ pub struct RdfReader {}
 ///
 /// Convert an RDF graph into a Smithy semantic model.
 ///
-pub fn rdf_to_model<'a>(graph: &GraphRef, model_iri: Option<IRIRef>) -> ModelResult<Model> {
+pub fn rdf_to_model(graph: &GraphRef, model_iri: Option<IRIRef>) -> ModelResult<Model> {
     let model_subject = rdf_model_subject(graph, model_iri)?;
 
     let version_string = rdf_literal_string(
@@ -62,7 +62,7 @@ pub fn rdf_to_model<'a>(graph: &GraphRef, model_iri: Option<IRIRef>) -> ModelRes
 
     for shape in graph.borrow().objects_for(&model_subject, smithy::shape()) {
         let top_level_shape = rdf_to_shape(graph, shape)?;
-        model.add_shape(top_level_shape);
+        let _ = model.add_shape(top_level_shape);
     }
     Ok(model)
 }
@@ -81,7 +81,7 @@ impl ModelReader for RdfReader {
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
-fn rdf_literal_string<'a>(
+fn rdf_literal_string(
     graph: &GraphRef,
     subject: &SubjectNodeRef,
     predicate: &IRIRef,
@@ -119,10 +119,7 @@ fn rdf_literal_string<'a>(
     }
 }
 
-fn rdf_model_subject<'a>(
-    graph: &GraphRef,
-    model_iri: Option<IRIRef>,
-) -> ModelResult<SubjectNodeRef> {
+fn rdf_model_subject(graph: &GraphRef, model_iri: Option<IRIRef>) -> ModelResult<SubjectNodeRef> {
     let ref_graph = graph.borrow();
     let model_object = ref_graph
         .statement_factory()
@@ -159,9 +156,9 @@ fn rdf_model_subject<'a>(
     }
 }
 
-fn rdf_to_shape<'a>(
-    graph: &GraphRef,
-    subject_as_object: &ObjectNodeRef,
+fn rdf_to_shape(
+    _graph: &GraphRef,
+    _subject_as_object: &ObjectNodeRef,
 ) -> ModelResult<TopLevelShape> {
     // if let Some(iri) = subject_as_object.as_iri() && is_shape_iri(iri) {
     //     // Find type

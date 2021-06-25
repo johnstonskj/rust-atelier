@@ -8,8 +8,9 @@ in an action.
 use crate::action::{Action, ActionIssue, IssueLevel, Validator};
 use crate::error::Result as ModelResult;
 use crate::model::shapes::{HasTraits, ShapeKind};
-use crate::model::{HasIdentity, Model, ShapeID};
+use crate::model::{HasIdentity, Identifier, Model, ShapeID};
 use crate::prelude::PRELUDE_NAMESPACE;
+use crate::syntax::{MEMBER_ERRORS, MEMBER_INPUT, MEMBER_OUTPUT};
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
@@ -81,23 +82,23 @@ impl Validator for CorrectTypeReferences {
                 ShapeKind::List(list_or_set) | ShapeKind::Set(list_or_set) => {
                     self.check_type_only(
                         &shape.id(),
+                        list_or_set.member().id(),
                         list_or_set.member().target(),
                         model,
-                        "List or Set member",
                     );
                 }
                 ShapeKind::Map(map) => {
-                    self.check_type_only(&shape.id(), map.key().target(), model, "Map key");
-                    self.check_type_only(&shape.id(), map.value().target(), model, "Map value");
+                    self.check_type_only(&shape.id(), map.key().id(), map.key().target(), model);
+                    self.check_type_only(
+                        &shape.id(),
+                        map.value().id(),
+                        map.value().target(),
+                        model,
+                    );
                 }
                 ShapeKind::Structure(structured) | ShapeKind::Union(structured) => {
                     for member in structured.members() {
-                        self.check_type_only(
-                            member.id(),
-                            &member.target(),
-                            model,
-                            "Structure member",
-                        );
+                        self.check_type_only(&shape.id(), member.id(), &member.target(), model);
                     }
                 }
                 ShapeKind::Service(service) => {
@@ -110,23 +111,33 @@ impl Validator for CorrectTypeReferences {
                 }
                 ShapeKind::Operation(operation) => {
                     if let Some(target) = operation.input() {
-                        self.check_type_only(&shape.id(), target, model, "Operation input");
+                        self.check_type_only(
+                            &shape.id(),
+                            &Identifier::new_unchecked(MEMBER_INPUT),
+                            target,
+                            model,
+                        );
                     }
                     if let Some(target) = operation.output() {
-                        self.check_type_only(&shape.id(), target, model, "Operation output");
+                        self.check_type_only(
+                            &shape.id(),
+                            &Identifier::new_unchecked(MEMBER_OUTPUT),
+                            target,
+                            model,
+                        );
                     }
                     for target in operation.errors() {
-                        self.check_type_only(&shape.id(), target, model, "Operation error");
+                        self.check_type_only(
+                            &shape.id(),
+                            &Identifier::new_unchecked(MEMBER_ERRORS),
+                            target,
+                            model,
+                        );
                     }
                 }
                 ShapeKind::Resource(resource) => {
                     for (id, target) in resource.identifiers() {
-                        self.check_type_only(
-                            &shape.id().make_member(id.clone()),
-                            &target,
-                            model,
-                            "Resource identifier",
-                        );
+                        self.check_type_only(&shape.id(), &id, target, model);
                     }
                     if let Some(target) = resource.create() {
                         self.check_operation_only(
@@ -199,25 +210,31 @@ impl Validator for CorrectTypeReferences {
 }
 
 impl CorrectTypeReferences {
-    fn check_type_only(&mut self, shape: &ShapeID, target: &ShapeID, model: &Model, member: &str) {
-        if let Some(target) = model.shape(target) {
+    fn check_type_only(
+        &mut self,
+        shape: &ShapeID,
+        member_id: &Identifier,
+        target_id: &ShapeID,
+        model: &Model,
+    ) {
+        if let Some(target) = model.shape(target_id) {
             let target = target.body();
             if target.is_service() || target.is_operation() || target.is_resource() {
                 self.issues.push(ActionIssue::error_at(
                     self.label(),
                     &format!(
-                        "{} must not refer to a service, operation, resource or member.",
-                        member
+                        "{} member {} must not refer to a service, operation, resource or member.",
+                        shape, member_id
                     ),
                     shape.clone(),
                 ));
             }
-        } else if target.namespace().to_string() != PRELUDE_NAMESPACE {
+        } else if target_id.namespace().to_string() != PRELUDE_NAMESPACE {
             self.issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(
-                    "{}'s type ({}) cannot be resolved to a shape in this model.",
-                    member, target,
+                    "{} member {}'s type ({}) cannot be resolved to a shape in this model.",
+                    shape, member_id, target_id,
                 ),
                 shape.clone(),
             ));
@@ -272,7 +289,7 @@ impl CorrectTypeReferences {
             self.issues.push(ActionIssue::warning_at(
                 self.label(),
                 &format!(
-                    "{} type ({}) cannot be resolved to a shape in this model.",
+                    "{}'s type ({}) cannot be resolved to a shape in this model.",
                     member, target,
                 ),
                 shape.clone(),

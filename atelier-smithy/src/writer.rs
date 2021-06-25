@@ -325,7 +325,7 @@ impl SmithyWriter {
             w,
             "{}{}: {}",
             prefix,
-            member.id().member_name().as_ref().unwrap(),
+            member.id(),
             member.target().shape_name()
         )?;
         Ok(())

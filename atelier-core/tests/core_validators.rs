@@ -32,7 +32,7 @@ fn make_model() -> Model {
 #[test]
 fn test_correct_type_references() {
     let expected = [
-        "Structure member\'s type (foo.baz#MyString) cannot be resolved to a shape in this model.",
+        "smithy.example#MyStructure member e\'s type (foo.baz#MyString) cannot be resolved to a shape in this model.",
         "The simple shape (smithy.example#MyString) is simply a synonym, did you mean to add any constraint traits?",
         "The simple shape (smithy.example#MyBoolean) is simply a synonym, did you mean to add any constraint traits?",
     ];

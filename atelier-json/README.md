@@ -26,6 +26,11 @@ println!("{:#?}", result.unwrap());
 
 ## Changes
 
+**Version 0.2.6**
+
+* Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the
+  JSON AST usage.
+  
 **Version 0.2.5**
 
 * New Feature: [make a public api for converting Model to json-ast model](https://github.com/johnstonskj/rust-atelier/issues/32).

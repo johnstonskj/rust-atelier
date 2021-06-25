@@ -1,6 +1,4 @@
-use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::identity::HasIdentity;
-use crate::model::shapes::{AppliedTraits, HasTraits, NonTraitEq, Shape};
+use crate::model::shapes::{AppliedTraits, HasTraits, NonTraitEq};
 use crate::model::values::Value;
 use crate::model::{Identifier, ShapeID};
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
@@ -16,7 +14,7 @@ use std::collections::HashMap;
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct MemberShape {
-    id: ShapeID,
+    id: Identifier,
     traits: AppliedTraits,
     target: ShapeID,
 }
@@ -59,46 +57,27 @@ impl NonTraitEq for MemberShape {
     }
 }
 
-impl HasIdentity for MemberShape {
-    fn id(&self) -> &ShapeID {
+has_traits_impl! { MemberShape . traits }
+
+impl MemberShape {
+    // The member name for this member, this is an identifier not a full shape ID.
+    pub fn id(&self) -> &Identifier {
         &self.id
     }
 
-    fn set_id(&mut self, id: ShapeID) {
+    // Set the member name for this member, this is an identifier not a full shape ID.
+    pub fn set_id(&mut self, id: Identifier) {
         self.id = id
     }
-}
-
-has_traits_impl! { MemberShape . traits }
-
-impl Shape for MemberShape {
-    fn is_member(&self) -> bool {
-        true
-    }
-}
-
-impl MemberShape {
-    /// Construct a new Member shape with the given target shape (type).
-    pub fn new(id: ShapeID, target: ShapeID) -> Self {
-        Self {
-            id,
-            traits: Default::default(),
-            target,
-        }
-    }
 
     /// Construct a new Member shape with the given target shape (type).
-    pub fn new_from(parent_id: &ShapeID, id: Identifier, target: ShapeID) -> Self {
-        Self {
-            id: parent_id.make_member(id),
-            traits: Default::default(),
-            target,
-        }
+    pub fn new(id: Identifier, target: ShapeID) -> Self {
+        Self::with_traits(id, target, Default::default())
     }
 
     /// Construct a new Member shape with the given target shape (type).
     pub fn with_traits(
-        id: ShapeID,
+        id: Identifier,
         target: ShapeID,
         traits: HashMap<ShapeID, Option<Value>>,
     ) -> Self {
@@ -120,22 +99,15 @@ impl MemberShape {
 
 impl ListOrSet {
     /// Construct a new list, or set, with the given `ShapeID` as the reference to the member type.
-    pub fn new(parent_id: &ShapeID, target: ShapeID) -> Self {
+    pub fn new(member_target: ShapeID) -> Self {
         Self {
-            member: MemberShape::new_from(
-                parent_id,
-                Identifier::new_unchecked(MEMBER_MEMBER),
-                target,
-            ),
+            member: MemberShape::new(Identifier::new_unchecked(MEMBER_MEMBER), member_target),
         }
     }
 
     /// Construct a new list, or set, with the given value as the member.
     pub fn from(member: MemberShape) -> Self {
-        assert_eq!(
-            member.id.member_name().as_ref().unwrap().to_string(),
-            MEMBER_MEMBER
-        );
+        assert_eq!(member.id().to_string(), MEMBER_MEMBER);
         Self { member }
     }
 
@@ -147,7 +119,6 @@ impl ListOrSet {
     /// Set the identifier of the type of each member of the list or set.
     pub fn set_member(&mut self, member: MemberShape) {
         assert_eq!(member.id(), self.member.id());
-        assert!(member.is_member());
         self.member = member
     }
 }
@@ -156,14 +127,10 @@ impl ListOrSet {
 
 impl Map {
     /// Construct a new map with the given `ShapeID`s as the reference to the key and value types.
-    pub fn new(parent_id: &ShapeID, key_shape: ShapeID, value_shape: ShapeID) -> Self {
+    pub fn new(key_target: ShapeID, value_target: ShapeID) -> Self {
         Self {
-            key: MemberShape::new_from(parent_id, Identifier::new_unchecked(MEMBER_KEY), key_shape),
-            value: MemberShape::new_from(
-                parent_id,
-                Identifier::new_unchecked(MEMBER_VALUE),
-                value_shape,
-            ),
+            key: MemberShape::new(Identifier::new_unchecked(MEMBER_KEY), key_target),
+            value: MemberShape::new(Identifier::new_unchecked(MEMBER_VALUE), value_target),
         }
     }
 
@@ -180,7 +147,6 @@ impl Map {
     /// Set the identifier for the type of the key for each member of the list or set.
     pub fn set_key(&mut self, key: MemberShape) {
         assert_eq!(key.id(), self.key.id());
-        assert!(key.is_member());
         self.key = key;
     }
 
@@ -192,7 +158,6 @@ impl Map {
     /// Set the identifier for the type of the value for each member of the list or set.
     pub fn set_value(&mut self, value: MemberShape) {
         assert_eq!(value.id(), self.value.id());
-        assert!(value.is_member());
         self.value = value;
     }
 }
@@ -219,7 +184,6 @@ impl StructureOrUnion {
     /// Note: that all members must have a body variant `ShapeBody::Member`, otherwise this method
     /// will panic.
     pub fn with_members(members: &[MemberShape]) -> Self {
-        assert!(members.iter().all(|shape| shape.is_member()));
         let mut new = Self {
             members: Default::default(),
         };
@@ -254,23 +218,12 @@ impl StructureOrUnion {
         self.members.values()
     }
 
-    pub fn add_member(&mut self, member_name: ShapeID, target: ShapeID) {
+    pub fn add_member(&mut self, member_name: Identifier, target: ShapeID) {
         let shape = MemberShape::new(member_name, target);
         let _ = self.add_a_member(shape);
     }
 
-    pub fn add_member_from(&mut self, parent_id: &ShapeID, id: Identifier, target: ShapeID) {
-        let shape = MemberShape::new_from(parent_id, id, target);
-        let _ = self.add_a_member(shape);
-    }
-
-    pub fn add_a_member(&mut self, member: MemberShape) -> ModelResult<Option<MemberShape>> {
-        if !member.id().is_member() {
-            Err(ErrorKind::MemberIDExpected(member.id().clone()).into())
-        } else {
-            Ok(self
-                .members
-                .insert(member.id().member_name().clone().unwrap(), member))
-        }
+    pub fn add_a_member(&mut self, member: MemberShape) -> Option<MemberShape> {
+        self.members.insert(member.id().clone(), member)
     }
 }

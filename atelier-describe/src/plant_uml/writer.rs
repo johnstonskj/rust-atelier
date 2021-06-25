@@ -108,7 +108,7 @@ Which would produce an image like the following.
 
 use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::HasTraits;
-use atelier_core::model::shapes::{Shape, ShapeKind, TopLevelShape};
+use atelier_core::model::shapes::{ShapeKind, TopLevelShape};
 use atelier_core::model::values::Value;
 use atelier_core::model::HasIdentity;
 use atelier_core::model::{Model, NamespaceID, ShapeID};
@@ -323,11 +323,7 @@ impl PlantUmlWriter {
         }
         let notes = self.write_class_traits(w, structure, model)?;
         for member in body.members() {
-            if member.is_member() {
-                writeln!(w, "        {}: {}", member.id(), member.target())?;
-            } else {
-                unreachable!()
-            }
+            writeln!(w, "        {}: {}", member.id(), member.target())?;
         }
         writeln!(w, "    }}")?;
         self.write_class_notes(w, structure.id(), notes)?;

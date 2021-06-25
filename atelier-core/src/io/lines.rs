@@ -390,12 +390,7 @@ fn value_into_strings(prefix: &str, value: &Value, strings: &mut Vec<String>) {
 }
 
 fn member_into_strings(prefix: &str, member: &MemberShape, strings: &mut Vec<String>) {
-    let prefix = format!(
-        "{}{}{}",
-        prefix,
-        SEGMENT_SEP,
-        member.id().member_name().as_ref().unwrap()
-    );
+    let prefix = format!("{}{}{}", prefix, SEGMENT_SEP, member.id());
     strings.push(format!("{}{}{}", prefix, TARGET_SEP, member.target()));
     let prefix = format!("{}{}{}{}", prefix, SEGMENT_SEP, TRAIT_PREFIX, SEGMENT_SEP);
     traits_into_strings(&prefix, member.traits(), strings);

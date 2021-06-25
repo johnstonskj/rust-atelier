@@ -133,7 +133,7 @@ impl Linter for NamingConventions {
                 // (https://github.com/johnstonskj/rust-atelier/issues/7)
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
                     for member in body.members() {
-                        self.check_member_name(member.id());
+                        self.check_member_name(member.id(), shape.id());
                         self.check_shape_name(member.target(), true);
                         self.check_applied_trait_names(member.traits());
                     }
@@ -177,9 +177,8 @@ impl NamingConventions {
             ));
         }
     }
-    fn check_member_name(&mut self, id: &ShapeID) {
-        let shape_name = id.member_name().as_ref().unwrap();
-        let shape_name = shape_name.to_string();
+    fn check_member_name(&mut self, id: &Identifier, parent: &ShapeID) {
+        let shape_name = id.to_string();
         if shape_name.to_mixed_case() != shape_name {
             self.issues.push(ActionIssue::info_at(
                 &self.label(),
@@ -187,7 +186,7 @@ impl NamingConventions {
                     "Member names should conform to lowerCamelCase, i.e. {}",
                     shape_name.to_mixed_case()
                 ),
-                id.clone(),
+                parent.clone(),
             ));
         }
     }
@@ -215,8 +214,9 @@ impl Linter for UnwelcomeTerms {
 
             match shape.body() {
                 ShapeKind::Structure(body) | ShapeKind::Union(body) => {
+                    self.check_shape_id(shape.id());
                     for member in body.members() {
-                        self.check_shape_id(member.id());
+                        self.check_identifier(member.id(), Some(shape.id()));
                         self.check_shape_id(member.target());
                         for (id, _) in member.traits() {
                             self.check_shape_id(id);

@@ -37,9 +37,9 @@ fn make_collection_shape(
     let shape_id = ShapeID::new_unchecked("example.smithy", shape_name, None);
     let target_id = prelude_shape_named(target_shape).unwrap();
     let body = match kind {
-        CollectionShape::List => ShapeKind::List(ListOrSet::new(&shape_id, target_id)),
-        CollectionShape::Set => ShapeKind::Set(ListOrSet::new(&shape_id, target_id)),
-        CollectionShape::Map => ShapeKind::Map(Map::new(&shape_id, target_id.clone(), target_id)),
+        CollectionShape::List => ShapeKind::List(ListOrSet::new(target_id)),
+        CollectionShape::Set => ShapeKind::Set(ListOrSet::new(target_id)),
+        CollectionShape::Map => ShapeKind::Map(Map::new(target_id.clone(), target_id)),
     };
     TopLevelShape::new(shape_id, body)
 }
@@ -58,7 +58,7 @@ fn make_structure_shape(
     let mut inner = StructureOrUnion::new();
     for (name, target) in members {
         inner.add_member(
-            shape_id.make_member(Identifier::new_unchecked(name)),
+            Identifier::new_unchecked(name),
             prelude_shape_named(target).unwrap(),
         )
     }

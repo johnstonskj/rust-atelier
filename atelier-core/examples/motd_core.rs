@@ -26,7 +26,7 @@ pub fn main() {
     let shape_name = namespace.make_shape("BadDateValue".parse().unwrap());
     let mut body = StructureOrUnion::new();
     body.add_member(
-        shape_name.make_member("errorMessage".parse().unwrap()),
+        "errorMessage".parse().unwrap(),
         prelude.make_shape("String".parse().unwrap()),
     );
     let mut error = TopLevelShape::new(shape_name, ShapeKind::Structure(body));
@@ -38,10 +38,9 @@ pub fn main() {
         .unwrap();
 
     // ----------------------------------------------------------------------------------------
-    let shape_name = namespace.make_shape("GetMessageOutput".parse().unwrap());
     let mut output = StructureOrUnion::new();
     let mut message = MemberShape::new(
-        shape_name.make_member("message".parse().unwrap()),
+        "message".parse().unwrap(),
         prelude.make_shape("String".parse().unwrap()),
     );
     message
@@ -54,12 +53,8 @@ pub fn main() {
     );
 
     // ----------------------------------------------------------------------------------------
-    let shape_name = namespace.make_shape("GetMessageInput".parse().unwrap());
     let mut input = StructureOrUnion::new();
-    input.add_member(
-        shape_name.make_member("date".parse().unwrap()),
-        date.id().clone(),
-    );
+    input.add_member("date".parse().unwrap(), date.id().clone());
     let input = TopLevelShape::new(
         namespace.make_shape("GetMessageInput".parse().unwrap()),
         ShapeKind::Structure(input),

@@ -398,9 +398,9 @@ impl ModelBuilder {
             let _ = references.insert(target_id.clone());
         }
         Ok(TopLevelShape::with_traits(
-            shape_id.clone(),
+            shape_id,
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
-                shape_id.make_member(builder.member.member_name.clone()),
+                builder.member.member_name.clone(),
                 target_id,
                 self.make_traits(&builder.member.applied_traits, references)?,
             ))),
@@ -422,9 +422,9 @@ impl ModelBuilder {
             let _ = references.insert(target_id.clone());
         }
         Ok(TopLevelShape::with_traits(
-            shape_id.clone(),
+            shape_id,
             ShapeKind::List(ListOrSet::from(MemberShape::with_traits(
-                shape_id.make_member(builder.member.member_name.clone()),
+                builder.member.member_name.clone(),
                 target_id,
                 self.make_traits(&builder.member.applied_traits, references)?,
             ))),
@@ -451,15 +451,15 @@ impl ModelBuilder {
             let _ = references.insert(value_target_id.clone());
         }
         Ok(TopLevelShape::with_traits(
-            shape_id.clone(),
+            shape_id,
             ShapeKind::Map(Map::from(
                 MemberShape::with_traits(
-                    shape_id.make_member(builder.key.member_name.clone()),
+                    builder.key.member_name.clone(),
                     key_target_id,
                     self.make_traits(&builder.key.applied_traits, references)?,
                 ),
                 MemberShape::with_traits(
-                    shape_id.make_member(builder.value.member_name.clone()),
+                    builder.value.member_name.clone(),
                     value_target_id,
                     self.make_traits(&builder.value.applied_traits, references)?,
                 ),
@@ -470,7 +470,6 @@ impl ModelBuilder {
 
     fn make_structure_inner(
         &self,
-        shape_name: &ShapeID,
         builder: &StructureBuilder,
         references: &mut HashSet<ShapeID>,
     ) -> Result<StructureOrUnion, Error> {
@@ -484,7 +483,7 @@ impl ModelBuilder {
                     let _ = references.insert(member_target_id.clone());
                 }
                 Ok(MemberShape::with_traits(
-                    shape_name.make_member(mb.member_name.clone()),
+                    mb.member_name.clone(),
                     member_target_id,
                     self.make_traits(&mb.applied_traits, references)?,
                 ))
@@ -503,8 +502,8 @@ impl ModelBuilder {
             let _ = references.insert(shape_id.clone());
         }
         Ok(TopLevelShape::with_traits(
-            shape_id.clone(),
-            ShapeKind::Structure(self.make_structure_inner(&shape_id, builder, references)?),
+            shape_id,
+            ShapeKind::Structure(self.make_structure_inner(builder, references)?),
             self.make_traits(&builder.applied_traits, references)?,
         ))
     }
@@ -519,8 +518,8 @@ impl ModelBuilder {
             let _ = references.insert(shape_id.clone());
         }
         Ok(TopLevelShape::with_traits(
-            shape_id.clone(),
-            ShapeKind::Union(self.make_structure_inner(&shape_id, builder, references)?),
+            shape_id,
+            ShapeKind::Union(self.make_structure_inner(builder, references)?),
             self.make_traits(&builder.applied_traits, references)?,
         ))
     }
