@@ -99,6 +99,10 @@ $ cargo run --example motd_builder
 
 **Version 0.2.17**
 
+* Fixed escaping bug for line writer that made cross-platform comparison a pain.
+
+**Version 0.2.17**
+
 * Fixed add_shape bug, it must allow shapes with a member_id IFF the shape kind is unresolved.
 
 **Version 0.2.16**
