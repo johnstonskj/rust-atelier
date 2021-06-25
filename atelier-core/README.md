@@ -97,6 +97,12 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.20**
+
+* Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace
+  files](https://github.com/johnstonskj/rust-atelier/issues/27) using the model assembler.
+  * Updated Model::namespaces to return a HashSet rather than a Vec.
+  
 **Version 0.2.19**
 
 * Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the

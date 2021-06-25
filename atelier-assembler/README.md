@@ -30,6 +30,12 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 
 ## Changes
 
+**Version 0.1.2**
+
+* Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace 
+  files](https://github.com/johnstonskj/rust-atelier/issues/27) using the model assembler.
+  * Fixed compiler warnings in this crate.
+
 **Version 0.1.1**
 
 * Refactored to produce:

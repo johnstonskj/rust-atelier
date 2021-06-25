@@ -43,6 +43,12 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.13**
+
+* Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace
+  files](https://github.com/johnstonskj/rust-atelier/issues/27) using the model assembler.
+  * Fixed bugs in Smithy writer when writing values (in traits and metadata).
+
 **Version 0.2.12**
 
 * Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the

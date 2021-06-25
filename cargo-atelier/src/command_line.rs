@@ -1,4 +1,4 @@
-use crate::{Command, DocumentCommand, File, FileCommand, FileFormat, Options, TransformCommand};
+use crate::{Command, DocumentCommand, FileFormat, Options, TransformCommand};
 use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -31,31 +31,19 @@ pub(crate) enum SubCommand {
     Lint {
         /// The file to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
-
-        /// The representation of the input file
-        #[structopt(short, long, default_value = "smithy")]
-        read_format: FileFormat,
+        in_file: Vec<PathBuf>,
     },
     /// Run standard validators on a model file
     Validate {
         /// The file to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
-
-        /// The representation of the input file,
-        #[structopt(short, long, default_value = "smithy")]
-        read_format: FileFormat,
+        in_file: Vec<PathBuf>,
     },
     /// Convert model from one representation to another
     Convert {
         /// The file to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
-
-        /// The representation of the input file
-        #[structopt(short, long, default_value = "smithy")]
-        read_format: FileFormat,
+        in_file: Vec<PathBuf>,
 
         /// The file to write to [default: <stdout>]
         #[structopt(long, short)]
@@ -73,11 +61,7 @@ pub(crate) enum SubCommand {
     Document {
         /// The file to read [default: <stdin>]
         #[structopt(long, short)]
-        in_file: Option<PathBuf>,
-
-        /// The representation of the input file
-        #[structopt(short, long, default_value = "smithy")]
-        read_format: FileFormat,
+        in_file: Vec<PathBuf>,
 
         /// The file to write to [default: <stdout>]
         #[structopt(long, short)]
@@ -104,65 +88,30 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
     };
 
     match args.cmd {
-        SubCommand::Lint {
-            in_file,
-            read_format,
-        } => Ok(Command::Lint(
-            FileCommand {
-                input_file: File {
-                    file_name: in_file,
-                    format: read_format,
-                },
-            },
-            options,
-        )),
-        SubCommand::Validate {
-            in_file,
-            read_format,
-        } => Ok(Command::Validate(
-            FileCommand {
-                input_file: File {
-                    file_name: in_file,
-                    format: read_format,
-                },
-            },
-            options,
-        )),
+        SubCommand::Lint { in_file } => Ok(Command::Lint(in_file, options)),
+        SubCommand::Validate { in_file } => Ok(Command::Validate(in_file, options)),
         SubCommand::Convert {
             in_file,
-            read_format,
             out_file,
             write_format,
             namespace,
         } => Ok(Command::Convert(
             TransformCommand {
-                input_file: File {
-                    file_name: in_file,
-                    format: read_format,
-                },
-                output_file: File {
-                    file_name: out_file,
-                    format: write_format,
-                },
+                input_files: in_file,
+                output_file: out_file,
+                output_format: write_format,
                 namespace,
             },
             options,
         )),
         SubCommand::Document {
             in_file,
-            read_format,
             out_file,
             write_format,
         } => Ok(Command::Document(
             DocumentCommand {
-                input_file: File {
-                    file_name: in_file,
-                    format: read_format,
-                },
-                output_file: File {
-                    file_name: out_file,
-                    format: FileFormat::Smithy,
-                },
+                input_files: in_file,
+                output_file: out_file,
                 output_format: write_format,
             },
             options,

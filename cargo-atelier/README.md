@@ -161,6 +161,13 @@ Smith Version: 1.0
 
 ## Changes
 
+**Version 0.2.5**
+
+* Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace
+  files](https://github.com/johnstonskj/rust-atelier/issues/27) using the model assembler.
+  * Updated all commands to take a list of file paths as input, the assembler will figure out the file types.
+  * Updated error reporting.
+
 **Version 0.2.4**
 
 * Change to lib API.

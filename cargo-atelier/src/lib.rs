@@ -15,8 +15,8 @@ pub struct Options {
 
 #[derive(Debug)]
 pub enum Command {
-    Lint(FileCommand, Options),
-    Validate(FileCommand, Options),
+    Lint(Vec<PathBuf>, Options),
+    Validate(Vec<PathBuf>, Options),
     Convert(TransformCommand, Options),
     Document(DocumentCommand, Options),
 }
@@ -29,27 +29,17 @@ pub enum FileFormat {
 }
 
 #[derive(Debug)]
-pub struct File {
-    pub file_name: Option<PathBuf>,
-    pub format: FileFormat,
-}
-
-#[derive(Debug)]
-pub struct FileCommand {
-    pub input_file: File,
-}
-
-#[derive(Debug)]
 pub struct TransformCommand {
-    pub input_file: File,
-    pub output_file: File,
+    pub input_files: Vec<PathBuf>,
+    pub output_file: Option<PathBuf>,
+    pub output_format: FileFormat,
     pub namespace: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct DocumentCommand {
-    pub input_file: File,
-    pub output_file: File,
+    pub input_files: Vec<PathBuf>,
+    pub output_file: Option<PathBuf>,
     pub output_format: OutputFormat,
 }
 

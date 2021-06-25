@@ -1,16 +1,16 @@
-use atelier_assembler::ModelAssembler;
-use atelier_core::model::Model;
-use std::convert::TryFrom;
-use std::path::PathBuf;
-
-const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
-
 // **************************************************
 // *********** BROKEN TEST BELOW DISABLED ***********
 // **************************************************
 #[cfg(broken_test)]
 #[test]
 fn test_shape_name_resolution() {
+    use atelier_assembler::ModelAssembler;
+    use atelier_core::model::Model;
+    use std::convert::TryFrom;
+    use std::path::PathBuf;
+
+    const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
+
     pretty_env_logger::try_init().expect("Could not initialize logger.");
 
     let mut path = PathBuf::from(MANIFEST_DIR);

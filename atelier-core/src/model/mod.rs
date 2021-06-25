@@ -8,7 +8,7 @@ use crate::error::{ErrorKind, Result as ModelResult};
 use crate::model::shapes::{HasTraits, NonTraitEq, ShapeKind, TopLevelShape};
 use crate::model::values::{Value, ValueMap};
 use crate::Version;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 
 // ------------------------------------------------------------------------------------------------
@@ -280,11 +280,9 @@ impl Model {
             .map(|shape| shape.id())
     }
 
-    /// Return a vector containing all the namespaces used in defining shapes in this model.
-    pub fn namespaces(&self) -> Vec<&NamespaceID> {
-        let mut result: Vec<&NamespaceID> = self.shape_names().map(|id| id.namespace()).collect();
-        result.dedup();
-        result
+    /// Return a set containing all the namespaces used in defining shapes in this model.
+    pub fn namespaces(&self) -> HashSet<&NamespaceID> {
+        self.shape_names().map(|id| id.namespace()).collect()
     }
 
     // --------------------------------------------------------------------------------------------

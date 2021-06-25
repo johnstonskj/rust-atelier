@@ -65,7 +65,9 @@ impl SmithyWriter {
     fn write_metadata_section(&mut self, w: &mut impl Write, model: &Model) -> Result<()> {
         if model.has_metadata() {
             for (key, value) in model.metadata() {
-                writeln!(w, "{} \"{}\" = {}", STATEMENT_METADATA, key, value)?;
+                write!(w, "{} \"{}\" = ", STATEMENT_METADATA, key)?;
+                self.write_value(w, value, true)?;
+                writeln!(w)?;
             }
             writeln!(w)?;
         }
@@ -287,15 +289,48 @@ impl SmithyWriter {
         write!(w, "{}{}{}", prefix, TRAIT_PREFIX, id)?;
         match value {
             None => writeln!(w)?,
-            Some(Value::Object(map)) => writeln!(
-                w,
-                "({})",
-                map.iter()
-                    .map(|(k, v)| format!("{}: {:?}", k, v))
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            )?,
-            Some(value) => writeln!(w, "({:?})", value.to_string())?,
+            Some(v) => {
+                write!(w, "(")?;
+                self.write_value(w, v, true)?;
+                writeln!(w, ")")?;
+            }
+        }
+        Ok(())
+    }
+
+    fn write_value(&mut self, w: &mut impl Write, value: &Value, top: bool) -> Result<()> {
+        match value {
+            Value::Array(vs) => {
+                write!(w, "[")?;
+                let last = if vs.len() == 0 { 0 } else { vs.len() - 1 };
+                for (i, v) in vs.iter().enumerate() {
+                    self.write_value(w, v, false)?;
+                    if i < last {
+                        write!(w, ", ")?;
+                    }
+                }
+                write!(w, "]")?;
+            }
+            Value::Object(vs) => {
+                if !top {
+                    write!(w, "{{")?;
+                }
+                let last = if vs.len() == 0 { 0 } else { vs.len() - 1 };
+                for (i, (k, v)) in vs.iter().enumerate() {
+                    write!(w, "{}: ", k)?;
+                    self.write_value(w, v, false)?;
+                    if i < last {
+                        write!(w, ", ")?;
+                    }
+                }
+                if !top {
+                    write!(w, "}}")?;
+                }
+            }
+            Value::Number(v) => write!(w, "{}", v)?,
+            Value::Boolean(v) => write!(w, "{}", v)?,
+            Value::String(v) => write!(w, "{:?}", v)?,
+            Value::None => {}
         }
         Ok(())
     }
