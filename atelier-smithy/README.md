@@ -43,6 +43,10 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.10**
+
+* Fixed test case typo.
+
 **Version 0.2.9**
 
 * From core: Reorganized errors, made the naming and messages consistent and removed unused.
