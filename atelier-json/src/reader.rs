@@ -64,12 +64,12 @@ impl JsonReader {
 
             let metadata = self.metadata(vs.get(MODEL_METADATA))?;
             for (key, value) in metadata {
-                let _ = model.add_metadata(key, value);
+                let _ = model.add_metadata(key, value)?;
             }
 
             let shapes = self.shapes(vs.get(MODEL_SHAPES))?;
             for shape in shapes.into_iter().map(|(_, s)| s) {
-                let _ = model.add_shape(shape);
+                model.add_shape(shape)?;
             }
 
             return Ok(model);
@@ -131,20 +131,17 @@ impl JsonReader {
             } else if s == SHAPE_APPLY {
                 Ok(ShapeKind::Unresolved)
             } else if s == SHAPE_LIST {
-                Ok(ShapeKind::List(ListOrSet::new(
-                    &id,
-                    self.target(outer.get(MEMBER_MEMBER))?,
+                Ok(ShapeKind::List(ListOrSet::from(
+                    self.member(id, outer.get(MEMBER_MEMBER))?,
                 )))
             } else if s == SHAPE_SET {
-                Ok(ShapeKind::Set(ListOrSet::new(
-                    &id,
-                    self.target(outer.get(MEMBER_MEMBER))?,
+                Ok(ShapeKind::Set(ListOrSet::from(
+                    self.member(id, outer.get(MEMBER_MEMBER))?,
                 )))
             } else if s == SHAPE_MAP {
-                Ok(ShapeKind::Map(MapShape::new(
-                    &id,
-                    self.target(outer.get(MEMBER_KEY))?,
-                    self.target(outer.get(MEMBER_VALUE))?,
+                Ok(ShapeKind::Map(MapShape::from(
+                    self.member(id, outer.get(MEMBER_KEY))?,
+                    self.member(id, outer.get(MEMBER_VALUE))?,
                 )))
             } else if s == SHAPE_STRUCTURE {
                 let members = if let Some(Value::Object(vs)) = outer.get(ADD_SHAPE_KEY_MEMBERS) {
@@ -212,8 +209,6 @@ impl JsonReader {
                 );
                 resource.append_resources(&self.target_list(outer.get(MEMBER_RESOURCES))?);
                 Ok(ShapeKind::Resource(resource))
-            } else if s == SHAPE_APPLY {
-                Ok(ShapeKind::Unresolved)
             } else {
                 return Err(ErrorKind::Deserialization(
                     REPRESENTATION_NAME.to_string(),
@@ -308,8 +303,9 @@ impl JsonReader {
             let mut hash: HashMap<Identifier, ShapeID> = Default::default();
             if let Value::Object(ms) = member {
                 for (obj_key, obj) in ms {
+                    println!("{:?}: {:?}", obj_key, obj);
                     let key = Identifier::from_str(obj_key)?;
-                    let value = ShapeID::from_str(&self.string_value(obj)?)?;
+                    let value = self.target(Some(obj))?;
                     let _ = hash.insert(key, value);
                 }
                 Ok(hash)
@@ -357,8 +353,29 @@ impl JsonReader {
 
     fn target(&self, member: Option<&Value>) -> ModelResult<ShapeID> {
         if let Some(Value::Object(ms)) = member {
-            if let Some(Value::String(member_id)) = ms.get(ADD_SHAPE_KEY_TARGET) {
-                return ShapeID::from_str(member_id);
+            if let Some(Value::String(target_id)) = ms.get(ADD_SHAPE_KEY_TARGET) {
+                return ShapeID::from_str(target_id);
+            }
+        }
+        Err(ErrorKind::Deserialization(
+            REPRESENTATION_NAME.to_string(),
+            "JsonReader::target".to_string(),
+            Some(format!("{:#?}", member)),
+        )
+        .into())
+    }
+
+    fn member(&self, parent_id: &ShapeID, member: Option<&Value>) -> ModelResult<MemberShape> {
+        if let Some(Value::Object(ms)) = member {
+            if let Some(Value::String(target_id)) = ms.get(ADD_SHAPE_KEY_TARGET) {
+                let mut member_shape = MemberShape::new(
+                    parent_id.make_member(Identifier::new_unchecked(MEMBER_MEMBER)),
+                    ShapeID::from_str(target_id)?,
+                );
+                if let Some(Value::Object(vs)) = ms.get(ADD_SHAPE_KEY_TRAITS) {
+                    member_shape.append_traits(&self.traits(vs)?)?;
+                };
+                return Ok(member_shape);
             }
         }
         Err(ErrorKind::Deserialization(

@@ -22,8 +22,8 @@ use std::io::Write;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Implementation of `ModelWriter` to write a [Model](../atelier_core/model/struct.Model.html)
-/// in the JSON AST representation.
+/// This struct implements the `ModelWriter` trait to write a [Model](../atelier_core/model/struct.Model.html)
+/// in the [JSON AST](https://awslabs.github.io/smithy/1.0/spec/core/json-ast.html) representation.
 ///
 #[allow(missing_debug_implementations)]
 pub struct JsonWriter {
@@ -35,8 +35,8 @@ pub struct JsonWriter {
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Return a JSON AST representation of a model. This function is used in the `JsonWriter`
-/// implementation.
+/// Return a [JSON AST](https://awslabs.github.io/smithy/1.0/spec/core/json-ast.html) representation
+/// of a model. This function is used in the `JsonWriter` implementation.
 ///
 pub fn model_to_json(model: &Model) -> Value {
     let mut top: Map<String, Value> = Default::default();
@@ -119,28 +119,22 @@ fn from_shape(shape: &TopLevelShape) -> Value {
                 ADD_SHAPE_KEY_TYPE.to_string(),
                 Value::String(SHAPE_LIST.to_string()),
             );
-            let _ = shape_map.insert(
-                MEMBER_MEMBER.to_string(),
-                from_reference(v.member().target()),
-            );
+            let _ = shape_map.insert(MEMBER_MEMBER.to_string(), from_member(v.member()));
         }
         ShapeKind::Set(v) => {
             let _ = shape_map.insert(
                 ADD_SHAPE_KEY_TYPE.to_string(),
                 Value::String(SHAPE_SET.to_string()),
             );
-            let _ = shape_map.insert(
-                MEMBER_MEMBER.to_string(),
-                from_reference(v.member().target()),
-            );
+            let _ = shape_map.insert(MEMBER_MEMBER.to_string(), from_member(v.member()));
         }
         ShapeKind::Map(v) => {
             let _ = shape_map.insert(
                 ADD_SHAPE_KEY_TYPE.to_string(),
                 Value::String(SHAPE_MAP.to_string()),
             );
-            let _ = shape_map.insert(MEMBER_KEY.to_string(), from_reference(v.key().target()));
-            let _ = shape_map.insert(MEMBER_VALUE.to_string(), from_reference(v.value().target()));
+            let _ = shape_map.insert(MEMBER_KEY.to_string(), from_member(v.key()));
+            let _ = shape_map.insert(MEMBER_VALUE.to_string(), from_member(v.value()));
         }
         ShapeKind::Structure(v) => {
             let _ = shape_map.insert(
@@ -217,7 +211,7 @@ fn from_shape(shape: &TopLevelShape) -> Value {
             if v.has_identifiers() {
                 let mut id_map: Map<String, Value> = Default::default();
                 for (id, ref_id) in v.identifiers() {
-                    let _ = id_map.insert(id.to_string(), Value::String(ref_id.to_string()));
+                    let _ = id_map.insert(id.to_string(), from_reference(ref_id));
                 }
                 let _ = shape_map.insert(MEMBER_IDENTIFIERS.to_string(), Value::Object(id_map));
             }
@@ -289,20 +283,27 @@ fn from_traits(traits: &AppliedTraits) -> Value {
 fn from_members<'a>(members: impl Iterator<Item = &'a MemberShape>) -> Value {
     let mut members_map: Map<String, Value> = Default::default();
     for member in members {
-        let mut member_map: Map<String, Value> = Default::default();
-        if member.has_traits() {
-            let _ = member_map.insert(
-                ADD_SHAPE_KEY_TRAITS.to_string(),
-                from_traits(member.traits()),
-            );
-        }
-        let _ = member_map.insert(
-            ADD_SHAPE_KEY_TARGET.to_string(),
-            Value::String(member.target().to_string()),
+        let _ = members_map.insert(
+            member.id().member_name().as_ref().unwrap().to_string(),
+            from_member(member),
         );
-        let _ = members_map.insert(member.id().to_string(), Value::Object(member_map));
     }
     Value::Object(members_map)
+}
+
+fn from_member(member: &MemberShape) -> Value {
+    let mut member_map: Map<String, Value> = Default::default();
+    let _ = member_map.insert(
+        ADD_SHAPE_KEY_TARGET.to_string(),
+        Value::String(member.target().to_string()),
+    );
+    if member.has_traits() {
+        let _ = member_map.insert(
+            ADD_SHAPE_KEY_TRAITS.to_string(),
+            from_traits(member.traits()),
+        );
+    }
+    Value::Object(member_map)
 }
 
 fn from_value(value: &NodeValue) -> Value {

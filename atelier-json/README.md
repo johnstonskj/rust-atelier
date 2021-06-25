@@ -26,6 +26,12 @@ println!("{:#?}", result.unwrap());
 
 ## Changes
 
+**Version 0.2.5**
+
+* New Feature: [make a public api for converting Model to json-ast model](https://github.com/johnstonskj/rust-atelier/issues/32).
+* Added all snippets from section 17 of the specification as test cases.
+* Fixed bugs in reader for handling member traits.
+
 **Version 0.2.4**
 
 * From core: Reorganized errors, made the naming and messages consistent and removed unused.
