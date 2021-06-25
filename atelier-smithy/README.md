@@ -43,6 +43,10 @@ assert!(result.is_ok());
 
 ## Changes
 
+**Version 0.2.11**
+
+* Fixed escaping bug for line writer that made cross-platform comparison a pain.
+
 **Version 0.2.10**
 
 * Fixed test case typo.
