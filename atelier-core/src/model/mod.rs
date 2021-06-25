@@ -5,7 +5,7 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 */
 
 use crate::error::{ErrorKind, Result as ModelResult};
-use crate::model::shapes::{HasTraits, NonTraitEq, TopLevelShape};
+use crate::model::shapes::{HasTraits, NonTraitEq, ShapeKind, TopLevelShape};
 use crate::model::values::{Value, ValueMap};
 use crate::Version;
 use std::collections::HashMap;
@@ -215,8 +215,11 @@ impl Model {
     /// >    1. Conflicting service shapes MUST contain the same properties and target the same shapes.
     ///
     pub fn add_shape(&mut self, shape: TopLevelShape) -> ModelResult<()> {
-        if shape.id().is_member() {
-            error!("Model::add_shape '{}' is a member ID", shape.id());
+        if shape.id().is_member() && !matches!(shape.body(), ShapeKind::Unresolved) {
+            error!(
+                "Model::add_shape '{}' is a member ID; only allowed for unresolved shapes",
+                shape.id()
+            );
             return Err(ErrorKind::ShapeIDExpected(shape.id().clone()).into());
         } else if let Some(existing) = self.shape_mut(shape.id()) {
             // > 1. All conflicting shapes MUST have the same shape type.
@@ -226,6 +229,7 @@ impl Model {
                 existing.body().is_unresolved(),
                 shape.body().is_unresolved(),
             ) {
+                // TODO: This does not deal with unresolved member shapes, only top-level.
                 (false, false) => {
                     if existing.equal_without_traits(&shape) {
                         copy_traits(existing, &shape)?;

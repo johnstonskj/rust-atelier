@@ -119,7 +119,7 @@ impl MemberShape {
 // ------------------------------------------------------------------------------------------------
 
 impl ListOrSet {
-    /// Construct a new list with the given `ShapeID` as the reference to the member type.
+    /// Construct a new list, or set, with the given `ShapeID` as the reference to the member type.
     pub fn new(parent_id: &ShapeID, target: ShapeID) -> Self {
         Self {
             member: MemberShape::new_from(
@@ -130,7 +130,12 @@ impl ListOrSet {
         }
     }
 
+    /// Construct a new list, or set, with the given value as the member.
     pub fn from(member: MemberShape) -> Self {
+        assert_eq!(
+            member.id.member_name().as_ref().unwrap().to_string(),
+            MEMBER_MEMBER
+        );
         Self { member }
     }
 
@@ -162,6 +167,7 @@ impl Map {
         }
     }
 
+    /// Construct a new map, with the given key/value pair as the members.
     pub fn from(key: MemberShape, value: MemberShape) -> Self {
         Self { key, value }
     }

@@ -97,6 +97,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.17**
+
+* Fixed add_shape bug, it must allow shapes with a member_id IFF the shape kind is unresolved.
+
 **Version 0.2.16**
 
 * Fixed resolver bug for the fall-through case and create an unresolved reference.
