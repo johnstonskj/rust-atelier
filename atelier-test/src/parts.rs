@@ -49,7 +49,7 @@ pub fn simple_shape_only() -> TestCaseModel {
 
 const SIMPLE_SHAPE_WITH_BLOCK_TEXT: &[&str] = &[
     "integer::example.foo#FooDelay",
-    "integer::example.foo#FooDelay::trait::smithy.api#documentation<=\"A wait time for \\\"foo\\\" to happen\\n        \"",
+    "integer::example.foo#FooDelay::trait::smithy.api#documentation<=\"A wait time for \"foo\" to happen\n        \"",
 ];
 
 ///
@@ -82,7 +82,7 @@ pub fn simple_shape_with_block_text() -> TestCaseModel {
 
 const SIMPLE_SHAPE_WITH_BLOCK_TEXT_2: &[&str] = &[
     "integer::example.foo#FooDelay",
-    "integer::example.foo#FooDelay::trait::smithy.api#documentation<=\"Do empty \\\"\\\" quotes work too?\"",
+    "integer::example.foo#FooDelay::trait::smithy.api#documentation<=\"Do empty \"\" quotes work too?\"",
 ];
 
 ///

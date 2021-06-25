@@ -22,7 +22,7 @@ const MESSAGE_OF_THE_DAY_AS_LINES: &[&str] = &[
     "service::example.motd#MessageOfTheDay::trait::smithy.api#documentation<=\"Provides a Message of the day.\"",
     "service::example.motd#MessageOfTheDay::version<=\"2020-06-21\"",
     "string::example.motd#Date",
-    "string::example.motd#Date::trait::smithy.api#pattern<=\"^\\\\d\\\\d\\\\d\\\\d\\\\-\\\\d\\\\d-\\\\d\\\\d$\"",
+    "string::example.motd#Date::trait::smithy.api#pattern<=\"^\\d\\d\\d\\d\\-\\d\\d-\\d\\d$\"",
     "structure::example.motd#BadDateValue",
     "structure::example.motd#BadDateValue::errorMessage::trait::smithy.api#required<={}",
     "structure::example.motd#BadDateValue::errorMessage=>smithy.api#String",

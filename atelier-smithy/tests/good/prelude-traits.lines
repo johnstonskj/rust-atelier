@@ -51,7 +51,7 @@ string::smithy.api#AuthTraitReference::trait::smithy.api#documentation<="A strin
 string::smithy.api#AuthTraitReference::trait::smithy.api#idRef<={selector}="[trait|authDefinition]"
 string::smithy.api#AuthTraitReference::trait::smithy.api#private<={}
 string::smithy.api#EnumConstantBodyName
-string::smithy.api#EnumConstantBodyName::trait::smithy.api#documentation<="The optional name or label of the enum constant value.\n\nThis property is used in code generation to provide a label for\neach enum value. No two enums can have the same \'name\' value."
+string::smithy.api#EnumConstantBodyName::trait::smithy.api#documentation<="The optional name or label of the enum constant value.\n\nThis property is used in code generation to provide a label for\neach enum value. No two enums can have the same 'name' value."
 string::smithy.api#EnumConstantBodyName::trait::smithy.api#pattern<="^[a-zA-Z_]+[a-zA-Z_0-9]*$"
 string::smithy.api#EnumConstantBodyName::trait::smithy.api#private<={}
 string::smithy.api#HttpApiKeyLocations

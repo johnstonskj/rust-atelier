@@ -384,12 +384,7 @@ fn value_into_strings(prefix: &str, value: &Value, strings: &mut Vec<String>) {
         }
         Value::Number(v) => strings.push(format!("{}{}", prefix, v)),
         Value::Boolean(v) => strings.push(format!("{}{}", prefix, v)),
-        Value::String(v) => {
-            if v.contains('\'') {
-                println!("{}", format!("{}{:?}", prefix, v));
-            }
-            strings.push(format!("{}{:?}", prefix, v))
-        }
+        Value::String(v) => strings.push(format!("{}\"{}\"", prefix, v)),
         Value::None => strings.push(format!("{}()", prefix)),
     }
 }

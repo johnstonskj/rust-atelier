@@ -10,7 +10,7 @@ list::smithy.waiters#NonEmptyStringList::member=>smithy.waiters#NonEmptyString
 list::smithy.waiters#NonEmptyStringList::trait::smithy.api#private<={}
 map::smithy.waiters#waitable
 map::smithy.waiters#waitable::key=>smithy.waiters#WaiterName
-map::smithy.waiters#waitable::trait::smithy.api#documentation<="Indicates that an operation has various named \"waiters\" that can be used\nto poll a resource until it enters a desired state."
+map::smithy.waiters#waitable::trait::smithy.api#documentation<="Indicates that an operation has various named "waiters" that can be used\nto poll a resource until it enters a desired state."
 map::smithy.waiters#waitable::trait::smithy.api#length<={min}=1
 map::smithy.waiters#waitable::trait::smithy.api#trait<={selector}="operation :not(-[input, output]-> structure > member > union[trait|streaming])"
 map::smithy.waiters#waitable::value=>smithy.waiters#Waiter
@@ -53,7 +53,7 @@ structure::smithy.waiters#Acceptor::matcher=>smithy.waiters#Matcher
 structure::smithy.waiters#Acceptor::state::trait::smithy.api#documentation<="The state the acceptor transitions to when matched."
 structure::smithy.waiters#Acceptor::state::trait::smithy.api#required<={}
 structure::smithy.waiters#Acceptor::state=>smithy.waiters#AcceptorState
-structure::smithy.waiters#Acceptor::trait::smithy.api#documentation<="Represents an acceptor in a waiter\'s state machine."
+structure::smithy.waiters#Acceptor::trait::smithy.api#documentation<="Represents an acceptor in a waiter's state machine."
 structure::smithy.waiters#Acceptor::trait::smithy.api#private<={}
 structure::smithy.waiters#PathMatcher
 structure::smithy.waiters#PathMatcher::comparator::trait::smithy.api#documentation<="The comparator used to compare the result of the expression with the\nexpected value."

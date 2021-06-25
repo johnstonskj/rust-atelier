@@ -68,28 +68,32 @@ pub fn parse_and_compare_to_file(input_str: &str, reader: &mut impl ModelReader,
 }
 
 pub fn compare_model_to_file(model: Model, file_path: &Path) {
-    let expected_lines: Vec<String> = fs::read_to_string(file_path)
-        .unwrap()
-        .split(LINE_ENDING)
-        .map(str::to_string)
-        .collect();
-
     let actual_lines: Vec<String> = make_line_oriented_form(&model)
         .iter()
         .map(|s| {
-            if s.contains("\\r\\n") {
-                s.replace("\\r\\n", "\\n")
-            } else {
-                s.to_string()
-            }
+            format!(
+                "{:?}",
+                if s.contains("\\r\\n") {
+                    s.replace("\\r\\n", "\\n")
+                } else {
+                    s.to_string()
+                }
+            )
         })
         .collect();
 
-    for line in &actual_lines {
-        if line.contains('\'') {
-            println!("{}", line);
-        }
-    }
+    let expected_lines: Vec<String> = fs::read_to_string(file_path)
+        .unwrap()
+        .split(LINE_ENDING)
+        .map(|s| {
+            format!(
+                "{:?}",
+                s.replace("\\n", "\n")
+                    .replace("\\t", "\t")
+                    .replace("\\\"", "\"")
+            )
+        })
+        .collect();
 
     assert_eq!(actual_lines, expected_lines);
 }
