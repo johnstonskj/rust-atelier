@@ -85,6 +85,12 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
         })
         .collect();
 
+    for line in &actual_lines {
+        if line.contains('\'') {
+            println!("{}", line);
+        }
+    }
+
     assert_eq!(actual_lines, expected_lines);
 }
 

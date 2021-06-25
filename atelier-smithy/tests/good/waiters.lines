@@ -34,7 +34,7 @@ string::smithy.waiters#PathComparator::trait::smithy.api#documentation<="Defines
 string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[0]={"documentation"}="Matches if the return value is a string that is equal to the expected string."
 string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[0]={"name"}="STRING_EQUALS"
 string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[0]={"value"}="stringEquals"
-string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"documentation"}="Matches if the return value is a boolean that is equal to the string literal \'true\' or \'false\'."
+string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"documentation"}="Matches if the return value is a boolean that is equal to the string literal 'true' or 'false'."
 string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"name"}="BOOLEAN_EQUALS"
 string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[1]={"value"}="booleanEquals"
 string::smithy.waiters#PathComparator::trait::smithy.api#enum<=[2]={"documentation"}="Matches if all values in the list matches the expected string."
