@@ -28,9 +28,6 @@ More detailed description, with
 )]
 
 #[macro_use]
-extern crate log;
-
-#[macro_use]
 extern crate paste;
 
 // ------------------------------------------------------------------------------------------------
