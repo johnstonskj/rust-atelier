@@ -73,8 +73,8 @@ pub fn compare_model_to_file(model: Model, file_path: &Path) {
         .map(|s| {
             format!(
                 "{:?}",
-                if s.contains("\\r\\n") {
-                    s.replace("\\r\\n", "\\n")
+                if s.contains("\r\n") {
+                    s.replace("\r\n", "\n")
                 } else {
                     s.to_string()
                 }
