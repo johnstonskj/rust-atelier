@@ -25,6 +25,17 @@ use std::io::Write;
 /// This struct implements the `ModelWriter` trait to write a [Model](../atelier_core/model/struct.Model.html)
 /// in the [JSON AST](https://awslabs.github.io/smithy/1.0/spec/core/json-ast.html) representation.
 ///
+/// Currently the JSON writer takes only one parameter which determines whether the resulting JSON
+/// should be *pretty printed* or not, the default is `false`.
+///
+/// ```rust
+/// use atelier_json::JsonWriter;
+///
+/// let writer = JsonWriter::default(); // pretty printing off.
+///
+/// let writer = JsonWriter::new(true); // pretty printing on.
+/// ```
+///
 #[allow(missing_debug_implementations)]
 pub struct JsonWriter {
     pretty_print: bool,

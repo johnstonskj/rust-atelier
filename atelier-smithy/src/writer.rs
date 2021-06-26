@@ -22,7 +22,18 @@ use crate::syntax::{
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Write a [Model](../atelier_core/model/struct.Model.html) in the Smithy native representation.
+/// This struct implements the `ModelWriter` trait to write a [Model](../atelier_core/model/struct.Model.html)
+/// in the [Smithy IDL](https://awslabs.github.io/smithy/1.0/spec/core/idl.html) representation.
+///
+/// Currently the Smithy writer takes only one parameter which is the namespace to filter the semantic
+/// model.
+///
+///```rust
+/// use atelier_core::model::NamespaceID;
+/// use atelier_smithy::SmithyWriter;
+/// use std::str::FromStr;
+///
+/// let writer = SmithyWriter::new(NamespaceID::from_str("org.example").unwrap());
 ///
 #[derive(Debug)]
 pub struct SmithyWriter {

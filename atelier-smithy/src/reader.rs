@@ -9,7 +9,16 @@ use std::io::Read;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Read a [Model](../atelier_core/model/struct.Model.html) from the Smithy native representation.
+/// This struct implements the `ModelReader` trait to read a [Model](../atelier_core/model/struct.Model.html)
+/// from the [Smithy IDL](https://awslabs.github.io/smithy/1.0/spec/core/idl.html) representation.
+///
+/// Currently the Smithy reader takes no parameters and so is constructed simply using `Default`:
+///
+/// ```rust
+/// use atelier_smithy::SmithyReader;
+///
+/// let reader = SmithyReader::default();
+/// ```
 ///
 #[derive(Debug)]
 pub struct SmithyReader;

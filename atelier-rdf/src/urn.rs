@@ -30,12 +30,6 @@ use std::sync::Arc;
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-const SHAPE_URN_ABSOLUTE_SEPARATOR: char = ':';
-
-const SHAPE_URN_MEMBER_SEPARATOR: char = '/';
-
-const URN_NID: &str = "smithy:";
-
 ///
 /// Convert a Smithy `ShapeID` into an `IRIRef`.
 ///
@@ -102,6 +96,16 @@ pub fn iri_to_shape(iri: IRIRef) -> Result<ShapeID, String> {
         Err(String::from("Not a URN"))
     }
 }
+
+// ------------------------------------------------------------------------------------------------
+// Private Values
+// ------------------------------------------------------------------------------------------------
+
+const SHAPE_URN_ABSOLUTE_SEPARATOR: char = ':';
+
+const SHAPE_URN_MEMBER_SEPARATOR: char = '/';
+
+const URN_NID: &str = "smithy:";
 
 // ------------------------------------------------------------------------------------------------
 // Unit Tests

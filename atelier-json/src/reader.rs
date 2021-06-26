@@ -27,7 +27,16 @@ use std::str::FromStr;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Read a [Model](../atelier_core/model/struct.Model.html) from the JSON AST representation.
+/// This struct implements the `ModelReader` trait to read a [Model](../atelier_core/model/struct.Model.html)
+/// from the [JSON AST](https://awslabs.github.io/smithy/1.0/spec/core/json-ast.html) representation.
+///
+/// Currently the JSON reader takes no parameters and so is constructed simply using `Default`:
+///
+/// ```rust
+/// use atelier_json::JsonReader;
+///
+/// let reader = JsonReader::default();
+/// ```
 ///
 #[allow(missing_debug_implementations)]
 pub struct JsonReader;

@@ -3,7 +3,7 @@
 Rust native library and tools for the AWS [Smithy](https://github.com/awslabs/smithy) Interface Definition Language.
 
 ![MIT License](https://img.shields.io/badge/license-mit-118811.svg)
-![Minimum Rust Version](https://img.shields.io/badge/Min%20Rust-1.40-green.svg)
+![Minimum Rust Version](https://img.shields.io/badge/Min%20Rust-1.48-green.svg)
 ![Rust](https://github.com/johnstonskj/rust-atelier/workflows/Rust/badge.svg)
 ![Audit](https://github.com/johnstonskj/rust-atelier/workflows/Security%20audit/badge.svg)
 [![GitHub stars](https://img.shields.io/github/stars/johnstonskj/rust-atelier.svg)](https://github.com/johnstonskj/rust-atelier/stargazers)
@@ -29,7 +29,7 @@ crate incorporates all, except the cargo command, using features to select the d
 | crate                                      | Content                                                | Status                                 |
 |--------------------------------------------|--------------------------------------------------------|----------------------------------------|
 | [`atelier_core`](./atelier-core)           | The Model, Builder, and Selector types and I/O traits. | Model: Done, Builder: Done, Tests: OK  |
-| [`atelier_assembler`](./atelier-assembler) | merge files into a single in-memory Model.             | Model: Done, Tests: None               |
+| [`atelier_assembler`](./atelier-assembler) | merge files into a single in-memory Model.             | Model: Done, Tests: Low               |
 | [`atelier_describe`](./atelier-describe)   | Model documentation writer, uses `somedoc` crate.      | Writer: 75%, Tests: Low                |
 | [`atelier_json`](./atelier-json)           | The serializer/de-serializer for the JSON AST.         | Reader/Writer: Done, Tests: Low        |
 | [`atelier_lib`](./atelier-lib)             | Re-export structures from previous crates.             | Done.                                  |

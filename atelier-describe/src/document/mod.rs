@@ -7,6 +7,11 @@ This module provides a writer for Markdown documentation for a model.
 ///
 pub const FILE_EXTENSION: &str = "md";
 
+///
+/// The name to report in errors in this representation.
+///
+pub const REPRESENTATION_NAME: &str = "Strucutured Documentation";
+
 // ------------------------------------------------------------------------------------------------
 // Modules
 // ------------------------------------------------------------------------------------------------

@@ -59,5 +59,6 @@ pub mod urn;
 pub mod reader;
 
 pub mod writer;
+pub use writer::{model_to_rdf, RdfWriter};
 
 pub mod vocabulary;

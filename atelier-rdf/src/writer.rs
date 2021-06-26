@@ -81,6 +81,21 @@ use std::str::FromStr;
 ///
 /// Simple implementation of the `ModelWriter` trait that writes the RDF representation of a model.
 ///
+/// Currently the RDF writer takes only one parameter which will be used as the subject IRI for the
+/// model. If not specified the writer will use a generated blank node instead.
+///
+///```rust
+/// use atelier_rdf::RdfWriter;
+/// use atelier_rdf::urn::shape_to_iri;
+/// use atelier_core::model::ShapeID;
+/// use std::str::FromStr;
+///
+/// let writer = RdfWriter::default();
+///
+/// let shape_id = ShapeID::from_str("org.example#ExampleShape").unwrap();
+/// let writer = RdfWriter::new(shape_to_iri(&shape_id));
+/// ```
+///
 #[derive(Debug)]
 pub struct RdfWriter {
     model_iri: Option<IRIRef>,
@@ -100,7 +115,8 @@ struct RdfModelVisitor {
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Convert a Smithy semantic model into a canonical RDF graph representation.
+/// Convert a Smithy semantic model into a canonical RDF graph representation. This function is
+/// used by the `RdfWriter` implementation.
 ///
 pub fn model_to_rdf(
     model: &Model,
