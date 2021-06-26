@@ -314,7 +314,7 @@ impl TryFrom<&mut ModelAssembler> for Model {
             );
             match models {
                 Ok(mut models) => {
-                    if models.len() == 0 {
+                    if models.is_empty() {
                         warn!(
                             "Model::try_from::<ModelAssembler>(...): No models found to assemble!"
                         );
@@ -415,6 +415,7 @@ impl ModelAssembler {
         mut_self
     }
 
+    #[allow(clippy::ptr_arg)]
     fn expand_path(&self, path: &PathBuf, results: &mut Vec<PathBuf>) {
         info!("ModelAssembler::expand_path({:?})", path);
         if path.is_file() {

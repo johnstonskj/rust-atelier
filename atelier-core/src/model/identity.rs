@@ -161,7 +161,8 @@ impl FromStr for NamespaceID {
 impl PartialEq for NamespaceID {
     ///
     /// § 2.4.2. Shape ID member names
-    /// While shape IDs used within a model are case-sensitive, no two shapes in the model can have the same case-insensitive shape ID.
+    /// While shape IDs used within a model are case-sensitive, no two shapes in the model can have
+    /// the same case-insensitive shape ID.
     ///
     fn eq(&self, other: &Self) -> bool {
         self.0.to_lowercase() == other.0.to_lowercase()
@@ -232,10 +233,7 @@ impl FromStr for ShapeID {
         if let Some(result) = RE_SHAPE_ID.captures(s) {
             let namespace = NamespaceID(result.get(1).unwrap().as_str().to_string());
             let shape_name = Identifier(result.get(3).unwrap().as_str().to_string());
-            let member_name = match result.get(5) {
-                Some(v) => Some(Identifier(v.as_str().to_string())),
-                None => None,
-            };
+            let member_name = result.get(5).map(|v| Identifier(v.as_str().to_string()));
             Ok(Self {
                 namespace,
                 shape_name,
@@ -278,10 +276,7 @@ impl ShapeID {
         Self::new(
             NamespaceID::new_unchecked(namespace),
             Identifier::new_unchecked(shape_name),
-            match member_name {
-                None => None,
-                Some(member_name) => Some(Identifier::new_unchecked(member_name)),
-            },
+            member_name.map(|member_name| Identifier::new_unchecked(member_name)),
         )
     }
 

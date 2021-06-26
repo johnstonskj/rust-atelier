@@ -302,7 +302,7 @@ impl SmithyWriter {
         match value {
             Value::Array(vs) => {
                 write!(w, "[")?;
-                let last = if vs.len() == 0 { 0 } else { vs.len() - 1 };
+                let last = if vs.is_empty() { 0 } else { vs.len() - 1 };
                 for (i, v) in vs.iter().enumerate() {
                     self.write_value(w, v, false)?;
                     if i < last {
@@ -315,7 +315,7 @@ impl SmithyWriter {
                 if !top {
                     write!(w, "{{")?;
                 }
-                let last = if vs.len() == 0 { 0 } else { vs.len() - 1 };
+                let last = if vs.is_empty() { 0 } else { vs.len() - 1 };
                 for (i, (k, v)) in vs.iter().enumerate() {
                     write!(w, "{}: ", k)?;
                     self.write_value(w, v, false)?;

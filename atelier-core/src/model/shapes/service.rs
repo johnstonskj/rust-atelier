@@ -7,7 +7,7 @@ use std::collections::HashMap;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// Corresponds to the "service" shape.
+/// Corresponds to the Smithy Service top-level shape.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Service {
@@ -18,7 +18,7 @@ pub struct Service {
 }
 
 ///
-/// Corresponds to the "operation" shape.
+/// Corresponds to the Smithy Operation top-level shape.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Operation {
@@ -28,7 +28,7 @@ pub struct Operation {
 }
 
 ///
-/// Corresponds to the "resource" shape.
+/// Corresponds to the Smithy Resource top-level shape.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Resource {
@@ -72,7 +72,7 @@ impl Service {
 
     array_member! { operations, operation, ShapeID }
 
-    /// Add an element to this member's collection.
+    /// Add an element to this service's `operations` collection.
     pub fn add_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.add_operation(shape.id().clone())
@@ -81,7 +81,7 @@ impl Service {
 
     array_member! { resources, resource, ShapeID }
 
-    /// Add an element to this member's collection.
+    /// Add an element to this service's `resources` collection.
     pub fn add_resource_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_resource() {
             self.add_resource(shape.id().clone())
@@ -106,7 +106,7 @@ impl Default for Operation {
 impl Operation {
     optional_member! { input, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of this operation's `input`.
     pub fn set_input_shape(&mut self, shape: &TopLevelShape) {
         if !(shape.is_operation()
             || shape.is_resource()
@@ -119,7 +119,7 @@ impl Operation {
 
     optional_member! { output, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of this operation's `output`.
     pub fn set_output_shape(&mut self, shape: &TopLevelShape) {
         if !(shape.is_operation()
             || shape.is_resource()
@@ -132,7 +132,7 @@ impl Operation {
 
     array_member! { errors, error, ShapeID }
 
-    /// Add an element to this member's collection.
+    /// Add an element to this operation's `errors` collection.
     pub fn add_error_shape(&mut self, shape: &TopLevelShape) {
         if !(shape.is_operation()
             || shape.is_resource()
@@ -213,7 +213,7 @@ impl Resource {
 
     optional_member! { create, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of the `create` operation.
     pub fn set_create_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.set_create(shape.id().clone())
@@ -222,7 +222,7 @@ impl Resource {
 
     optional_member! { put, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of the `put` operation.
     pub fn set_put_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.set_put(shape.id().clone())
@@ -231,7 +231,7 @@ impl Resource {
 
     optional_member! { read, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of the `read` operation.
     pub fn set_read_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.set_read(shape.id().clone())
@@ -240,7 +240,7 @@ impl Resource {
 
     optional_member! { update, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of the `update` operation.
     pub fn set_update_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.set_update(shape.id().clone())
@@ -249,7 +249,7 @@ impl Resource {
 
     optional_member! { delete, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of the `delete` operation.
     pub fn set_delete_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.set_delete(shape.id().clone())
@@ -258,7 +258,7 @@ impl Resource {
 
     optional_member! { list, ShapeID }
 
-    /// Set the current value of this member.
+    /// Set the current value (target) of the `list` operation.
     pub fn set_list_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.set_list(shape.id().clone())
@@ -267,7 +267,7 @@ impl Resource {
 
     array_member! { operations, operation, ShapeID }
 
-    /// Add an element to this member's collection.
+    /// Add an element to the `operation` collection.
     pub fn add_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.add_operation(shape.id().clone())
@@ -276,7 +276,7 @@ impl Resource {
 
     array_member! { collection_operations, collection_operation, ShapeID }
 
-    /// Add an element to this member's collection.
+    /// Add an element to the `collection_operations` collection.
     pub fn add_collection_operation_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_operation() {
             self.add_collection_operation(shape.id().clone())
@@ -285,7 +285,7 @@ impl Resource {
 
     array_member! { resources, resource, ShapeID }
 
-    /// Add an element to this member's collection.
+    /// Add an element to the `resources` collection.
     pub fn add_resource_shape(&mut self, shape: &TopLevelShape) {
         if shape.is_resource() {
             self.add_resource(shape.id().clone())

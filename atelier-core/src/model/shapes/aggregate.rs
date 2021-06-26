@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 ///
 /// Represents a member shape, part of an aggregate top-level shape. The `target` is the target
-/// type for this member.
+/// type for this member. Note that members have an identifier and may also have traits.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct MemberShape {
@@ -20,8 +20,8 @@ pub struct MemberShape {
 }
 
 ///
-/// Corresponds to the Smithy List and Set shape. It has a single member, named `member` which determines
-/// the shape type for each member of the list.
+/// Corresponds to the Smithy List and Set top-level shapes. It has a single member, named `member`
+/// which determines the shape type for each member of the list.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct ListOrSet {
@@ -29,8 +29,8 @@ pub struct ListOrSet {
 }
 
 ///
-/// Corresponds to the Smithy Map shape. It has two members, `key` and `value` which determine the
-/// shape types for each element within the map.
+/// Corresponds to the Smithy Map top-level shape. It has two members, `key` and `value` which
+/// determine the shape types for each element within the map.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct Map {
@@ -39,8 +39,8 @@ pub struct Map {
 }
 
 ///
-/// Corresponds to the Smithy Structure or Union shape. It has two members, `key` and `value` which determine the
-/// shape types for each element within the map.
+/// Corresponds to the Smithy Structure or Union top-level shapes. It has two members, `key` and
+/// `value` which determine the shape types for each element within the map.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct StructureOrUnion {
@@ -60,12 +60,12 @@ impl NonTraitEq for MemberShape {
 has_traits_impl! { MemberShape . traits }
 
 impl MemberShape {
-    // The member name for this member, this is an identifier not a full shape ID.
+    /// The member name for this member, this is an identifier not a full shape ID.
     pub fn id(&self) -> &Identifier {
         &self.id
     }
 
-    // Set the member name for this member, this is an identifier not a full shape ID.
+    /// Set the member name for this member, this is an identifier not a full shape ID.
     pub fn set_id(&mut self, id: Identifier) {
         self.id = id
     }

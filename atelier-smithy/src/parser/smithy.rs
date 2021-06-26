@@ -781,6 +781,7 @@ fn parse_node_value(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
 
 fn parse_quoted_text(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     entry!("parse_quoted_text", input_pair);
+    #[allow(clippy::never_loop)]
     for inner in input_pair.into_inner() {
         return match inner.as_rule() {
             Rule::quoted_chars => Ok(NodeValue::String(inner.as_str().to_string())),
@@ -792,6 +793,7 @@ fn parse_quoted_text(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
 
 fn parse_text_block(input_pair: Pair<'_, Rule>) -> ModelResult<NodeValue> {
     entry!("parse_text_block", input_pair);
+    #[allow(clippy::never_loop)]
     for inner in input_pair.into_inner() {
         match inner.as_rule() {
             Rule::block_quoted_chars => return Ok(NodeValue::String(inner.as_str().to_string())),

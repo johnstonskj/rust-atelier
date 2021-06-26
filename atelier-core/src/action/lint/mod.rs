@@ -191,7 +191,7 @@ impl NamingConventions {
         }
     }
     fn check_applied_trait_names(&mut self, ids: &HashMap<ShapeID, Option<Value>>) {
-        for (id, _) in ids {
+        for id in ids.keys() {
             self.check_trait_name(id);
         }
     }
@@ -208,7 +208,7 @@ impl Linter for UnwelcomeTerms {
         for shape in model.shapes() {
             let shape_id = shape.id();
             self.check_shape_id(shape_id);
-            for (id, _) in shape.traits() {
+            for id in shape.traits().keys() {
                 self.check_shape_id(id);
             }
 
@@ -218,7 +218,7 @@ impl Linter for UnwelcomeTerms {
                     for member in body.members() {
                         self.check_identifier(member.id(), Some(shape.id()));
                         self.check_shape_id(member.target());
-                        for (id, _) in member.traits() {
+                        for id in member.traits().keys() {
                             self.check_shape_id(id);
                         }
                     }
