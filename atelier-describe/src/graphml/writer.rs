@@ -113,7 +113,7 @@ use atelier_core::io::ModelWriter;
 use atelier_core::model::shapes::{
     AppliedTraits, ListOrSet, Map, Operation, Resource, Service, Simple, StructureOrUnion,
 };
-use atelier_core::model::visitor::{walk_model_mut, MutableModelVisitor};
+use atelier_core::model::visitor::{walk_model, ModelVisitor};
 use atelier_core::model::{Model, ShapeID};
 use atelier_core::syntax::{
     MEMBER_COLLECTION_OPERATIONS, MEMBER_CREATE, MEMBER_DELETE, MEMBER_ERRORS, MEMBER_INPUT,
@@ -121,6 +121,7 @@ use atelier_core::syntax::{
     MEMBER_READ, MEMBER_RESOURCES, MEMBER_UPDATE, MEMBER_VALUE, SHAPE_LIST, SHAPE_MAP,
     SHAPE_OPERATION, SHAPE_RESOURCE, SHAPE_SERVICE, SHAPE_SET, SHAPE_STRUCTURE, SHAPE_UNION,
 };
+use std::cell::{RefCell, RefMut};
 use std::io::Write;
 
 // ------------------------------------------------------------------------------------------------
@@ -138,9 +139,13 @@ pub struct GraphMLWriter {}
 // Private Types
 // ------------------------------------------------------------------------------------------------
 
-struct WriteVisitor<'a, W: Write> {
+struct VisitorState<'a, W: Write> {
     edge_count: u16,
     writer: &'a mut W,
+}
+#[allow(clippy::upper_case_acronyms)]
+struct GraphMLVisitor<'a, W: Write> {
+    state: RefCell<VisitorState<'a, W>>,
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -186,11 +191,13 @@ impl ModelWriter for GraphMLWriter {
             model.smithy_version()
         )?;
 
-        let mut visitor = WriteVisitor {
-            edge_count: 0,
-            writer: w,
+        let visitor = GraphMLVisitor {
+            state: RefCell::new(VisitorState {
+                edge_count: 0,
+                writer: w,
+            }),
         };
-        walk_model_mut(model, &mut visitor)?;
+        walk_model(model, &visitor)?;
         writeln!(w, r#"    </graph>"#)?;
 
         writeln!(w, r#"</graphml>"#)?;
@@ -237,11 +244,11 @@ impl GraphMLWriter {
 
 // ------------------------------------------------------------------------------------------------
 
-impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
+impl<'a, W: Write> ModelVisitor for GraphMLVisitor<'a, W> {
     type Error = ModelError;
 
     fn simple_shape(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Simple,
@@ -252,7 +259,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn list(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &ListOrSet,
@@ -264,7 +271,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn set(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &ListOrSet,
@@ -275,12 +282,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
         Ok(())
     }
 
-    fn map(
-        &mut self,
-        id: &ShapeID,
-        traits: &AppliedTraits,
-        value: &Map,
-    ) -> Result<(), Self::Error> {
+    fn map(&self, id: &ShapeID, traits: &AppliedTraits, value: &Map) -> Result<(), Self::Error> {
         self.node(id, SHAPE_MAP)?;
         self.traits(id, traits)?;
         self.member(id, value.key().target(), MEMBER_KEY)?;
@@ -289,7 +291,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn structure(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &StructureOrUnion,
@@ -303,7 +305,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn union(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &StructureOrUnion,
@@ -317,7 +319,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn operation(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Operation,
@@ -337,23 +339,26 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn service(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Service,
     ) -> Result<(), Self::Error> {
-        writeln!(self.writer, r#"        <node id="{}">"#, id)?;
-        writeln!(
-            self.writer,
-            r#"            <data key="type">{}</data>"#,
-            SHAPE_SERVICE
-        )?;
-        writeln!(
-            self.writer,
-            r#"            <data key="version">{}</data>"#,
-            value.version()
-        )?;
-        writeln!(self.writer, r#"        </node>"#)?;
+        {
+            let mut state = self.state.borrow_mut();
+            writeln!(state.writer, r#"        <node id="{}">"#, id)?;
+            writeln!(
+                state.writer,
+                r#"            <data key="type">{}</data>"#,
+                SHAPE_SERVICE
+            )?;
+            writeln!(
+                state.writer,
+                r#"            <data key="version">{}</data>"#,
+                value.version()
+            )?;
+            writeln!(state.writer, r#"        </node>"#)?;
+        }
         self.traits(id, traits)?;
         for target in value.operations() {
             self.member(id, target, MEMBER_OPERATIONS)?;
@@ -365,7 +370,7 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 
     fn resource(
-        &mut self,
+        &self,
         id: &ShapeID,
         traits: &AppliedTraits,
         value: &Resource,
@@ -403,51 +408,54 @@ impl<'a, W: Write> MutableModelVisitor for WriteVisitor<'a, W> {
     }
 }
 
-impl<'a, W: Write> WriteVisitor<'a, W> {
-    fn node(&mut self, id: &ShapeID, type_str: &str) -> ModelResult<()> {
-        writeln!(self.writer, r#"        <node id="{}">"#, id)?;
+impl<'a, W: Write> GraphMLVisitor<'a, W> {
+    fn node(&self, id: &ShapeID, type_str: &str) -> ModelResult<()> {
+        let mut state = self.state.borrow_mut();
+        writeln!(state.writer, r#"        <node id="{}">"#, id)?;
         writeln!(
-            self.writer,
+            state.writer,
             r#"            <data key="type">{}</data>"#,
             type_str
         )?;
-        writeln!(self.writer, r#"        </node>"#)?;
+        writeln!(state.writer, r#"        </node>"#)?;
         Ok(())
     }
 
-    fn member(&mut self, source: &ShapeID, target: &ShapeID, name: &str) -> ModelResult<()> {
-        let edge_id = self.edge_id();
+    fn member(&self, source: &ShapeID, target: &ShapeID, name: &str) -> ModelResult<()> {
+        let mut state = self.state.borrow_mut();
+        let edge_id = Self::edge_id(&mut state);
         writeln!(
-            self.writer,
+            state.writer,
             r#"        <edge id="{}" source="{}" target="{}">"#,
             edge_id, source, target
         )?;
         writeln!(
-            self.writer,
+            state.writer,
             r#"            <data key="member">{}</data>"#,
             name
         )?;
-        writeln!(self.writer, r#"        </edge>"#)?;
+        writeln!(state.writer, r#"        </edge>"#)?;
         Ok(())
     }
 
-    fn traits(&mut self, id: &ShapeID, traits: &AppliedTraits) -> ModelResult<()> {
+    fn traits(&self, id: &ShapeID, traits: &AppliedTraits) -> ModelResult<()> {
+        let mut state = self.state.borrow_mut();
         for trait_id in traits.keys() {
-            let edge_id = self.edge_id();
+            let edge_id = Self::edge_id(&mut state);
             writeln!(
-                self.writer,
+                state.writer,
                 r#"        <edge id="{}" source="{}" target="{}">"#,
                 edge_id, id, trait_id
             )?;
-            writeln!(self.writer, r#"            <data key="trait">true</data>"#)?;
-            writeln!(self.writer, r#"        </edge>"#)?;
+            writeln!(state.writer, r#"            <data key="trait">true</data>"#)?;
+            writeln!(state.writer, r#"        </edge>"#)?;
         }
         Ok(())
     }
 
-    fn edge_id(&mut self) -> String {
-        let id = self.edge_count;
-        self.edge_count = id + 1;
+    fn edge_id(state: &mut RefMut<'_, VisitorState<'a, W>>) -> String {
+        let id = state.edge_count;
+        state.edge_count = id + 1;
         format!("e{}", id)
     }
 }
