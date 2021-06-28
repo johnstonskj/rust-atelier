@@ -10,7 +10,7 @@ pub const FILE_EXTENSION: &str = "md";
 ///
 /// The name to report in errors in this representation.
 ///
-pub const REPRESENTATION_NAME: &str = "Strucutured Documentation";
+pub const REPRESENTATION_NAME: &str = "Structured Documentation";
 
 // ------------------------------------------------------------------------------------------------
 // Modules
