@@ -335,6 +335,34 @@ impl TryFrom<&mut ModelAssembler> for Model {
 
 impl ModelAssembler {
     ///
+    /// Construct a new model assembler which does not use any environment variable as a search path.
+    ///
+    pub fn no_env() -> Self {
+        info!("ModelAssembler::no_env()");
+        Self::init(
+            Self {
+                file_types: FileTypeRegistry::default(),
+                paths: Default::default(),
+            },
+            "",
+        )
+    }
+
+    ///
+    /// Construct a new model assembler using an environment variable other than `ENV_PATH_NAME`.
+    ///
+    pub fn env(var_name: &str) -> Self {
+        info!("ModelAssembler::env({})", var_name);
+        Self::init(
+            Self {
+                file_types: FileTypeRegistry::default(),
+                paths: Default::default(),
+            },
+            var_name,
+        )
+    }
+
+    ///
     /// Construct a new model assembler with the provided file type registry.
     ///
     pub fn with_registry(file_types: FileTypeRegistry) -> Self {
@@ -352,10 +380,38 @@ impl ModelAssembler {
     }
 
     ///
+    /// Construct a new model assembler using an environment variable other than `ENV_PATH_NAME`,
+    /// and the provided file type registry.
+    ///
+    pub fn env_with_registry(var_name: &str, file_types: FileTypeRegistry) -> Self {
+        info!(
+            "ModelAssembler::env_with_registry({}, {:?})",
+            var_name,
+            file_types.extensions().collect::<Vec<&String>>()
+        );
+        Self::init(
+            Self {
+                file_types,
+                paths: Default::default(),
+            },
+            var_name,
+        )
+    }
+
+    ///
     /// Add a single file path to the assembler for later processing.
     ///
     pub fn push(&mut self, path: &Path) -> &mut Self {
         info!("ModelAssembler::push({:?})", path);
+        let _ = self.paths.insert(PathBuf::from(path));
+        self
+    }
+
+    ///
+    /// Add a single file path to the assembler for later processing.
+    ///
+    pub fn push_str(&mut self, path: &str) -> &mut Self {
+        info!("ModelAssembler::push_str({})", path);
         let _ = self.paths.insert(PathBuf::from(path));
         self
     }
@@ -397,22 +453,26 @@ impl ModelAssembler {
     // --------------------------------------------------------------------------------------------
 
     fn init(self, search_path: &str) -> Self {
-        let mut mut_self = self;
-        if let Ok(search_path) = env::var(search_path) {
-            info!("ModelAssembler::init() - {}", search_path);
-            for path in search_path.split(':') {
-                let path = path.trim();
-                if !path.is_empty() {
-                    let _ = mut_self.push(&PathBuf::from(path));
+        if !search_path.is_empty() {
+            let mut mut_self = self;
+            if let Ok(search_path) = env::var(search_path) {
+                info!("ModelAssembler::init() - {}", search_path);
+                for path in search_path.split(':') {
+                    let path = path.trim();
+                    if !path.is_empty() {
+                        let _ = mut_self.push(&PathBuf::from(path));
+                    }
                 }
+            } else {
+                debug!(
+                    "ModelAssembler::init() - no value found for env-var '{}'",
+                    ENV_PATH_NAME
+                );
             }
+            mut_self
         } else {
-            debug!(
-                "ModelAssembler::init() - no value found for env-var '{}'",
-                ENV_PATH_NAME
-            );
+            self
         }
-        mut_self
     }
 
     #[allow(clippy::ptr_arg)]
