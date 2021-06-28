@@ -1,6 +1,8 @@
 # Smithy Overview
 
-Smithy is effectively a framework consisting of an semantic model, a custom IDL language, a mapping to/from JSON, and a build process. The semantic model is therefore consistent across different representations while different representations may be used for human usage as well as machine/tool usage. 
+Smithy is effectively a framework consisting of an semantic model, a custom IDL language, a mapping to/from JSON, and a 
+build process. The semantic model is therefore consistent across different representations while different 
+representations may be used for human usage as well as machine/tool usage. 
 
 Figures in this section use a combined ER notation to denote cardinality alongside UML inheritance relationships as needed.
 
@@ -59,12 +61,19 @@ Shape ID has three query methods, `is_absolute` is true if the id has a namespac
 
 ## Shapes
 
-Shapes come in three kinds; _simple_, _aggregate_, and _service_. A simple shape is the typpe for an atomic or primitive value such as `integer` or `string`. Aggregate shapes have members such as a `list` of `string`s or an address `structure`. Service shapes have specific semantics, unlike the very generic simple and aggregate shapes, as they represent either a _service_, a _resource_ managed by a service, or _operations_ on services and resources.
+Shapes come in three kinds; _simple_, _aggregate_, and _service_. A simple shape is the type for an atomic or primitive value such as `integer` or `string`. Aggregate shapes have members such as a `list` of `string`s or an address `structure`. Service shapes have specific semantics, unlike the very generic simple and aggregate shapes, as they represent either a _service_, a _resource_ managed by a service, or _operations_ on services and resources.
 
 <a name="fig_1_5"></a>![Shapes](img/smithy-model-shapes.svg)
 <div class="caption figure">1.5: Shapes</div>
 
 Note that the inheritance relationships in this model are not necessary to implement the semantic model semantics but do make it more understandable.
+
+### Members
+
+The aggregate types _list_, _set_, _map_, _structure_, and _union_ all reference a Member type. This type is shown below, but basically it allows for an identifier as well as a set of traits to be applied to the aggregate type's components.
+
+<a name="fig_1_6"></a>![Members](img/smithy-model-members.svg)
+<div class="caption figure">1.6: Members</div>
 
 ### Traits
 
@@ -74,13 +83,13 @@ The term _applied trait_ refers to the usage of a trait either directly or indir
 
 ## Values
 
-There are a few places in the semantic model where data values are used and the following demonstrates the values supported by the model. 
+There are a few places in the semantic model where data values are used, and the following demonstrates the values supported by the model. 
 
-<a name="fig_1_6"></a>![Data](img/smithy-model-values.svg)
-<div class="caption figure">1.6: Data</div>
+<a name="fig_1_7"></a>![Data Values](img/smithy-model-values.svg)
+<div class="caption figure">1.7: Data Values</div>
 
 * **metadata**; every Model has an optional metadata `Object` which is often used to store tool or process specific values.
-* **nodeValue**; a trait application has values for the structure that defines the trait itself.
+* **node-value**; a trait application has values for the structure that defines the trait itself.
 * **members**; the aggregate values, `Array` and `Object`, contain `Value` members.
 
 Note that there is no value type for `ShapeID`, these are stored in the semantic model as simply strings, their validation happens before the creation of the model and are treated only as opaque values by the model itself.
