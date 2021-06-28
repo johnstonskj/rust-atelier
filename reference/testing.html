@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Model Assembly - Atelier — Smithy for Rust</title>
+        <title>Appendix: Testing - Atelier — Smithy for Rust</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">2.3.</strong> Using the Visitor API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html" class="active"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html"><strong aria-hidden="true">7.</strong> Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded "><a href="../reference/rdf.html"><strong aria-hidden="true">8.</strong> Appendix: RDF Mapping</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/rdf-model.html"><strong aria-hidden="true">8.1.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/rdf-shapes.html"><strong aria-hidden="true">8.2.</strong> Shapes</a></li><li class="chapter-item expanded "><a href="../reference/rdf-traits-values.html"><strong aria-hidden="true">8.3.</strong> Traits and Values</a></li><li class="chapter-item expanded "><a href="../reference/rdf-example.html"><strong aria-hidden="true">8.4.</strong> Example</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/testing.html"><strong aria-hidden="true">9.</strong> Appendix: Testing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/test-crate.html"><strong aria-hidden="true">9.1.</strong> The test Crate</a></li><li class="chapter-item expanded "><a href="../reference/line-oriented-writer.html"><strong aria-hidden="true">9.2.</strong> LineOrientedWriter</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction/introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../introduction/smithy.html"><strong aria-hidden="true">1.1.</strong> Smithy Overview</a></li><li class="chapter-item expanded "><a href="../introduction/crates.html"><strong aria-hidden="true">1.2.</strong> Crate structure</a></li></ol></li><li class="chapter-item expanded "><a href="../using/creating.html"><strong aria-hidden="true">2.</strong> Creating Models</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/model_api.html"><strong aria-hidden="true">2.1.</strong> Using the Model API</a></li><li class="chapter-item expanded "><a href="../using/builder_api.html"><strong aria-hidden="true">2.2.</strong> Using the Builder API</a></li><li class="chapter-item expanded "><a href="../using/visitor.html"><strong aria-hidden="true">2.3.</strong> Using the Visitor API</a></li></ol></li><li class="chapter-item expanded "><a href="../using/io.html"><strong aria-hidden="true">3.</strong> Model IO</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../using/reader.html"><strong aria-hidden="true">3.1.</strong> Model Reader</a></li><li class="chapter-item expanded "><a href="../using/writer.html"><strong aria-hidden="true">3.2.</strong> Model Writer</a></li><li class="chapter-item expanded "><a href="../using/assembly.html"><strong aria-hidden="true">3.3.</strong> Model Assembly</a></li></ol></li><li class="chapter-item expanded "><a href="../using/checking.html"><strong aria-hidden="true">4.</strong> Checking Models</a></li><li class="chapter-item expanded "><a href="../using/cargo.html"><strong aria-hidden="true">5.</strong> Cargo Integration</a></li><li class="chapter-item expanded "><a href="../extending/extending.html"><strong aria-hidden="true">6.</strong> Extending Atelier</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../extending/file_io.html"><strong aria-hidden="true">6.1.</strong> Adding an Artifact Representation</a></li><li class="chapter-item expanded "><a href="../extending/linter.html"><strong aria-hidden="true">6.2.</strong> Adding a Linter</a></li><li class="chapter-item expanded "><a href="../extending/validator.html"><strong aria-hidden="true">6.3.</strong> Adding a Validator</a></li><li class="chapter-item expanded "><a href="../extending/transformer.html"><strong aria-hidden="true">6.4.</strong> Adding a Model Transformation</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/java_to_rust.html"><strong aria-hidden="true">7.</strong> Appendix: Java/Rust Differences</a></li><li class="chapter-item expanded "><a href="../reference/rdf.html"><strong aria-hidden="true">8.</strong> Appendix: RDF Mapping</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/rdf-model.html"><strong aria-hidden="true">8.1.</strong> Models</a></li><li class="chapter-item expanded "><a href="../reference/rdf-shapes.html"><strong aria-hidden="true">8.2.</strong> Shapes</a></li><li class="chapter-item expanded "><a href="../reference/rdf-traits-values.html"><strong aria-hidden="true">8.3.</strong> Traits and Values</a></li><li class="chapter-item expanded "><a href="../reference/rdf-example.html"><strong aria-hidden="true">8.4.</strong> Example</a></li></ol></li><li class="chapter-item expanded "><a href="../reference/testing.html" class="active"><strong aria-hidden="true">9.</strong> Appendix: Testing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../reference/test-crate.html"><strong aria-hidden="true">9.1.</strong> The test Crate</a></li><li class="chapter-item expanded "><a href="../reference/line-oriented-writer.html"><strong aria-hidden="true">9.2.</strong> LineOrientedWriter</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -153,51 +153,20 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#model-assembly" id="model-assembly">Model Assembly</a></h1>
-<p>The following is the simple, and most common, method of using the assembler. This uses the
-default <code>FileTypeRegistry</code> and will search for all models in the set of paths specified in
-the environment variable “<code>SMITHY_PATH</code>“.</p>
-<pre><pre class="playpen"><code class="language-rust">
-<span class="boring">#![allow(unused_variables)]
-</span><span class="boring">fn main() {
-</span>use atelier_assembler::ModelAssembler;
-use atelier_core::error::Result;
-use atelier_core::model::Model;
-use std::convert::TryFrom;
-
-let env_assembler = ModelAssembler::default();
-
-let model: Result&lt;Model&gt; = Model::try_from(env_assembler);
-<span class="boring">}
-</span></code></pre></pre>
-<pre><pre class="playpen"><code class="language-rust">
-<span class="boring">#![allow(unused_variables)]
-</span><span class="boring">fn main() {
-</span>use atelier_assembler::ModelAssembler;
-use atelier_core::error::Result;
-use atelier_core::model::Model;
-use std::convert::TryFrom;
-
-let mut assembler = ModelAssembler::default();
-
-assembler.push_str(&quot;tests/good&quot;);
-
-let model: Result&lt;Model&gt; = Model::try_from(assembler);
-<span class="boring">}
-</span></code></pre></pre>
+                        <h1><a class="header" href="#appendix-testing" id="appendix-testing">Appendix: Testing</a></h1>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../using/writer.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../reference/rdf-example.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../using/checking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../reference/test-crate.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -209,13 +178,13 @@ let model: Result&lt;Model&gt; = Model::try_from(assembler);
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../using/writer.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../reference/rdf-example.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../using/checking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../reference/test-crate.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
