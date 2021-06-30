@@ -1,3 +1,7 @@
+/*!
+Provides simple models as basic tests.
+*/
+
 use crate::TestCaseModel;
 use atelier_core::builder::traits::{documentation, pattern, range, range_min};
 use atelier_core::builder::{
@@ -10,6 +14,8 @@ use std::convert::TryInto;
 
 const NAMESPACE_ONLY: &[&str] = &[];
 
+///
+/// Example model with no shapes.
 ///
 /// ```smithy
 /// namespace smithy.waiters
@@ -28,6 +34,8 @@ pub fn namespace_only() -> TestCaseModel {
 
 const SIMPLE_SHAPE_ONLY: &[&str] = &["integer::smithy.waiters#WaiterDelay"];
 
+///
+/// Example model with a single simple shape.
 ///
 /// ```smithy
 /// namespace smithy.waiters
@@ -53,8 +61,11 @@ const SIMPLE_SHAPE_WITH_BLOCK_TEXT: &[&str] = &[
 ];
 
 ///
+/// Example model with a simple shape that has multi-line documentation.
+///
 /// ```smithy
 /// namespace example.foo
+///
 /// @documentation("""
 ///    A wait time for "foo" to happen
 /// """)
@@ -86,8 +97,11 @@ const SIMPLE_SHAPE_WITH_BLOCK_TEXT_2: &[&str] = &[
 ];
 
 ///
+/// Example model with a simple shape that has documentation containing double quotes.
+///
 /// ```smithy
 /// namespace example.foo
+///
 /// @documentation("""Do empty "" quotes work too?""")
 /// integer FooDelay
 /// ```
@@ -114,6 +128,8 @@ const SIMPLE_SHAPE_WITH_TRAITS: &[&str] = &[
     "integer::smithy.waiters#WaiterDelay::trait::smithy.api#range<={min}=1",
 ];
 
+///
+/// Example model with a simple shape with constraint traits.
 ///
 /// ```smithy
 /// namespace smithy.waiters
@@ -146,6 +162,8 @@ const SIMPLE_SHAPE_WITH_TRAITS_AND_COMMENTS: &[&str] = &[
     "integer::smithy.waiters#WaiterDelay::trait::smithy.api#range<={min}=1",
 ];
 
+///
+/// Example model with a simple shape with constraint traits and a lot of comments.
 ///
 /// ```smithy
 /// // start of the file
@@ -180,6 +198,8 @@ const SIMPLE_SHAPE_WITH_TRAITS_AND_DOCUMENTATION: &[&str] = &[
 ];
 
 ///
+/// Example model with a simple shape and a doc-comment.
+///
 /// ```smithy
 /// namespace smithy.waiters
 ///
@@ -213,6 +233,8 @@ const SERVICE_WITH_RENAMES: &[&str] = &[
     "service::smithy.example#MyService::version<=\"2017-02-11\"",
 ];
 
+///
+/// Example model with a service shape.
 ///
 /// ```smithy
 /// namespace smithy.example

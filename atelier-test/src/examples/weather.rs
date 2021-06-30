@@ -87,6 +87,9 @@ const WEATHER_AS_LINES: &[&str] = &[
     "structure::example.weather#NoSuchResource::trait::smithy.api#error<=\"client\"",
 ];
 
+///
+/// Return a test case for the Smithy [weather tutorial](https://awslabs.github.io/smithy/quickstart.html#weather-service) example.
+///
 pub fn make_weather_model() -> TestCaseModel {
     let model: Model = ModelBuilder::new(Version::V10, "example.weather")
         .service(

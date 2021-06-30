@@ -35,6 +35,9 @@ const MESSAGE_OF_THE_DAY_AS_LINES: &[&str] = &[
 
 ];
 
+///
+/// Return a test case for the _message of the day_ model.
+///
 pub fn make_message_of_the_day_model() -> TestCaseModel {
     let model: Model = ModelBuilder::new(Version::V10, "example.motd")
         .service(
