@@ -61,7 +61,7 @@ use atelier_core::model::shapes::{
 };
 use atelier_core::model::values::{Number, Value};
 use atelier_core::model::visitor::{walk_model, ModelVisitor};
-use atelier_core::model::{Model, ShapeID};
+use atelier_core::model::{HasIdentity, Model, ShapeID};
 use rdftk_core::model::graph::{Graph, GraphFactoryRef, GraphRef};
 use rdftk_core::model::statement::SubjectNodeRef;
 use rdftk_core::simple::graph_factory;

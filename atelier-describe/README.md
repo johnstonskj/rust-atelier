@@ -51,6 +51,10 @@ let documentation = writer.write(&mut stdout(), &model).unwrap();
 
 ## Changes
 
+**Version 0.1.10**
+
+* Added usage of HasIdentity trait for member shapes.
+
 **Version 0.1.9**
 
 * Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the
