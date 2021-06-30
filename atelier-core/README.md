@@ -97,6 +97,14 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.21**
+
+* Altered the HasIdentity trait to parameterize the identifier type.
+  * Added is() method to HasIdentity.
+* Implemented HasIdentity for MemberShape.
+* Removed unnecessary Shape trait.
+* Some documentation clean-up.
+
 **Version 0.2.20**
 
 * Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace

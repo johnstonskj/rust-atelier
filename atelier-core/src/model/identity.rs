@@ -3,7 +3,8 @@ use crate::syntax::{
     SHAPE_ID_ABSOLUTE_SEPARATOR, SHAPE_ID_MEMBER_SEPARATOR, SHAPE_ID_NAMESPACE_SEPARATOR,
 };
 use regex::Regex;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+use std::hash::Hash;
 use std::str::FromStr;
 
 // ------------------------------------------------------------------------------------------------
@@ -65,14 +66,22 @@ pub struct ShapeID {
 }
 
 ///
-/// A Trait that is implemented by model elements that have a shape identifier.
+/// A Trait that is implemented by model shapes that have an identifier.
 ///
-pub trait HasIdentity {
-    /// The absolute ShapeID of this shape.
-    fn id(&self) -> &ShapeID;
+pub trait HasIdentity<T>
+where
+    T: Clone + Debug + Display + Eq + Ord + Hash,
+{
+    /// Return the identifier of this shape.
+    fn id(&self) -> &T;
 
-    /// Set the absolute ShapeID of this shape.
-    fn set_id(&mut self, id: ShapeID);
+    /// Return `true` if this shape has the provided identifier, else `false`..
+    fn is(&self, id: &T) -> bool {
+        self.id() == id
+    }
+
+    /// Set the identifier of this shape.
+    fn set_id(&mut self, id: T);
 }
 
 // ------------------------------------------------------------------------------------------------

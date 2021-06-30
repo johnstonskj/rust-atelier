@@ -1,6 +1,6 @@
 use crate::model::shapes::{AppliedTraits, HasTraits, NonTraitEq};
 use crate::model::values::Value;
-use crate::model::{Identifier, ShapeID};
+use crate::model::{HasIdentity, Identifier, ShapeID};
 use crate::syntax::{MEMBER_KEY, MEMBER_MEMBER, MEMBER_VALUE};
 use std::collections::HashMap;
 
@@ -59,17 +59,17 @@ impl NonTraitEq for MemberShape {
 
 has_traits_impl! { MemberShape . traits }
 
-impl MemberShape {
-    /// The member name for this member, this is an identifier not a full shape ID.
-    pub fn id(&self) -> &Identifier {
+impl HasIdentity<Identifier> for MemberShape {
+    fn id(&self) -> &Identifier {
         &self.id
     }
 
-    /// Set the member name for this member, this is an identifier not a full shape ID.
-    pub fn set_id(&mut self, id: Identifier) {
+    fn set_id(&mut self, id: Identifier) {
         self.id = id
     }
+}
 
+impl MemberShape {
     /// Construct a new Member shape with the given target shape (type).
     pub fn new(id: Identifier, target: ShapeID) -> Self {
         Self::with_traits(id, target, Default::default())

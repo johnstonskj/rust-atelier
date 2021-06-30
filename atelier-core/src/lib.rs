@@ -40,7 +40,7 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 ```rust
 use atelier_core::model::identity::{HasIdentity, Identifier};
 use atelier_core::model::shapes::{
-    HasTraits, MemberShape, Operation, Resource, Service, Shape,
+    HasTraits, MemberShape, Operation, Resource, Service,
     ShapeKind, Simple, StructureOrUnion, TopLevelShape,
 };
 use atelier_core::model::values::Value;

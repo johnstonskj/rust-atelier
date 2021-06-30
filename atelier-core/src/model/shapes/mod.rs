@@ -19,6 +19,7 @@ use crate::prelude::{
     TRAIT_TRAIT, TRAIT_UNIQUEITEMS, TRAIT_UNSTABLE,
 };
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -226,16 +227,6 @@ pub trait HasTraits {
 }
 
 ///
-/// A common trait shared by `TopLevelShape` and `MemberShape`.
-///
-pub trait Shape: NonTraitEq + HasIdentity + HasTraits {
-    /// Returns `true` if this shape is defined in the prelude.
-    fn is_prelude_shape(&self) -> bool {
-        self.id().namespace().to_string() == *PRELUDE_NAMESPACE
-    }
-}
-
-///
 /// This structure represents a top-level shape within a model. The shape-specific data is within
 /// the `ShapeKind` enumeration. Aggregate shapes may have members of type `MemberShape`, but a
 /// model only directly contains top-level shapes.
@@ -285,11 +276,11 @@ pub enum ShapeKind {
 macro_rules! has_traits_impl {
     ($struct_name:ident . $field_name:ident) => {
         impl HasTraits for $struct_name {
-            fn traits(&self) -> &HashMap<ShapeID, Option<Value>> {
+            fn traits(&self) -> &AppliedTraits {
                 &self.$field_name
             }
 
-            fn traits_mut(&mut self) -> &mut HashMap<ShapeID, Option<Value>> {
+            fn traits_mut(&mut self) -> &mut AppliedTraits {
                 &mut self.$field_name
             }
 
@@ -392,7 +383,7 @@ impl NonTraitEq for TopLevelShape {
     }
 }
 
-impl HasIdentity for TopLevelShape {
+impl HasIdentity<ShapeID> for TopLevelShape {
     fn id(&self) -> &ShapeID {
         &self.id
     }
@@ -468,6 +459,14 @@ impl TopLevelShape {
     delegate! { is_unresolved, inner = body }
 
     // --------------------------------------------------------------------------------------------
+
+    ///
+    /// Returns `true` if the namespace of this shape corresponds to the Smithy
+    /// [prelude namespace](../../prelude/constant.PRELUDE_NAMESPACE.html), else `false`.
+    ///
+    pub fn is_prelude_shape(&self) -> bool {
+        self.id().namespace().to_string() == *PRELUDE_NAMESPACE
+    }
 
     ///
     /// Does this shape support members?
