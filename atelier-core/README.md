@@ -97,6 +97,10 @@ $ cargo run --example motd_builder
 
 ## Changes
 
+**Version 0.2.22**
+
+* Fix for [bug #31](Model builder ignores operation output member, incorrectly stores input member in output member field).
+
 **Version 0.2.21**
 
 * Altered the HasIdentity trait to parameterize the identifier type.
