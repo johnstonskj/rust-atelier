@@ -99,7 +99,8 @@ $ cargo run --example motd_builder
 
 **Version 0.2.22**
 
-* Fix for [bug #31](Model builder ignores operation output member, incorrectly stores input member in output member field).
+* Fix for [Model builder ignores operation output member, incorrectly stores input member in output member 
+  field](https://github.com/johnstonskj/rust-atelier/issues/31).
 
 **Version 0.2.21**
 
