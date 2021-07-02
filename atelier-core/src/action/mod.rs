@@ -113,6 +113,9 @@ pub enum IssueLevel {
 /// An issue reported by an action. An issue may, or may not, be associated with a shape but will
 /// always include a message.
 ///
+/// Note that `ActionIssue` also implements `std::error::Error` so it can be used as a failure error
+/// if necessary.
+///
 #[derive(Debug, Clone)]
 pub struct ActionIssue {
     reporter: String,
@@ -174,10 +177,10 @@ pub trait Validator: Action {
 ///
 pub trait Transformer: Action {
     ///
-    /// Transform the input model into another. This _may_ consume the input and produce an entirely
-    /// new model, or it _may_ simply mutate the model and return the modified input.
+    /// Transform the input model into another. The intent of this is **not** to transform a
+    /// model in place but to create a new model from the source.
     ///
-    fn transform(&mut self, model: Model) -> ModelResult<Model>;
+    fn transform(&mut self, source: &Model) -> ModelResult<Model>;
 }
 
 // ------------------------------------------------------------------------------------------------

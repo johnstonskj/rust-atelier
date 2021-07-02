@@ -103,6 +103,7 @@ $ cargo run --example motd_builder
   * Added is() method to HasIdentity.
 * Implemented HasIdentity for MemberShape.
 * Removed unnecessary Shape trait.
+* Updated the API for action::Transformer to not consume the source.
 * Some documentation clean-up.
 
 **Version 0.2.20**
