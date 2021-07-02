@@ -12,7 +12,7 @@ const MESSAGE_OF_THE_DAY_AS_LINES: &[&str] = &[
     "operation::example.motd#GetMessage",
     "operation::example.motd#GetMessage::error=>example.motd#BadDateValue",
     "operation::example.motd#GetMessage::input=>example.motd#GetMessageInput",
-    "operation::example.motd#GetMessage::output=>example.motd#GetMessageInput",
+    "operation::example.motd#GetMessage::output=>example.motd#GetMessageOutput",
     "operation::example.motd#GetMessage::trait::smithy.api#readonly<={}",
     "resource::example.motd#Message",
     "resource::example.motd#Message::identifier::date=>example.motd#Date",

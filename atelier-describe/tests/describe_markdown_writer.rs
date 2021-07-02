@@ -30,7 +30,7 @@ const EXPECTED: &[&str] = &[
     "</table>",
     "> **Input type**: [GetMessageInput](#shape:GetMessageInput)",
     "> ",
-    "> **Output type**: [GetMessageInput](#shape:GetMessageInput)",
+    "> **Output type**: [GetMessageOutput](#shape:GetMessageOutput)",
     "> ",
     "> **Errors**:",
     "> ",
