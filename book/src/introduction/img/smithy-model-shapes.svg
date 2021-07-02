@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="329.75 429.875 788.375 618.75" width="788.375" height="618.75">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="329.75 429.875 917.4373 639" width="917.4373" height="639">
   <defs>
     <font-face font-family="Avenir" font-size="13" panose-1="2 11 5 3 2 2 3 2 2 4" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="468" cap-height="708" ascent="1e3" descent="-365.9973" font-weight="400">
       <font-face-src>
@@ -18,13 +18,11 @@
       </g>
     </marker>
   </defs>
-  <metadata> Produced by OmniGraffle 7.12.1 
-    <dc:date>2021-06-28 01:47:40 +0000</dc:date>
-  </metadata>
-  <g id="Model_Shapes" fill="none" stroke-dasharray="none" stroke="none" stroke-opacity="1" fill-opacity="1">
+  <metadata> Produced by OmniGraffle 7.18.5\n2021-06-28 19:31:06 +0000</metadata>
+  <g id="Model_Shapes" stroke-opacity="1" stroke="none" fill="none" fill-opacity="1" stroke-dasharray="none">
     <title>Model:Shapes</title>
-    <rect fill="white" x="329.75" y="429.875" width="788.375" height="618.75"/>
-    <g id="Model_Shapes: Layer 1">
+    <rect fill="white" x="329.75" y="429.875" width="917.4373" height="639"/>
+    <g id="Model_Shapes_Layer_1">
       <title>Layer 1</title>
       <g id="Group_96">
         <g id="Graphic_46">
@@ -352,18 +350,19 @@
           <title>Class with Attributes</title>
           <g id="Graphic_20">
             <title>Attributes</title>
-            <rect x="907.875" y="635.125" width="209.25" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            <rect x="907.875" y="635.125" width="246.375" height="84" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             <text transform="translate(913.875 641.125)" fill="#515556">
-              <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">version</tspan>
+              <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">version: string</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">operations: operation *</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">resources: resource *</tspan>
+              <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="67">rename: Map&lt;ShapeID, Identifier&gt; ?</tspan>
             </text>
           </g>
           <g id="Graphic_19">
             <title>Class Name</title>
-            <rect x="907.875" y="609.125" width="209.25" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            <rect x="907.875" y="609.125" width="246.375" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             <text transform="translate(913.875 613.125)" fill="#515556">
-              <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="77.552" y="13">service</tspan>
+              <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="96.1145" y="13">service</tspan>
             </text>
           </g>
         </g>
@@ -373,14 +372,14 @@
       </g>
       <g id="Group_11">
         <g id="Graphic_15">
-          <rect x="907.875" y="719.375" width="21.063" height="92" fill="white"/>
+          <rect x="907.875" y="738.25" width="24.799984" height="92" fill="white"/>
         </g>
         <g id="Group_12">
           <title>Class with Attributes</title>
           <g id="Graphic_14">
             <title>Attributes</title>
-            <rect x="907.875" y="745.375" width="209.25" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            <text transform="translate(913.875 751.375)" fill="#515556">
+            <rect x="907.875" y="764.25" width="246.375" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            <text transform="translate(913.875 770.25)" fill="#515556">
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">input: Shape ?</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">output: Shape ?</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">errors: Shape *</tspan>
@@ -388,24 +387,24 @@
           </g>
           <g id="Graphic_13">
             <title>Class Name</title>
-            <rect x="907.875" y="719.375" width="209.25" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            <text transform="translate(913.875 723.375)" fill="#515556">
-              <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="68.894" y="13">operation</tspan>
+            <rect x="907.875" y="738.25" width="246.375" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            <text transform="translate(913.875 742.25)" fill="#515556">
+              <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="87.4565" y="13">operation</tspan>
             </text>
           </g>
         </g>
       </g>
       <g id="Group_6">
         <g id="Graphic_10">
-          <rect x="907.875" y="829.125" width="21.063" height="218.5" fill="white"/>
+          <rect x="907.875" y="849.375" width="24.799984" height="218.5" fill="white"/>
         </g>
         <g id="Group_7">
           <title>Class with Attributes</title>
           <g id="Graphic_9">
             <title>Attributes</title>
-            <rect x="907.875" y="855.625" width="209.25" height="192" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            <text transform="translate(913.875 861.625)" fill="#515556">
-              <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">identifiers ?</tspan>
+            <rect x="907.875" y="875.875" width="246.375" height="192" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            <text transform="translate(913.875 881.875)" fill="#515556">
+              <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">identifiers: Map&lt;Identifier, ShapeID&gt; ?</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">create: operation ?</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">put: operation ?</tspan>
               <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="67">read: operation ?</tspan>
@@ -419,21 +418,21 @@
           </g>
           <g id="Graphic_8">
             <title>Class Name</title>
-            <rect x="907.875" y="829.625" width="209.25" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            <text transform="translate(913.875 833.625)" fill="#515556">
-              <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="72.625" y="13">resource</tspan>
+            <rect x="907.875" y="849.875" width="246.375" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            <text transform="translate(913.875 853.875)" fill="#515556">
+              <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="91.1875" y="13">resource</tspan>
             </text>
           </g>
         </g>
       </g>
       <g id="Line_5">
-        <path d="M 907.875 938.375 L 876.125 938.625 L 876.5937 575.5" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        <path d="M 907.875 958.625 L 876.9253 958.8602 L 876.5937 575.5" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
       </g>
       <g id="Line_4">
-        <line x1="907.875" y1="765.375" x2="876.3483" y2="765.6259" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        <line x1="907.875" y1="784.25" x2="876.7743" y2="784.2506" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
       </g>
       <g id="Line_3">
-        <line x1="907.875" y1="655.125" x2="876.491" y2="655.1261" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        <line x1="907.875" y1="655.125" x2="876.6627" y2="655.2501" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
       </g>
       <g id="Line_2">
         <path d="M 463.9375 531.5 L 463.9375 509.7777 L 917.3125 509.7777 L 917.3125 531.5" stroke="#c1c1c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>

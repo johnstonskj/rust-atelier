@@ -26,5 +26,5 @@
    1. [Traits and Values](reference/rdf-traits-values.md)
    1. [Example](reference/rdf-example.md)
 1. [Appendix: Testing](reference/testing.md)
-   1. [The test Crate](reference/test-crate.md)
    1. [LineOrientedWriter](reference/line-oriented-writer.md)
+   1. [The test Crate](reference/test-crate.md)

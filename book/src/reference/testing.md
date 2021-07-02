@@ -1,1 +1,3 @@
 # Appendix: Testing
+
+Rust has excellent test tools, patterns, and idioms, but where different crates are implementing common traits the tendency is to duplicate tests. To this end the [test](https://crates.io/crates/atelier_test) contains common examples with expected results that can be used by different crate implementations. To achieve this the crate leverages a specific write-only representation that is stable in it's ordering and can be directly diffed between test runs.

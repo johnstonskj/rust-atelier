@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="156.5 738.125 410.375 94" width="410.375" height="94">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" viewBox="-257.5 738.125 943.6102 214" width="943.6102" height="214">
   <defs>
     <font-face font-family="Avenir" font-size="13" panose-1="2 11 5 3 2 2 3 2 2 4" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="468" cap-height="708" ascent="1e3" descent="-365.9973" font-weight="400">
       <font-face-src>
         <font-face-name name="Avenir-Roman"/>
+      </font-face-src>
+    </font-face>
+    <font-face font-family="Avenir" font-size="13" panose-1="2 0 5 3 2 0 0 2 0 3" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="468" cap-height="708" ascent="1e3" descent="-365.9973" font-weight="400">
+      <font-face-src>
+        <font-face-name name="Avenir-Book"/>
+      </font-face-src>
+    </font-face>
+    <font-face font-family="Lucida Grande" font-size="13" panose-1="2 11 6 0 4 5 2 2 2 4" units-per-em="1000" underline-position="-97.65625" underline-thickness="48.828125" slope="0" x-height="530.27344" cap-height="722.65625" ascent="966.7969" descent="-210.9375" font-weight="400">
+      <font-face-src>
+        <font-face-name name="LucidaGrande"/>
       </font-face-src>
     </font-face>
     <font-face font-family="Avenir" font-size="13" panose-1="2 11 7 3 2 2 3 2 2 4" units-per-em="1000" underline-position="-75" underline-thickness="50" slope="0" x-height="480" cap-height="708" ascent="1e3" descent="-365.9973" font-weight="800">
@@ -13,20 +23,35 @@
       </font-face-src>
     </font-face>
   </defs>
-  <metadata> Produced by OmniGraffle 7.12.1 
-    <dc:date>2021-06-28 01:47:40 +0000</dc:date>
-  </metadata>
-  <g id="Model__ShapeID" fill="none" stroke-dasharray="none" stroke="none" stroke-opacity="1" fill-opacity="1">
+  <metadata> Produced by OmniGraffle 7.18.5\n2021-06-28 19:27:06 +0000</metadata>
+  <g id="Model__ShapeID" stroke-opacity="1" stroke="none" fill="none" fill-opacity="1" stroke-dasharray="none">
     <title>Model: ShapeID</title>
-    <rect fill="white" x="156.5" y="738.125" width="410.375" height="94"/>
-    <g id="Model__ShapeID: Layer 1">
+    <rect fill="white" x="-257.5" y="738.125" width="943.6102" height="214"/>
+    <g id="Model__ShapeID_Layer_1">
       <title>Layer 1</title>
       <g id="Group_5">
         <title>Class with Attributes</title>
+        <g id="Graphic_8">
+          <title>Attributes</title>
+          <rect x="146.25" y="831.125" width="216" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(152.25 837.125)" fill="#515556">
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">is_member</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="13">()</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="13"> </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="13">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="13"> boolean</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">new_shape()  </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="31">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="31"> Self</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">new_member(id: Identifier) </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="49">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="49"> Self</tspan>
+          </text>
+        </g>
         <g id="Graphic_7">
           <title>Attributes</title>
-          <rect x="157.5" y="765.125" width="180.37716" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          <text transform="translate(163.5 771.125)" fill="#515556">
+          <rect x="146.25" y="765.125" width="216" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(152.25 771.125)" fill="#515556">
             <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">namespace: NamespaceID</tspan>
             <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">shape-name: Identifier</tspan>
             <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">member-name: Identifier ?</tspan>
@@ -34,18 +59,45 @@
         </g>
         <g id="Graphic_6">
           <title>Class Name</title>
-          <rect x="157.5" y="739.125" width="180.37716" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          <text transform="translate(163.5 743.125)" fill="#515556">
-            <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="27.970083" y="13">semantic::ShapeID</tspan>
+          <rect x="146.25" y="739.125" width="216" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(152.25 743.125)" fill="#515556">
+            <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="45.7815" y="13">semantic::ShapeID</tspan>
           </text>
         </g>
       </g>
       <g id="Group_2">
         <title>Class with Attributes</title>
+        <g id="Graphic_9">
+          <title>Attributes</title>
+          <rect x="385.875" y="831.125" width="216" height="120" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(391.875 837.125)" fill="#515556">
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">is_absolute() </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="13">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="13"> boolean</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">is_relative() </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="31">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="31"> boolean</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">to_relative() </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="49">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="49"> </tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="49">Self</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="67">is_member</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="67">()</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="67"> </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="67">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="67"> boolean</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="85">new_shape()  </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="85">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="85"> Self</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="103">new_member(id: Identifier) </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="103">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="103"> Self</tspan>
+          </text>
+        </g>
         <g id="Graphic_4">
           <title>Attributes</title>
-          <rect x="385.49784" y="765.125" width="180.37716" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          <text transform="translate(391.49784 771.125)" fill="#515556">
+          <rect x="385.875" y="765.125" width="216" height="66" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(391.875 771.125)" fill="#515556">
             <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">namespace: NamespaceID ?</tspan>
             <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">shape-name: Identifier</tspan>
             <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="49">member-name: Identifier ?</tspan>
@@ -53,9 +105,35 @@
         </g>
         <g id="Graphic_3">
           <title>Class Name</title>
-          <rect x="385.49784" y="739.125" width="180.37716" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          <text transform="translate(391.49784 743.125)" fill="#515556">
-            <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="47.340083" y="13">idl::ShapeID</tspan>
+          <rect x="385.875" y="739.125" width="216" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(391.875 743.125)" fill="#515556">
+            <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="65.1515" y="13">idl::ShapeID</tspan>
+          </text>
+        </g>
+      </g>
+      <g id="Group_10">
+        <title>Class with Attributes</title>
+        <g id="Graphic_13">
+          <title>Attributes</title>
+          <rect x="-256.5" y="789.125" width="379.125" height="48" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(-250.5 795.125)" fill="#515556">
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="13">new_shape(id: Identifier) </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="13">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="13"> ShapeID</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" x="0" y="31">new_member(shape: Identifier, member: Identifier) </tspan>
+            <tspan font-family="Lucida Grande" font-size="13" font-weight="400" fill="#515556" y="31">→</tspan>
+            <tspan font-family="Avenir" font-size="13" font-weight="400" fill="#515556" y="31"> ShapeID</tspan>
+          </text>
+        </g>
+        <g id="Graphic_12">
+          <title>Attributes</title>
+          <rect x="-256.5" y="765.125" width="379.125" height="24" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        </g>
+        <g id="Graphic_11">
+          <title>Class Name</title>
+          <rect x="-256.5" y="739.125" width="379.125" height="26" stroke="#b9c0c1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <text transform="translate(-250.5 743.125)" fill="#515556">
+            <tspan font-family="Avenir" font-size="13" font-weight="800" fill="#515556" x="141.436" y="13">NamespaceID</tspan>
           </text>
         </g>
       </g>

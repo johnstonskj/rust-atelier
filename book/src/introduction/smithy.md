@@ -1,8 +1,10 @@
 # Smithy Overview
 
-Smithy is effectively a framework consisting of an semantic model, a custom IDL language, a mapping to/from JSON, and a 
-build process. The semantic model is therefore consistent across different representations while different 
-representations may be used for human usage as well as machine/tool usage. 
+[Smithy](https://awslabs.github.io/smithy/) is effectively a framework consisting of a semantic model, a custom IDL language, a mapping to/from JSON, and a 
+build process. The semantic model is therefore consistent across different representations allowing different 
+representations to be used for human readability as well as machine/tool usage. 
+
+> _Smithy_ is an interface definition language and set of tools that allows developers to build clients and servers in multiple languages. Smithy models define a service as a collection of resources, operations, and shapes. A Smithy model enables API providers to generate clients and servers in various programming languages, API documentation, test automation, and example code.
 
 Figures in this section use a combined ER notation to denote cardinality alongside UML inheritance relationships as needed.
 
@@ -16,11 +18,11 @@ The following figure demonstrates the framework elements and their relations.
 * **Semantic Model**; is the in-memory model used by tool. The semantic model has no file or format details associated with it, it may be serialized using a representation into a model file.
 * **Representation**; is a particular model file format such as the Smithy IDL or JSON AST.
 * **Mapping**; is a set of rules that allow for reading and writing a representation. Some representations may not provide a meaningful mapping for read or write.
-* **Model File**; is a file on the file system, in a particular representation. Models may be split across multiple stored artifacts, and those artifacts do not need the same representation.
+* **Artifact**; typically a file on the file system, in a particular representation. A single model is serialized into one, or more, artifacts potentially with different representations.
 
 The build process takes multiple model files, validates them, and combines them into a single instance of the semantic model. The process may also perform model transformations to add or remove shapes and metadata before any final artifact generation. 
 
-Artifacts may represent different parts of the IDL for a given application but also their dependencies thus enabling the sharing of common shapes.
+Artifacts may represent different parts of the IDL for a given application but also their dependencies thus enabling the sharing of common shapes. Most tools will only ever deal with the semantic model interfaces with serialization and deserialization simply handled by representation mappings.
 
 ### Transformations
 
@@ -38,14 +40,14 @@ The following figure shows that a transform has to have one or more models and m
 
 ## The Semantic Model
 
-The semantic model is a specified in-memory model used by tools. It is separate from potential serialization representations. Most tools will only ever deal with the semantic model interfaces with serialization and deserialization simply handled by representation mappings.
+The semantic model is a specified in-memory model used by tools. It consists of a set of shapes that corresponds to the data and behavioral elements of a service. 
 
 <a name="fig_1_3"></a>![The Semantic Model](img/smithy-model-model.svg)
 <div class="caption figure">1.3: The Semantic Model</div>
 
 * **Semantic Model**; a container of shapes and optional [metadata](#values).
 * **Shape**; a defined thing, shapes are either _simple_, _aggregate_ or _service_ types as described [below](#shapes).
-* **Applied Trait**; [traits](#traits) are a meta feature that allows for values to be associated with shapes. Trait applications  are typically used by tools for validation and code generation.
+* **Applied Trait**; [traits](#traits) are a meta feature that allows for values to be associated with shapes. Tools may use applied traits for additional validation and code generation.
 * **ShapeID**; the identifier for all shapes defined in a model, all members of defined shapes, and the names of all traits.
 
 ### Shape IDs

@@ -1,8 +1,47 @@
 # Introduction
 
-The [Atelier](https://github.com/johnstonskj/rust-atelier) project is a suite of Rust crates that provides the ability 
-to read, write, and process AWS [Smithy](https://github.com/awslabs/smithy) interface definition models. AWS is using 
+The [Atelier](https://rust-atelier.dev) project is a suite of Rust crates that provides the ability 
+to read, write, and process AWS [Smithy](https://awslabs.github.io/smithy/) interface definition models. AWS is using 
 Smithy extensively to define their services and to generate client and server implementations. 
+
+```smithy
+$version: "1.0"
+
+namespace example.motd
+
+@documentation("Provides a Message of the day.")
+service MessageOfTheDay {
+   version: "2020-06-21"
+   resources: [
+      Message
+   ]
+}
+
+resource Message {
+   identifiers: {
+      date: Date
+   }
+   read: GetMessage
+}
+
+@readonly
+operation GetMessage {
+   input: GetMessageInput
+   output: GetMessageInput
+}
+
+@pattern("^\\d\\d\\d\\d\\-\\d\\d\\-\\d\\d$")
+string Date
+
+structure GetMessageInput {
+   date: example.motd#Date
+}
+
+structure GetMessageOutput {
+   @required
+   message: String
+}
+```
 
 The goal of the Atelier project is to provide both Rust-native crates that allow parsing and emitting of Smithy models
 but also a clean-slate implementation of the Smithy specifications. This aspect has been useful, addressing ambiguities 
@@ -16,3 +55,4 @@ will cover the following topics:
 * How to use the lint and validate framework to check models.
 * How to run the `cargo-atelier` tool to perform many of these actions from the command-line.
 * How to extend the Atelier provided tools.
+
