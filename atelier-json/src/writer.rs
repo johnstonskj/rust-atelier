@@ -47,7 +47,10 @@ pub struct JsonWriter {
 
 ///
 /// Return a [JSON AST](https://awslabs.github.io/smithy/1.0/spec/core/json-ast.html) representation
-/// of a model. This function is used in the `JsonWriter` implementation.
+/// of a model. The return value is a [Serde JSON/(https://docs.serde.rs/serde_json/) `Value` that
+/// represents the top-level model.
+///
+/// This function is used in the `JsonWriter` implementation.
 ///
 pub fn model_to_json(model: &Model) -> Value {
     let mut top: Map<String, Value> = Default::default();
