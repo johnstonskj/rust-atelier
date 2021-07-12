@@ -161,6 +161,10 @@ Smith Version: 1.0
 
 ## Changes
 
+**Version 0.2.6**
+
+* Added parameters 'default_search_env' and 'search_env' to control the model assembler.
+
 **Version 0.2.5**
 
 * Implemented [cargo-atelier's lint and validate should work on models built from multiple namespace

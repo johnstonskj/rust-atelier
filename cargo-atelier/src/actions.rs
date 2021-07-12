@@ -1,6 +1,6 @@
 use crate::{DocumentCommand, FileFormat, TransformCommand};
 use atelier_lib::actions::{standard_model_lint, standard_model_validation};
-use atelier_lib::assembler::ModelAssembler;
+use atelier_lib::assembler::{FileTypeRegistry, ModelAssembler, SearchPath};
 use atelier_lib::core::action::ActionIssue;
 use atelier_lib::core::error::Result as ModelResult;
 use atelier_lib::core::io::ModelWriter;
@@ -21,17 +21,26 @@ use std::str::FromStr;
 // Public Functions
 // ------------------------------------------------------------------------------------------------
 
-pub fn lint_file(paths: Vec<PathBuf>) -> ModelResult<Vec<ActionIssue>> {
-    standard_model_lint(&assemble_model(paths)?, false)
+pub fn lint_file(
+    paths: Vec<PathBuf>,
+    search_path: Option<SearchPath>,
+) -> ModelResult<Vec<ActionIssue>> {
+    standard_model_lint(&assemble_model(paths, search_path)?, false)
 }
 
-pub fn validate_file(paths: Vec<PathBuf>) -> ModelResult<Vec<ActionIssue>> {
-    standard_model_validation(&assemble_model(paths)?, false)
+pub fn validate_file(
+    paths: Vec<PathBuf>,
+    search_path: Option<SearchPath>,
+) -> ModelResult<Vec<ActionIssue>> {
+    standard_model_validation(&assemble_model(paths, search_path)?, false)
 }
 
-pub fn convert_file_format(cmd: TransformCommand) -> Result<(), Box<dyn Error>> {
+pub fn convert_file_format(
+    cmd: TransformCommand,
+    search_path: Option<SearchPath>,
+) -> Result<(), Box<dyn Error>> {
     transform_file(
-        &assemble_model(cmd.input_files)?,
+        &assemble_model(cmd.input_files, search_path)?,
         cmd.output_file,
         cmd.output_format,
         cmd.namespace,
@@ -39,9 +48,12 @@ pub fn convert_file_format(cmd: TransformCommand) -> Result<(), Box<dyn Error>> 
     )
 }
 
-pub fn document_file(cmd: DocumentCommand) -> Result<(), Box<dyn Error>> {
+pub fn document_file(
+    cmd: DocumentCommand,
+    search_path: Option<SearchPath>,
+) -> Result<(), Box<dyn Error>> {
     document_a_file(
-        &assemble_model(cmd.input_files)?,
+        &assemble_model(cmd.input_files, search_path)?,
         cmd.output_file,
         cmd.output_format,
     )
@@ -51,8 +63,11 @@ pub fn document_file(cmd: DocumentCommand) -> Result<(), Box<dyn Error>> {
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
-fn assemble_model(input_files: Vec<PathBuf>) -> ModelResult<Model> {
-    let mut assembler = ModelAssembler::default();
+fn assemble_model(
+    input_files: Vec<PathBuf>,
+    search_path: Option<SearchPath>,
+) -> ModelResult<Model> {
+    let mut assembler = ModelAssembler::new(FileTypeRegistry::default(), search_path);
     input_files.iter().for_each(|pb| {
         assembler.push(pb);
     });

@@ -3,14 +3,15 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let result = match command_line::parse()? {
-        Command::Lint(cmd, options) => {
-            report::report_action_issues(actions::lint_file(cmd)?, options.use_color)
+        Command::Lint(cmd, search_path, options) => {
+            report::report_action_issues(actions::lint_file(cmd, search_path)?, options.use_color)
         }
-        Command::Validate(cmd, options) => {
-            report::report_action_issues(actions::validate_file(cmd)?, options.use_color)
-        }
-        Command::Convert(cmd, _) => actions::convert_file_format(cmd),
-        Command::Document(cmd, _) => actions::document_file(cmd),
+        Command::Validate(cmd, search_path, options) => report::report_action_issues(
+            actions::validate_file(cmd, search_path)?,
+            options.use_color,
+        ),
+        Command::Convert(cmd, search_path, _) => actions::convert_file_format(cmd, search_path),
+        Command::Document(cmd, search_path, _) => actions::document_file(cmd, search_path),
     };
 
     if result.is_err() {

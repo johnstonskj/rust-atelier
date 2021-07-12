@@ -1,3 +1,4 @@
+use atelier_lib::assembler::SearchPath;
 use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -15,10 +16,10 @@ pub struct Options {
 
 #[derive(Debug)]
 pub enum Command {
-    Lint(Vec<PathBuf>, Options),
-    Validate(Vec<PathBuf>, Options),
-    Convert(TransformCommand, Options),
-    Document(DocumentCommand, Options),
+    Lint(Vec<PathBuf>, Option<SearchPath>, Options),
+    Validate(Vec<PathBuf>, Option<SearchPath>, Options),
+    Convert(TransformCommand, Option<SearchPath>, Options),
+    Document(DocumentCommand, Option<SearchPath>, Options),
 }
 
 #[derive(Debug)]
