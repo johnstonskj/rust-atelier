@@ -17,6 +17,7 @@ use atelier_core::error::Result;
 use atelier_core::model::Model;
 use std::convert::TryFrom;
 
+// The default constructor will load all paths from the `SMITHY_PATH` environment variable.
 let env_assembler = ModelAssembler::default();
 
 let model: Result<Model> = Model::try_from(env_assembler);
@@ -54,7 +55,7 @@ use atelier_core::io::ModelReader;
 use atelier_core::model::Model;
 use atelier_json as json;
 use atelier_smithy as smithy;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::convert::TryFrom;
 use std::env;
 use std::fmt::{Debug, Display, Formatter};
@@ -67,13 +68,16 @@ use std::rc::Rc;
 // ------------------------------------------------------------------------------------------------
 
 ///
-/// A Function type used to read a particular format into a model.
+/// A Function type used to read a particular format into a model. This type is used by the
+/// [`FileType`](struct.FileType.html).
 ///
 pub type FileReader = fn(&mut File) -> Result<Model>;
 
 ///
-/// A File type, this has a display name and a reader function.
+/// A File type, this has a display name and a reader function. The [`FileTypeRegistry`](struct.FileTypeRegistry.html)
+/// uses these to map one ot more file _types_ to reader functions ([`FileReader`](type.FileReader.html)).
 ///
+#[derive(Clone)]
 pub struct FileType {
     display_name: String,
     mime_type: Option<String>,
@@ -85,21 +89,30 @@ pub struct FileType {
 /// always contain *at least* mappings for ".json" and ".smithy" file types. Note that file
 /// extensions will always be compared in a case insensitive manner.
 ///
+#[derive(Clone)]
 pub struct FileTypeRegistry {
     by_extension: BTreeMap<String, Rc<FileType>>,
     by_mime_type: BTreeMap<String, Rc<FileType>>,
 }
 
 ///
-/// The name of an environment variable, which if present, has a number of paths which should be
-/// searched for files by the `ModelAssembler`.
+/// A Search path that can be initialized from an environment variable.
 ///
-pub const ENV_PATH_NAME: &str = "SMITHY_PATH";
+#[derive(Clone, Debug)]
+pub struct SearchPath {
+    var_name: String,
+    paths: BTreeSet<PathBuf>,
+}
 
 ///
-/// Assemble a single model by merging the sub-models represented by one or more files.
+/// Assemble a single model by merging the sub-models represented by one or more files. The model
+/// assembler uses an instance of [`FileTypeRegistry`](struct.FileTypeRegistry.html) to determine
+/// the correct file mappings to load different representations. It may also scan an environment
+/// variable for a set of paths to load models from as well as any specific files or directories
+/// added via [`push`](struct.ModelAssembler.html#method.push) or
+/// [`push_str`](struct.ModelAssembler.html#method.push_str).
 ///
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ModelAssembler {
     file_types: FileTypeRegistry,
     paths: HashSet<PathBuf>,
@@ -144,7 +157,7 @@ impl FileType {
     ///
     /// Construct a new file type with the provided display name, MIME type, and reader function.
     ///
-    pub fn with_mime_type(name: &str, mime_type: &str, reader_fn: FileReader) -> Rc<Self> {
+    pub fn new_with_mime_type(name: &str, reader_fn: FileReader, mime_type: &str) -> Rc<Self> {
         Rc::new(Self {
             display_name: name.to_string(),
             mime_type: Some(mime_type.to_string()),
@@ -280,9 +293,95 @@ impl FileTypeRegistry {
 
 // ------------------------------------------------------------------------------------------------
 
+impl Default for SearchPath {
+    fn default() -> Self {
+        Self::from_env(Self::ENV_PATH_NAME)
+    }
+}
+
+impl SearchPath {
+    const PATH_SEP: &'static str = ":";
+
+    const ENV_PATH_NAME: &'static str = "SMITHY_PATH";
+
+    ///
+    /// Construct a new instance from the named environment variable. The implementation of
+    /// `Default::default` will always use the `$SMITHY_PATH` variable.
+    ///
+    pub fn from_env(env_name: &str) -> Self {
+        if let Ok(search_path) = env::var(env_name) {
+            if !search_path.is_empty() {
+                let mut paths: BTreeSet<PathBuf> = Default::default();
+                info!(
+                    "SearchPath::from_env({:?}) - parsing search path '{}'",
+                    env_name, search_path
+                );
+                for path in search_path.split(Self::PATH_SEP) {
+                    let path = path.trim();
+                    if !path.is_empty() {
+                        let _ = paths.insert(PathBuf::from(path));
+                    }
+                }
+                Self {
+                    var_name: env_name.to_string(),
+                    paths,
+                }
+            } else {
+                warn!(
+                    "SearchPath::from_env({:?}) - search_path is empty",
+                    env_name
+                );
+                Self {
+                    var_name: env_name.to_string(),
+                    paths: Default::default(),
+                }
+            }
+        } else {
+            warn!(
+                "SearchPath::from_env({:?}) - no value found for `env::var`",
+                env_name
+            );
+            Self {
+                var_name: env_name.to_string(),
+                paths: Default::default(),
+            }
+        }
+    }
+
+    ///
+    /// Return the name of the environment variable used to create this instance.
+    ///
+    pub fn env_name(&self) -> &String {
+        &self.var_name
+    }
+
+    ///
+    /// Return `true` is the set of paths found in the environment variable is empty, else `false`.
+    ///
+    pub fn is_empty(&self) -> bool {
+        self.paths.is_empty()
+    }
+
+    ///
+    /// Return the number of paths found in the environment variable.
+    ///
+    pub fn len(&self) -> usize {
+        self.paths.len()
+    }
+
+    ///
+    /// Return an iterator over the set of paths found in the environment variable.
+    ///
+    pub fn paths(&self) -> impl Iterator<Item = &PathBuf> {
+        self.paths.iter()
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+
 impl Default for ModelAssembler {
     fn default() -> Self {
-        Self::with_registry(FileTypeRegistry::default())
+        Self::new(FileTypeRegistry::default(), Some(SearchPath::default()))
     }
 }
 
@@ -335,71 +434,24 @@ impl TryFrom<&mut ModelAssembler> for Model {
 
 impl ModelAssembler {
     ///
-    /// Construct a new model assembler which does not use any environment variable as a search path.
+    /// Construct a new instance with a file type registry and search path. If the `search_path` is
+    /// None then no environment variable is checked for paths.
     ///
-    pub fn no_env() -> Self {
-        info!("ModelAssembler::no_env()");
-        Self::init(
-            Self {
-                file_types: FileTypeRegistry::default(),
-                paths: Default::default(),
-            },
-            "",
-        )
+    pub fn new(file_types: FileTypeRegistry, search_path: Option<SearchPath>) -> Self {
+        info!("ModelAssembler::new()");
+        let new_self = Self {
+            file_types,
+            paths: Default::default(),
+        };
+        match search_path {
+            None => new_self,
+            Some(search_path) => Self::include_search_path(new_self, &search_path),
+        }
     }
 
     ///
-    /// Construct a new model assembler using an environment variable other than `ENV_PATH_NAME`.
-    ///
-    pub fn env(var_name: &str) -> Self {
-        info!("ModelAssembler::env({})", var_name);
-        Self::init(
-            Self {
-                file_types: FileTypeRegistry::default(),
-                paths: Default::default(),
-            },
-            var_name,
-        )
-    }
-
-    ///
-    /// Construct a new model assembler with the provided file type registry.
-    ///
-    pub fn with_registry(file_types: FileTypeRegistry) -> Self {
-        info!(
-            "ModelAssembler::with_registry({:?})",
-            file_types.extensions().collect::<Vec<&String>>()
-        );
-        Self::init(
-            Self {
-                file_types,
-                paths: Default::default(),
-            },
-            ENV_PATH_NAME,
-        )
-    }
-
-    ///
-    /// Construct a new model assembler using an environment variable other than `ENV_PATH_NAME`,
-    /// and the provided file type registry.
-    ///
-    pub fn env_with_registry(var_name: &str, file_types: FileTypeRegistry) -> Self {
-        info!(
-            "ModelAssembler::env_with_registry({}, {:?})",
-            var_name,
-            file_types.extensions().collect::<Vec<&String>>()
-        );
-        Self::init(
-            Self {
-                file_types,
-                paths: Default::default(),
-            },
-            var_name,
-        )
-    }
-
-    ///
-    /// Add a single file path to the assembler for later processing.
+    /// Add a single file path to the assembler for later processing. The path may be a single file
+    /// name or it may be a directory to scan.
     ///
     pub fn push(&mut self, path: &Path) -> &mut Self {
         info!("ModelAssembler::push({:?})", path);
@@ -408,7 +460,8 @@ impl ModelAssembler {
     }
 
     ///
-    /// Add a single file path to the assembler for later processing.
+    /// Add a single file path to the assembler for later processing. The string will be processed
+    /// as a file path and handled in the same way as [`push`](method.push.html).
     ///
     pub fn push_str(&mut self, path: &str) -> &mut Self {
         info!("ModelAssembler::push_str({})", path);
@@ -452,27 +505,16 @@ impl ModelAssembler {
 
     // --------------------------------------------------------------------------------------------
 
-    fn init(self, search_path: &str) -> Self {
-        if !search_path.is_empty() {
-            let mut mut_self = self;
-            if let Ok(search_path) = env::var(search_path) {
-                info!("ModelAssembler::init() - {}", search_path);
-                for path in search_path.split(':') {
-                    let path = path.trim();
-                    if !path.is_empty() {
-                        let _ = mut_self.push(&PathBuf::from(path));
-                    }
-                }
-            } else {
-                debug!(
-                    "ModelAssembler::init() - no value found for env-var '{}'",
-                    ENV_PATH_NAME
-                );
-            }
-            mut_self
-        } else {
-            self
+    fn include_search_path(self, search_path: &SearchPath) -> Self {
+        debug!(
+            "ModelAssembler::include_search_path - using environment variable '{}'",
+            search_path.env_name()
+        );
+        let mut mut_self = self;
+        for path in search_path.paths() {
+            let _ = mut_self.push(&PathBuf::from(path));
         }
+        mut_self
     }
 
     #[allow(clippy::ptr_arg)]

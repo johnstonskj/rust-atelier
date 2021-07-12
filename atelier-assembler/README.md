@@ -30,6 +30,10 @@ For more information, see [the Rust Atelier book](https://rust-atelier.dev/using
 
 ## Changes
 
+**Version 0.1.4**
+
+* Refactored constructors for ModelAssembler, just one 'new' function now.
+
 **Version 0.1.3**
 
 * Added validation for swaits' resolver test.
