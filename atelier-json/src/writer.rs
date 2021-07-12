@@ -57,6 +57,13 @@ pub fn model_to_json(model: &Model) -> Value {
         Value::String(model.smithy_version().to_string()),
     );
 
+    if model.has_metadata() {
+        let mut meta_map: Map<String, Value> = Default::default();
+        for (key, value) in model.metadata() {
+            let _ = meta_map.insert(key.to_string(), from_value(value));
+        }
+        let _ = top.insert(MODEL_METADATA.to_string(), Value::Object(meta_map));
+    }
     let _ = top.insert(MODEL_SHAPES.to_string(), from_shapes(model));
 
     Value::Object(top)
@@ -102,13 +109,6 @@ fn from_shapes(model: &Model) -> Value {
     let mut shape_map: Map<String, Value> = Default::default();
     for shape in model.shapes() {
         let _ = shape_map.insert(shape.id().to_string(), from_shape(shape));
-    }
-    if model.has_metadata() {
-        let mut meta_map: Map<String, Value> = Default::default();
-        for (key, value) in model.metadata() {
-            let _ = meta_map.insert(key.to_string(), from_value(value));
-        }
-        let _ = shape_map.insert(MODEL_METADATA.to_string(), Value::Object(meta_map));
     }
     Value::Object(shape_map)
 }

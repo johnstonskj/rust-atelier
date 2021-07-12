@@ -26,6 +26,10 @@ println!("{:#?}", result.unwrap());
 
 ## Changes
 
+**Version 0.2.7**
+
+* Fixed bug: [JsonWriter puts metadata as a child of 'shapes' but it should be top-level](https://github.com/johnstonskj/rust-atelier/issues/34)
+
 **Version 0.2.6**
 
 * Changed the ID on MemberShape from ShapeID to Identifier. This matches both the formal BNF for the Smithy IDL and the
