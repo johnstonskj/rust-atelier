@@ -12,7 +12,7 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "cargo-atelier", about = "Tools for the Smithy IDL.")]
-pub(crate) struct CommandLine {
+struct CommandLine {
     /// The level of logging to perform; from off to trace
     #[structopt(long, short = "v", parse(from_occurrences))]
     verbose: i8,
@@ -27,48 +27,36 @@ pub(crate) struct CommandLine {
 }
 
 #[derive(Debug, StructOpt)]
-pub(crate) enum SubCommand {
+struct FileInput {
+    /// A file, or directory containing files, to read.
+    #[structopt(long, short)]
+    in_file: Vec<PathBuf>,
+
+    /// If set, the standard SMITHY_PATH environment variable is used as a search path.
+    #[structopt(long, short, conflicts_with = "search_env")]
+    default_search_env: bool,
+
+    /// The name of an environment variable to use as a search path.
+    #[structopt(long, short, conflicts_with = "default_search_env")]
+    search_env: Option<String>,
+}
+
+#[derive(Debug, StructOpt)]
+enum SubCommand {
     /// Run standard linter rules on a model file
     Lint {
-        /// The file to read [default: <stdin>]
-        #[structopt(long, short)]
-        in_file: Vec<PathBuf>,
-
-        /// If set, the standard SMITHY_PATH environment variable is used as a search path.
-        #[structopt(long, short, conflicts_with = "search_env")]
-        default_search_env: bool,
-
-        /// The name of an environment variable to use as a search path.
-        #[structopt(long, short, conflicts_with = "default_search_env")]
-        search_env: Option<String>,
+        #[structopt(flatten)]
+        file_input: FileInput,
     },
     /// Run standard validators on a model file
     Validate {
-        /// The file to read [default: <stdin>]
-        #[structopt(long, short)]
-        in_file: Vec<PathBuf>,
-
-        /// If set, the standard SMITHY_PATH environment variable is used as a search path.
-        #[structopt(long, short, conflicts_with = "search_env")]
-        default_search_env: bool,
-
-        /// The name of an environment variable to use as a search path.
-        #[structopt(long, short, conflicts_with = "default_search_env")]
-        search_env: Option<String>,
+        #[structopt(flatten)]
+        file_input: FileInput,
     },
     /// Convert model from one representation to another
     Convert {
-        /// The file to read [default: <stdin>]
-        #[structopt(long, short)]
-        in_file: Vec<PathBuf>,
-
-        /// If set, the standard SMITHY_PATH environment variable is used as a search path.
-        #[structopt(long, short, conflicts_with = "search_env")]
-        default_search_env: bool,
-
-        /// The name of an environment variable to use as a search path.
-        #[structopt(long, short, conflicts_with = "default_search_env")]
-        search_env: Option<String>,
+        #[structopt(flatten)]
+        file_input: FileInput,
 
         /// The file to write to [default: <stdout>]
         #[structopt(long, short)]
@@ -84,17 +72,8 @@ pub(crate) enum SubCommand {
     },
     /// Create human-readable documentation from a model
     Document {
-        /// The file to read [default: <stdin>]
-        #[structopt(long, short)]
-        in_file: Vec<PathBuf>,
-
-        /// If set, the standard SMITHY_PATH environment variable is used as a search path.
-        #[structopt(long, short, conflicts_with = "search_env")]
-        default_search_env: bool,
-
-        /// The name of an environment variable to use as a search path.
-        #[structopt(long, short, conflicts_with = "default_search_env")]
-        search_env: Option<String>,
+        #[structopt(flatten)]
+        file_input: FileInput,
 
         /// The file to write to [default: <stdout>]
         #[structopt(long, short)]
@@ -106,23 +85,9 @@ pub(crate) enum SubCommand {
     },
 }
 
-#[derive(Debug)]
-pub struct CommandLineError {}
-
 // ------------------------------------------------------------------------------------------------
 // Public Functions
 // ------------------------------------------------------------------------------------------------
-
-pub fn make_search_path(
-    default_search_env: bool,
-    search_env: Option<String>,
-) -> Option<SearchPath> {
-    if default_search_env {
-        Some(SearchPath::default())
-    } else {
-        search_env.map(|search_env| SearchPath::from_env(&search_env))
-    }
-}
 
 pub fn parse() -> Result<Command, Box<dyn Error>> {
     let args = CommandLine::from_args();
@@ -133,27 +98,36 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
 
     match args.cmd {
         SubCommand::Lint {
-            in_file,
-            default_search_env,
-            search_env,
+            file_input:
+                FileInput {
+                    in_file,
+                    default_search_env,
+                    search_env,
+                },
         } => Ok(Command::Lint(
             in_file,
             make_search_path(default_search_env, search_env),
             options,
         )),
         SubCommand::Validate {
-            in_file,
-            default_search_env,
-            search_env,
+            file_input:
+                FileInput {
+                    in_file,
+                    default_search_env,
+                    search_env,
+                },
         } => Ok(Command::Validate(
             in_file,
             make_search_path(default_search_env, search_env),
             options,
         )),
         SubCommand::Convert {
-            in_file,
-            default_search_env,
-            search_env,
+            file_input:
+                FileInput {
+                    in_file,
+                    default_search_env,
+                    search_env,
+                },
             out_file,
             write_format,
             namespace,
@@ -168,9 +142,12 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
             options,
         )),
         SubCommand::Document {
-            in_file,
-            default_search_env,
-            search_env,
+            file_input:
+                FileInput {
+                    in_file,
+                    default_search_env,
+                    search_env,
+                },
             out_file,
             write_format,
         } => Ok(Command::Document(
@@ -186,25 +163,13 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Implementations
+// Private Functions
 // ------------------------------------------------------------------------------------------------
 
-impl Default for CommandLineError {
-    fn default() -> Self {
-        Self {}
-    }
-}
-
-impl Display for CommandLineError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "An error occurred processing command line options")
-    }
-}
-
-impl Error for CommandLineError {}
-
-impl CommandLineError {
-    pub fn boxed() -> Box<Self> {
-        Box::new(Self::default())
+fn make_search_path(default_search_env: bool, search_env: Option<String>) -> Option<SearchPath> {
+    if default_search_env {
+        Some(SearchPath::default())
+    } else {
+        search_env.map(|search_env| SearchPath::from_env(&search_env))
     }
 }
