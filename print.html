@@ -714,7 +714,7 @@ SUBCOMMANDS:
 <p>Both the lint and validate commands use a common mechanism for printing results and will by default print using a 
 colorized output. As different linter and validation rules can be used the <em>reported by</em> row informs you which rule-set
 has determined the error.</p>
-<h1><a class="header" href="#example-lint" id="example-lint">Example Lint</a></h1>
+<h2><a class="header" href="#linter-example" id="linter-example">Linter example</a></h2>
 <p>For the following badly formatted Smithy file, in <code>test-models/lint-test.smithy</code>.</p>
 <pre><code class="language-smithy">namespace org.example.smithy
 
@@ -732,7 +732,7 @@ string someUnknownShape
 structure ThisIsNotAGoodName {}
 </code></pre>
 <p>The following issues will be output when the linter runs.</p>
-<pre><code class="language-text">&gt; cargo atelier lint -i test-models/lint-test.smithy -r smithy
+<pre><code class="language-text">&gt; cargo atelier lint -i test-models/lint-test.smithy
 
 [info] Shape names should conform to UpperCamelCase, i.e. ThisIsMyStructure
 	Reported by NamingConventions on/for element `thisIsMyStructure`.
@@ -758,7 +758,7 @@ structure ThisIsNotAGoodName {}
 [info] Member names should conform to lowerCamelCase, i.e. upper
 	Reported by NamingConventions on/for element `thisIsMyStructure$Upper`.
 </code></pre>
-<h1><a class="header" href="#example-validate" id="example-validate">Example Validate</a></h1>
+<h2><a class="header" href="#validation-example" id="validation-example">Validation example</a></h2>
 <p>For the following erroneous Smithy file, in <code>test-models/validation-test.smithy</code>.</p>
 <pre><code class="language-smithy">namespace org.example.smithy
 
@@ -777,7 +777,7 @@ service SomeService {
 }
 </code></pre>
 <p>The following issues will be output when the validation runs.</p>
-<pre><code class="language-text">&gt; cargo atelier validate -i test-models/validation-test.smithy -r smithy
+<pre><code class="language-text">&gt; cargo atelier validate -i test-models/validation-test.smithy
 
 [error] Structure member may not refer to a service, operation, resource or apply.
 	Reported by CorrectTypeReferences on/for element `MyStructure$wrongType`.
@@ -791,6 +791,31 @@ service SomeService {
 [error] Operation input may not refer to a service, operation, resource or apply.
 	Reported by CorrectTypeReferences on/for element `SomeOperation`.
 </code></pre>
+<h1><a class="header" href="#parameters" id="parameters">Parameters</a></h1>
+<p>Common parameters that may be included with any command.</p>
+<ul>
+<li><code>-V</code>, <code>--version</code>; prints version information (and exits).</li>
+<li><code>-h</code>, <code>--help</code>; prints help information (and exits).</li>
+<li><code>-v</code>, <code>--verbose</code>; turn on more logging, the more times you add the parameter the more logging you get.</li>
+<li><code>--no-color</code>; turn off color support.</li>
+</ul>
+<p>The following parameters are supported for all file input. File input uses the
+<a href="https://github.com/johnstonskj/rust-atelier//atelier-assembler"><code>atelier_assembler</code></a> crate to read multiple files and
+support multiple file representations. By default, the model assembler does not use a search path to load files. However,
+this can be changed with either the <code>-d</code> flag which will load any files found in the search path in the environment
+variable <code>$SMITHY_PATH</code>. Alternatively the <code>-s</code> parameter provides the name of an environment variable to use instead
+of <code>$SMITHY_PATH</code>.</p>
+<ul>
+<li><code>-d</code>, <code>--default-search-env</code>; if set, the standard <code>SMITHY_PATH</code> environment variable will be used as a search path.</li>
+<li><code>-i</code>, <code>--in-file &lt;in-file&gt;</code>;the name of a file to read, multiple files can be specified.</li>
+<li><code>-s</code>, <code>--search-env &lt;search-env&gt;</code>; the name of an environment variable to use as a search path.</li>
+</ul>
+<p>The following parameters are supported for all file output.</p>
+<ul>
+<li><code>-n</code>, <code>--namespace &lt;namespace&gt;</code>;a namespace to write, if the output format requires one.</li>
+<li><code>-o</code>, <code>--out-file &lt;out-file&gt;</code>; the name of a file to write to or stdout.</li>
+<li><code>-w</code>, <code>--write-format &lt;write-format&gt;</code>; the representation of the output file, the default is dependent on the command.</li>
+</ul>
 <h1><a class="header" href="#extending-atelier" id="extending-atelier">Extending Atelier</a></h1>
 <h1><a class="header" href="#adding-an-artifact-representation" id="adding-an-artifact-representation">Adding an Artifact Representation</a></h1>
 <h1><a class="header" href="#model-writer-1" id="model-writer-1">Model Writer</a></h1>
