@@ -74,7 +74,7 @@ String values MAY be represented as unqualified string literals OR as qualified 
 Boolean values MUST be represented as string literals with the type `xsd:boolean`.
 
 ```turtle
-[] smithy:value "true"^^xsd:boolean" .
+[] smithy:value "true"^^xsd:boolean .
 
 # alternatively, in Turtle:
 
@@ -87,7 +87,7 @@ Number values MUST be represented as string literals with either the type `xsd:s
    `xsd:double`.
 
 ```turtle
-[] smithy:value "1"^^xsd:signedLong" .
+[] smithy:value "1"^^xsd:signedLong .
 
 [] smithy:value "3.14"^^xsd:double" .
 ```
