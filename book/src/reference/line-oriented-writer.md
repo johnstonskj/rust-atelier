@@ -97,7 +97,7 @@ Finally, all lines MUST be sorted to ensure the overall output can be compared.
 
 A simple string shape with a trait applied.
 
-```text
+```smithy
 // "pattern" is a trait.
 @pattern("^[A-Za-z0-9 ]+$")
 string CityId
@@ -110,7 +110,7 @@ string::example.weather#CityId::trait::smithy.api#pattern<="^[A-Za-z0-9 ]+$"
 
 An operation, note the rename of "errors" to "error as the member identifier.
 
-```text
+```smithy
 @readonly
 operation GetCity {
     input: GetCityInput
@@ -127,10 +127,10 @@ operation::example.weather#GetCity::output=>example.weather#GetCityInput
 operation::example.weather#GetCity::trait::smithy.api#readonly
 ```
 
-A service, note the object-based trait "paginated" and the comment that has been turned into a
+A service, note the object-based trait "paginated", and the comment that has been turned into a
 documentation trait.
 
-```text
+```smithy
 /// Provides weather forecasts.
 @paginated(inputToken: "nextToken", outputToken: "nextToken",
            pageSize: "pageSize")

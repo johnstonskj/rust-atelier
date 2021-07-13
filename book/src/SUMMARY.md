@@ -6,7 +6,7 @@
 1. [Creating Models](using/creating.md)
    1. [Using the Model API](using/model_api.md)
    1. [Using the Builder API](using/builder_api.md)
-   1. [Using the Visitor API](using/visitor.md)
+1. [The Visitor API](using/visitor.md)
 1. [Model IO](using/io.md)
    1. [Model Reader](using/reader.md)
    1. [Model Writer](using/writer.md)
