@@ -61,7 +61,7 @@ structure ThisIsNotAGoodName {}
 The following issues will be output when the linter runs.
 
 ```bash
-> cargo atelier lint -i test-models/lint-test.smithy -r smithy
+> cargo atelier lint -i test-models/lint-test.smithy
 
 [info] Shape names should conform to UpperCamelCase, i.e. ThisIsMyStructure
 	Reported by NamingConventions on/for element `thisIsMyStructure`.
@@ -113,7 +113,7 @@ service SomeService {
 The following issues will be output when the validation runs.
 
 ```bash
-> cargo atelier validate -i test-models/validation-test.smithy -r smithy
+> cargo atelier validate -i test-models/validation-test.smithy
 
 [error] Structure member may not refer to a service, operation, resource or apply.
 	Reported by CorrectTypeReferences on/for element `MyStructure$wrongType`.
@@ -158,6 +158,32 @@ Smith Version: 1.0
 * ##OK##: ##smithy.api#Boolean##
 * ##someJSONThing##: [[someUnknownShape>>.||anchor=shape:someUnknownShape]]
 ```
+
+# Parameters
+
+Common parameters that may be included with any command.
+
+* `-V`, `--version`; prints version information (and exits).
+* `-h`, `--help`; prints help information (and exits).
+* `-v`, `--verbose`; turn on more logging, the more times you add the parameter the more logging you get.
+* `--no-color`; turn off color support.
+
+The following parameters are supported for all file input. File input uses the 
+[`atelier_assembler`](https://github.com/johnstonskj/rust-atelier//atelier-assembler) crate to read multiple files and
+support multiple file representations. By default, the model assembler does not use a search path to load files. However,
+this can be changed with either the `-d` flag which will load any files found in the search path in the environment
+variable `$SMITHY_PATH`. Alternatively the `-s` parameter provides the name of an environment variable to use instead
+of `$SMITHY_PATH`.
+
+* `-d`, `--default-search-env`; if set, the standard `SMITHY_PATH` environment variable will be used as a search path.
+* `-i`, `--in-file <in-file>`;the name of a file to read, multiple files can be specified.
+* `-s`, `--search-env <search-env>`; the name of an environment variable to use as a search path.
+
+The following parameters are supported for all file output.
+
+* `-n`, `--namespace <namespace>`;a namespace to write, if the output format requires one.
+* `-o`, `--out-file <out-file>`; the name of a file to write to or stdout.
+* `-w`, `--write-format <write-format>`; the representation of the output file, the default is dependent on the command.
 
 ## Changes
 

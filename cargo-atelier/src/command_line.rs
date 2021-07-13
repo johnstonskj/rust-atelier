@@ -19,7 +19,7 @@ pub(crate) struct CommandLine {
 
     #[cfg(feature = "color")]
     /// Turn off color in the output
-    #[structopt(long, short)]
+    #[structopt(long)]
     no_color: bool,
 
     #[structopt(subcommand)]
