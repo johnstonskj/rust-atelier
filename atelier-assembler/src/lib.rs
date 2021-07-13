@@ -5,6 +5,9 @@ A tool can add files one-by-one, or from a directory, and then process them all 
 This implementation understands the different registered file extensions so that it can read files
 in different representations and assemble them seamlessly.
 
+Note that if a path processed by the assembler is a directory then all files in the directory will
+be added **recursively**.
+
 # Example
 
 The following is the simple, and most common, method of using the assembler. This uses the
