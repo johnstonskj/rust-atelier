@@ -154,6 +154,10 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#model-assembly" id="model-assembly">Model Assembly</a></h1>
+<p>The model assembler is used to create a single semantic model from a set of model artifacts. The assembler uses a <em>file 
+type registry</em> to identify different representations and how to load them. Additionally, the assembler will process
+paths specified in a typical <em>search path</em> environment variable.</p>
+<h2><a class="header" href="#examples" id="examples">Examples</a></h2>
 <p>The following is the simple, and most common, method of using the assembler. This uses the
 default <code>FileTypeRegistry</code> and will search for all models in the set of paths specified in
 the environment variable “<code>SMITHY_PATH</code>“.</p>
@@ -170,15 +174,17 @@ let env_assembler = ModelAssembler::default();
 let model: Result&lt;Model&gt; = Model::try_from(env_assembler);
 <span class="boring">}
 </span></code></pre></pre>
+<p>The next example turns off the search path handling entirely (the <code>None</code> passed to the <code>new</code> function) and then
+adds a single directory to the assembler.</p>
 <pre><pre class="playpen"><code class="language-rust">
 <span class="boring">#![allow(unused_variables)]
 </span><span class="boring">fn main() {
-</span>use atelier_assembler::ModelAssembler;
+</span>use atelier_assembler::{FileTypeRegistry, ModelAssembler};
 use atelier_core::error::Result;
 use atelier_core::model::Model;
 use std::convert::TryFrom;
 
-let mut assembler = ModelAssembler::default();
+let mut assembler = ModelAssembler::new(FileTypeRegistry::default(), None);
 
 assembler.push_str(&quot;tests/good&quot;);
 

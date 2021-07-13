@@ -564,6 +564,10 @@ fn test_file_parses(file_name: &amp;str) {
 </span></code></pre></pre>
 <h1><a class="header" href="#model-writer" id="model-writer">Model Writer</a></h1>
 <h1><a class="header" href="#model-assembly" id="model-assembly">Model Assembly</a></h1>
+<p>The model assembler is used to create a single semantic model from a set of model artifacts. The assembler uses a <em>file 
+type registry</em> to identify different representations and how to load them. Additionally, the assembler will process
+paths specified in a typical <em>search path</em> environment variable.</p>
+<h2><a class="header" href="#examples" id="examples">Examples</a></h2>
 <p>The following is the simple, and most common, method of using the assembler. This uses the
 default <code>FileTypeRegistry</code> and will search for all models in the set of paths specified in
 the environment variable “<code>SMITHY_PATH</code>“.</p>
@@ -580,15 +584,17 @@ let env_assembler = ModelAssembler::default();
 let model: Result&lt;Model&gt; = Model::try_from(env_assembler);
 <span class="boring">}
 </span></code></pre></pre>
+<p>The next example turns off the search path handling entirely (the <code>None</code> passed to the <code>new</code> function) and then
+adds a single directory to the assembler.</p>
 <pre><pre class="playpen"><code class="language-rust">
 <span class="boring">#![allow(unused_variables)]
 </span><span class="boring">fn main() {
-</span>use atelier_assembler::ModelAssembler;
+</span>use atelier_assembler::{FileTypeRegistry, ModelAssembler};
 use atelier_core::error::Result;
 use atelier_core::model::Model;
 use std::convert::TryFrom;
 
-let mut assembler = ModelAssembler::default();
+let mut assembler = ModelAssembler::new(FileTypeRegistry::default(), None);
 
 assembler.push_str(&quot;tests/good&quot;);
 
@@ -692,8 +698,12 @@ shape or member identifier accordingly.</p>
 ]
 </code></pre>
 <h1><a class="header" href="#cargo-integration" id="cargo-integration">Cargo Integration</a></h1>
+<p>The <code>cargo_atelier</code> crate provides a cargo sub-command for processing Smithy files, and is installed in the usual manner.</p>
+<pre><code class="language-bash">&gt; cargo install cargo_atelier
+</code></pre>
+<p>To ensure this installed correctly, you can check the help.</p>
 <pre><code class="language-text">&gt; cargo atelier --help
-cargo-atelier 0.1.2
+cargo-atelier 0.2.7
 Tools for the Smithy IDL.
 
 USAGE:
@@ -810,6 +820,16 @@ of <code>$SMITHY_PATH</code>.</p>
 <li><code>-i</code>, <code>--in-file &lt;in-file&gt;</code>;the name of a file to read, multiple files can be specified.</li>
 <li><code>-s</code>, <code>--search-env &lt;search-env&gt;</code>; the name of an environment variable to use as a search path.</li>
 </ul>
+<blockquote>
+<p>The following will process all files in the default environment variable, with local files prepended to the
+search path.</p>
+<pre><code class="language-bash">&gt; export SMITHY_PATH=./src/models:$SMITHY_PATH
+&gt; cargo atelier validate -d
+</code></pre>
+<p>The above can also be accomplished using <code>-d</code> and <code>-i</code> together.</p>
+<pre><code class="language-bash">&gt; cargo atelier validate -d -i ./src/models
+</code></pre>
+</blockquote>
 <p>The following parameters are supported for all file output.</p>
 <ul>
 <li><code>-n</code>, <code>--namespace &lt;namespace&gt;</code>;a namespace to write, if the output format requires one.</li>
@@ -1694,7 +1714,7 @@ these same value production rules (13),</li>
 </li>
 </ul>
 <p>Finally, all lines MUST be sorted to ensure the overall output can be compared.</p>
-<h2><a class="header" href="#examples" id="examples">Examples</a></h2>
+<h2><a class="header" href="#examples-1" id="examples-1">Examples</a></h2>
 <p>A simple string shape with a trait applied.</p>
 <pre><code class="language-text">// &quot;pattern&quot; is a trait.
 @pattern(&quot;^[A-Za-z0-9 ]+$&quot;)

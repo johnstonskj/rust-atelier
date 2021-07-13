@@ -154,8 +154,12 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#cargo-integration" id="cargo-integration">Cargo Integration</a></h1>
+<p>The <code>cargo_atelier</code> crate provides a cargo sub-command for processing Smithy files, and is installed in the usual manner.</p>
+<pre><code class="language-bash">&gt; cargo install cargo_atelier
+</code></pre>
+<p>To ensure this installed correctly, you can check the help.</p>
 <pre><code class="language-text">&gt; cargo atelier --help
-cargo-atelier 0.1.2
+cargo-atelier 0.2.7
 Tools for the Smithy IDL.
 
 USAGE:
@@ -272,6 +276,16 @@ of <code>$SMITHY_PATH</code>.</p>
 <li><code>-i</code>, <code>--in-file &lt;in-file&gt;</code>;the name of a file to read, multiple files can be specified.</li>
 <li><code>-s</code>, <code>--search-env &lt;search-env&gt;</code>; the name of an environment variable to use as a search path.</li>
 </ul>
+<blockquote>
+<p>The following will process all files in the default environment variable, with local files prepended to the
+search path.</p>
+<pre><code class="language-bash">&gt; export SMITHY_PATH=./src/models:$SMITHY_PATH
+&gt; cargo atelier validate -d
+</code></pre>
+<p>The above can also be accomplished using <code>-d</code> and <code>-i</code> together.</p>
+<pre><code class="language-bash">&gt; cargo atelier validate -d -i ./src/models
+</code></pre>
+</blockquote>
 <p>The following parameters are supported for all file output.</p>
 <ul>
 <li><code>-n</code>, <code>--namespace &lt;namespace&gt;</code>;a namespace to write, if the output format requires one.</li>
