@@ -2,7 +2,6 @@ use crate::{Command, DocumentCommand, FileFormat, Options, TransformCommand};
 use atelier_lib::assembler::SearchPath;
 use somedoc::write::OutputFormat;
 use std::error::Error;
-use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -90,7 +89,7 @@ enum SubCommand {
 // ------------------------------------------------------------------------------------------------
 
 pub fn parse() -> Result<Command, Box<dyn Error>> {
-    let args = CommandLine::from_args();
+    let args = CommandLine::from_iter(check_command_line());
 
     let options = Options {
         use_color: !args.no_color,
@@ -165,6 +164,19 @@ pub fn parse() -> Result<Command, Box<dyn Error>> {
 // ------------------------------------------------------------------------------------------------
 // Private Functions
 // ------------------------------------------------------------------------------------------------
+
+fn check_command_line() -> Vec<String> {
+    use std::env;
+    let mut args = env::args().collect::<Vec<String>>();
+
+    if let Some(command) = args.get(1) {
+        // The following is true if this is run as a cargo sub-command.
+        if command == "atelier" {
+            args.remove(1);
+        }
+    }
+    args
+}
 
 fn make_search_path(default_search_env: bool, search_env: Option<String>) -> Option<SearchPath> {
     if default_search_env {

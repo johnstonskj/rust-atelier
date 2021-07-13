@@ -1,8 +1,16 @@
 # Cargo Integration
 
+The `cargo_atelier` crate provides a cargo sub-command for processing Smithy files, and is installed in the usual manner.
+
+```bash
+> cargo install cargo_atelier
+```
+
+To ensure this installed correctly, you can check the help.
+
 ```text
 > cargo atelier --help
-cargo-atelier 0.1.2
+cargo-atelier 0.2.7
 Tools for the Smithy IDL.
 
 USAGE:
@@ -136,6 +144,22 @@ of `$SMITHY_PATH`.
 * `-d`, `--default-search-env`; if set, the standard `SMITHY_PATH` environment variable will be used as a search path.
 * `-i`, `--in-file <in-file>`;the name of a file to read, multiple files can be specified.
 * `-s`, `--search-env <search-env>`; the name of an environment variable to use as a search path.
+
+> 
+> The following will process all files in the default environment variable, with local files prepended to the
+> search path.
+> 
+> ```bash
+> > export SMITHY_PATH=./src/models:$SMITHY_PATH
+> > cargo atelier validate -d
+> ```
+> 
+> The above can also be accomplished using `-d` and `-i` together.
+> 
+> ```bash
+> > cargo atelier validate -d -i ./src/models
+> ```
+> 
 
 The following parameters are supported for all file output.
 

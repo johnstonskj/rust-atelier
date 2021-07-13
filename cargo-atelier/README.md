@@ -187,6 +187,10 @@ The following parameters are supported for all file output.
 
 ## Changes
 
+**Version 0.2.7**
+
+* Added argument check to run correctly under cargo.
+
 **Version 0.2.6**
 
 * Added parameters 'default_search_env' and 'search_env' to control the model assembler.
