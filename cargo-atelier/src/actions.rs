@@ -1,6 +1,6 @@
 use crate::{DocumentCommand, FileFormat, TransformCommand};
 use atelier_lib::actions::{standard_model_lint, standard_model_validation};
-use atelier_lib::assembler::{FileTypeRegistry, ModelAssembler, SearchPath};
+use atelier_lib::assembler::{FileTypeRegistry, ModelAssembler};
 use atelier_lib::core::action::ActionIssue;
 use atelier_lib::core::error::Result as ModelResult;
 use atelier_lib::core::io::ModelWriter;
@@ -9,6 +9,7 @@ use atelier_lib::format::document::writer::describe_model;
 use atelier_lib::format::json::JsonWriter;
 use atelier_lib::format::plant_uml::writer::PlantUmlWriter;
 use atelier_lib::format::smithy::SmithyWriter;
+use search_path::SearchPath;
 use somedoc::write::{write_document, OutputFormat};
 use std::convert::TryFrom;
 use std::error::Error;

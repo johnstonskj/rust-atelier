@@ -1,4 +1,4 @@
-use atelier_lib::assembler::SearchPath;
+use search_path::SearchPath;
 use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::fmt::{Display, Formatter};

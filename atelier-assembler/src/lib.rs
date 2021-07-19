@@ -58,9 +58,9 @@ use atelier_core::io::ModelReader;
 use atelier_core::model::Model;
 use atelier_json as json;
 use atelier_smithy as smithy;
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use search_path::SearchPath;
+use std::collections::{BTreeMap, HashSet};
 use std::convert::TryFrom;
-use std::env;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::{read_dir, File};
 use std::path::{Path, PathBuf};
@@ -96,15 +96,6 @@ pub struct FileType {
 pub struct FileTypeRegistry {
     by_extension: BTreeMap<String, Rc<FileType>>,
     by_mime_type: BTreeMap<String, Rc<FileType>>,
-}
-
-///
-/// A Search path that can be initialized from an environment variable.
-///
-#[derive(Clone, Debug)]
-pub struct SearchPath {
-    var_name: String,
-    paths: BTreeSet<PathBuf>,
 }
 
 ///
@@ -296,92 +287,6 @@ impl FileTypeRegistry {
 
 // ------------------------------------------------------------------------------------------------
 
-impl Default for SearchPath {
-    fn default() -> Self {
-        Self::from_env(Self::ENV_PATH_NAME)
-    }
-}
-
-impl SearchPath {
-    const PATH_SEP: &'static str = ":";
-
-    const ENV_PATH_NAME: &'static str = "SMITHY_PATH";
-
-    ///
-    /// Construct a new instance from the named environment variable. The implementation of
-    /// `Default::default` will always use the `$SMITHY_PATH` variable.
-    ///
-    pub fn from_env(env_name: &str) -> Self {
-        if let Ok(search_path) = env::var(env_name) {
-            if !search_path.is_empty() {
-                let mut paths: BTreeSet<PathBuf> = Default::default();
-                info!(
-                    "SearchPath::from_env({:?}) - parsing search path '{}'",
-                    env_name, search_path
-                );
-                for path in search_path.split(Self::PATH_SEP) {
-                    let path = path.trim();
-                    if !path.is_empty() {
-                        let _ = paths.insert(PathBuf::from(path));
-                    }
-                }
-                Self {
-                    var_name: env_name.to_string(),
-                    paths,
-                }
-            } else {
-                warn!(
-                    "SearchPath::from_env({:?}) - search_path is empty",
-                    env_name
-                );
-                Self {
-                    var_name: env_name.to_string(),
-                    paths: Default::default(),
-                }
-            }
-        } else {
-            warn!(
-                "SearchPath::from_env({:?}) - no value found for `env::var`",
-                env_name
-            );
-            Self {
-                var_name: env_name.to_string(),
-                paths: Default::default(),
-            }
-        }
-    }
-
-    ///
-    /// Return the name of the environment variable used to create this instance.
-    ///
-    pub fn env_name(&self) -> &String {
-        &self.var_name
-    }
-
-    ///
-    /// Return `true` is the set of paths found in the environment variable is empty, else `false`.
-    ///
-    pub fn is_empty(&self) -> bool {
-        self.paths.is_empty()
-    }
-
-    ///
-    /// Return the number of paths found in the environment variable.
-    ///
-    pub fn len(&self) -> usize {
-        self.paths.len()
-    }
-
-    ///
-    /// Return an iterator over the set of paths found in the environment variable.
-    ///
-    pub fn paths(&self) -> impl Iterator<Item = &PathBuf> {
-        self.paths.iter()
-    }
-}
-
-// ------------------------------------------------------------------------------------------------
-
 impl Default for ModelAssembler {
     fn default() -> Self {
         Self::new(FileTypeRegistry::default(), Some(SearchPath::default()))
@@ -448,7 +353,7 @@ impl ModelAssembler {
         };
         match search_path {
             None => new_self,
-            Some(search_path) => Self::include_search_path(new_self, &search_path),
+            Some(search_path) => Self::include_search_path(new_self, search_path),
         }
     }
 
@@ -508,15 +413,10 @@ impl ModelAssembler {
 
     // --------------------------------------------------------------------------------------------
 
-    fn include_search_path(self, search_path: &SearchPath) -> Self {
-        debug!(
-            "ModelAssembler::include_search_path - using environment variable '{}'",
-            search_path.env_name()
-        );
+    fn include_search_path(self, search_path: SearchPath) -> Self {
+        debug!("ModelAssembler::include_search_path",);
         let mut mut_self = self;
-        for path in search_path.paths() {
-            let _ = mut_self.push(&PathBuf::from(path));
-        }
+        mut_self.paths.extend(search_path.into_iter());
         mut_self
     }
 

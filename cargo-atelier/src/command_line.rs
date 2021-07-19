@@ -1,5 +1,5 @@
 use crate::{Command, DocumentCommand, FileFormat, Options, TransformCommand};
-use atelier_lib::assembler::SearchPath;
+use search_path::SearchPath;
 use somedoc::write::OutputFormat;
 use std::error::Error;
 use std::path::PathBuf;
@@ -182,6 +182,6 @@ fn make_search_path(default_search_env: bool, search_env: Option<String>) -> Opt
     if default_search_env {
         Some(SearchPath::default())
     } else {
-        search_env.map(|search_env| SearchPath::from_env(&search_env))
+        search_env.map(|search_env| SearchPath::new_or_default(&search_env))
     }
 }
