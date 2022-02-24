@@ -18,3 +18,7 @@ all-features = true
 
 [dependencies]
 atelier_core = { version = "~0.2", path = "../atelier-core" }
+
+[dev-dependencies]
+atelier_test = {version = "0.1", path = "../atelier-test" }
+atelier_smithy = {version = "~0.2", path = "../atelier-smithy" }

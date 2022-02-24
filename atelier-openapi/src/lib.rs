@@ -1,13 +1,14 @@
-/*!
-Future home of the OpenAPI writer for Smithy.
-
-*/
-
-// use ...
+use atelier_core::io::ModelWriter;
 
 // ------------------------------------------------------------------------------------------------
 // Public Types
 // ------------------------------------------------------------------------------------------------
+
+///
+/// Writes out a model in the [OpenAPI](https://swagger.io/specification/) format.
+///
+#[derive(Debug, Default)]
+pub struct OpenApiWriter {}
 
 // ------------------------------------------------------------------------------------------------
 // Private Types
@@ -20,6 +21,20 @@ Future home of the OpenAPI writer for Smithy.
 // ------------------------------------------------------------------------------------------------
 // Implementations
 // ------------------------------------------------------------------------------------------------
+
+impl ModelWriter for OpenApiWriter {
+    fn write(
+        &mut self,
+        w: &mut impl std::io::Write,
+        _model: &atelier_core::model::Model,
+    ) -> atelier_core::error::Result<()> {
+        writeln!(w, "{{")?;
+        writeln!(w, r#" "openapi": "3.0.2""#)?;
+        writeln!(w, "}}")?;
+
+        Ok(())
+    }
+}
 
 // ------------------------------------------------------------------------------------------------
 // Private Functions
