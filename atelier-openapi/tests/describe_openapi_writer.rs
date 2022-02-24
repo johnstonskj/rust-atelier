@@ -35,7 +35,7 @@ fn test(file_name: &str) {
 
     let expected_lines: Vec<String> = fs::read_to_string(expected_file)
         .unwrap()
-        .split("\n")
+        .split('\n')
         // .split(LINE_ENDING)
         .map(|s| {
             format!(
