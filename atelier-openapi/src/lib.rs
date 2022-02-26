@@ -2,11 +2,11 @@ use std::cell::RefCell;
 use std::io::Write;
 use std::str::FromStr;
 
-use atelier_core::error::{Error as ModelError, Result as ModelResult};
+use atelier_core::error::Error as ModelError;
 use atelier_core::model::shapes::{AppliedTraits, Service};
 use atelier_core::model::values::Value;
 use atelier_core::model::visitor::walk_model;
-use atelier_core::model::{Identifier, Model, ShapeID};
+use atelier_core::model::{Model, ShapeID};
 use atelier_core::{io::ModelWriter, model::visitor::ModelVisitor};
 use okapi::openapi3;
 use serde_json::to_writer_pretty;
@@ -53,6 +53,18 @@ impl ModelWriter for OpenApiWriter {
     }
 }
 
+impl OpenApiModelVisitor {
+    fn add_info_object(&self, title: String, version: String) {
+        let mut spec = self.spec.borrow_mut();
+
+        spec.info = openapi3::Info {
+            version,
+            title,
+            ..openapi3::Info::default()
+        };
+    }
+}
+
 impl ModelVisitor for OpenApiModelVisitor {
     type Error = ModelError;
 
@@ -62,20 +74,17 @@ impl ModelVisitor for OpenApiModelVisitor {
         traits: &AppliedTraits,
         shape: &Service,
     ) -> Result<(), Self::Error> {
-        let mut spec = self.spec.borrow_mut();
-
         let title_trait_id = &ShapeID::from_str("smithy.api#title").unwrap();
 
-        let title = expect_string_trait_value(traits, title_trait_id)
-            .unwrap_or(format!("{}", id.shape_name()));
-
-        // let mut info = openapi3::Info::default();
-        // info.version = shape.version().clone();
-        spec.info = openapi3::Info {
-            version: shape.version().clone(),
-            title,
-            ..openapi3::Info::default()
+        let title = if traits.contains_key(title_trait_id) {
+            expect_string_trait_value(traits, title_trait_id)
+        } else {
+            format!("{}", id.shape_name())
         };
+
+        let version = shape.version().clone();
+
+        self.add_info_object(title, version);
 
         Ok(())
     }
@@ -85,16 +94,14 @@ impl ModelVisitor for OpenApiModelVisitor {
 // Private Functions
 // ------------------------------------------------------------------------------------------------
 
-// TODO: tighten up types, should error if trait doesn't have string value
-// TODO: also needs better name
-fn expect_string_trait_value(traits: &AppliedTraits, trait_id: &ShapeID) -> Option<String> {
+fn expect_string_trait_value(traits: &AppliedTraits, trait_id: &ShapeID) -> String {
     if let Some(Some(trait_value)) = traits.get(trait_id) {
         match trait_value {
-            Value::String(s) => Some(s.clone()),
-            _ => None,
+            Value::String(s) => s.clone(),
+            v => panic!("Expected trait {} to be a string but was: {}", trait_id, v),
         }
     } else {
-        None
+        panic!("Expected trait {} not found", trait_id)
     }
 }
 

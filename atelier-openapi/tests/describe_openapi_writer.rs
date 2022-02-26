@@ -20,7 +20,7 @@ fn test(file_name: &str) {
         MANIFEST_DIR, file_name
     ));
     let expected_file_path = PathBuf::from(format!(
-        "{}/tests/models/{}.openapi.jsoN",
+        "{}/tests/models/{}.openapi.json",
         MANIFEST_DIR, file_name
     ));
 
