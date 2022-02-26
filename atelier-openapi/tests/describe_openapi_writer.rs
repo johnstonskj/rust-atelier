@@ -1,9 +1,9 @@
 use atelier_core::io::{read_model_from_file, write_model_to_string};
 use atelier_openapi::OpenApiWriter;
 use atelier_smithy::SmithyReader;
-use std::{fs, path::PathBuf};
-
 use okapi::openapi3;
+use pretty_assertions::assert_eq;
+use std::{fs, path::PathBuf};
 
 #[test]
 fn test_unions() {

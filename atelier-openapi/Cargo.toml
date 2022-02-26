@@ -24,3 +24,4 @@ serde_json = "1.0"
 [dev-dependencies]
 atelier_test = { version = "0.1", path = "../atelier-test" }
 atelier_smithy = { version = "~0.2", path = "../atelier-smithy" }
+pretty_assertions = "1.1"
