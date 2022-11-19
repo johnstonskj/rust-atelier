@@ -18,3 +18,11 @@ all-features = true
 
 [dependencies]
 atelier_core = { version = "~0.2", path = "../atelier-core" }
+okapi = "0.7.0-rc.1"
+serde_json = "1.0"
+
+[dev-dependencies]
+atelier_test = { version = "0.1", path = "../atelier-test" }
+atelier_smithy = { version = "~0.2", path = "../atelier-smithy" }
+atelier_json = { version = "~0.2", path = "../atelier-json" }
+pretty_assertions = "1.1"
