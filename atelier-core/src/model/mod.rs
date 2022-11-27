@@ -125,7 +125,7 @@ impl Model {
 
     /// Returns `true` if this model's **metadata** collection has a shape with the provided key`, else `false`.
     pub fn has_metadata_value(&self, key: &str) -> bool {
-        !self.metadata.contains_key(key)
+        self.metadata.contains_key(key)
     }
 
     /// Returns the value in this model's **metadata** collection with the provide key.
@@ -189,7 +189,7 @@ impl Model {
 
     /// Returns `true` if this model's **shapes** collection has a shape with the provided `ShapeID`, else `false`.
     pub fn has_shape(&self, shape_id: &ShapeID) -> bool {
-        !self.shapes.contains_key(shape_id)
+        self.shapes.contains_key(shape_id)
     }
 
     /// Returns the shape in this model's **shapes** collection with the provided `ShapeID`.
